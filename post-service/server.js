@@ -12,8 +12,6 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(cors());
-
-// Exposes: GET / and POST /
 app.use('/', postRoutes);
 
 const PORT = process.env.PORT || 5002;

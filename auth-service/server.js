@@ -15,8 +15,6 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('Auth Service is running');
 });
-
-// Exposes: POST /register, POST /login
 app.use('/', authRoutes);
 
 const PORT = process.env.PORT || 5001;

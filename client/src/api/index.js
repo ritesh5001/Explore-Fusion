@@ -9,7 +9,8 @@ const toast = (message, type = 'info', timeoutMs) => {
 };
 
 const API = axios.create({
-  baseURL: 'http://localhost:5050/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  withCredentials: false,
 });
 
 API.interceptors.request.use((req) => {

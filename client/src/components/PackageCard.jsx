@@ -25,7 +25,7 @@ const normalizeImageUrl = (img) => {
 	return `http://localhost:5050${img}`;
 };
 
-export default function PackageCard({ id, title, price, image, destination }) {
+export default function PackageCard({ id, title, price, image, destination, duration }) {
 	return (
 		<Card className="overflow-hidden">
 			<img src={normalizeImageUrl(image)} alt={title} className="w-full h-44 object-cover" />
@@ -36,7 +36,16 @@ export default function PackageCard({ id, title, price, image, destination }) {
 						${price}
 					</span>
 				</div>
-				<p className="mt-2 text-sm text-charcoal/70 dark:text-sand/70 line-clamp-1">📍 {destination}</p>
+				<div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
+					{!!destination && (
+						<span className="text-charcoal/70 dark:text-sand/70 line-clamp-1">📍 {destination}</span>
+					)}
+					{!!duration && (
+						<span className="px-2 py-1 rounded-full bg-soft/70 dark:bg-white/10 text-charcoal/70 dark:text-sand/70 text-xs">
+							⏳ {duration}
+						</span>
+					)}
+				</div>
 
 				<Button as={Link} to={`/packages/${id}`} className="w-full mt-4">
 					View Details

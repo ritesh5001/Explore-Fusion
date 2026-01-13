@@ -7,11 +7,11 @@ const PlanTrip = () => {
   const [formData, setFormData] = useState({ destination: '', days: 3, budget: 1000 });
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
 
-  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,7 +25,7 @@ const PlanTrip = () => {
     setLoading(false);
   };
 
-  
+
   const handleSaveTrip = async () => {
     if (!user) {
       alert("Please login to save trips!");
@@ -34,17 +34,19 @@ const PlanTrip = () => {
 
     try {
       await API.post('/itineraries', {
-        user_id: user._id, 
-        destination: formData.destination,
-        duration: formData.days,
-        budget: formData.budget,
-        total_cost: plan.estimated_cost,
-        currency: plan.currency,
-        activities: plan.itinerary,
-        note: plan.note
+        userId: user._id,
+        plan: {
+          destination: formData.destination,
+          duration: formData.days,
+          budget: formData.budget,
+          total_cost: plan.estimated_cost,
+          currency: plan.currency,
+          activities: plan.itinerary,
+          note: plan.note
+        }
       });
       alert("Trip Saved Successfully! 🎉");
-      navigate('/bookings'); 
+      navigate('/bookings');
     } catch (error) {
       console.error(error);
       alert("Failed to save trip.");
@@ -59,44 +61,44 @@ const PlanTrip = () => {
         <h1 className="text-3xl font-bold text-center mb-8">🤖 AI Trip Planner</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {}
+
+          { }
           <div className="bg-white p-6 rounded-lg shadow-md h-fit">
             <h2 className="text-xl font-semibold mb-4">Tell me your plans</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-gray-700 mb-1">Destination</label>
-                <input 
+                <input
                   type="text" required
                   className="w-full border p-2 rounded"
                   placeholder="e.g. Paris, Goa, Tokyo"
                   value={formData.destination}
-                  onChange={(e) => setFormData({...formData, destination: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 mb-1">Days</label>
-                  <input 
+                  <input
                     type="number" required min="1"
                     className="w-full border p-2 rounded"
                     value={formData.days}
-                    onChange={(e) => setFormData({...formData, days: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, days: e.target.value })}
                   />
                 </div>
                 <div>
                   <label className="block text-gray-700 mb-1">Budget ($)</label>
-                  <input 
+                  <input
                     type="number" required
                     className="w-full border p-2 rounded"
                     value={formData.budget}
-                    onChange={(e) => setFormData({...formData, budget: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                   />
                 </div>
               </div>
 
-              <button 
+              <button
                 disabled={loading}
                 className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 disabled:bg-gray-400"
               >
@@ -105,7 +107,7 @@ const PlanTrip = () => {
             </form>
           </div>
 
-          {}
+          { }
           <div className="bg-white p-6 rounded-lg shadow-md min-h-[300px]">
             {plan ? (
               <div>
@@ -127,13 +129,13 @@ const PlanTrip = () => {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="mt-6 p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200">
                   ⚠️ Note: {plan.note}
                 </div>
 
-                {}
-                <button 
+                { }
+                <button
                   onClick={handleSaveTrip}
                   className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-bold shadow-sm transition-colors"
                 >

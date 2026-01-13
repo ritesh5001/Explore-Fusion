@@ -24,8 +24,8 @@ const Packages = () => {
 
     try {
       await API.post('/bookings', {
-        user_id: user._id,
-        package_id: pkgId,
+        userId: user._id,
+        packageId: pkgId,
         status: 'confirmed'
       });
       alert("Booking Confirmed! ✈️");
@@ -34,11 +34,11 @@ const Packages = () => {
     }
   };
 
-  
+
   const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/400x200"; 
-    if (img.startsWith('http')) return img; 
-    return `http://localhost:5050${img}`; 
+    if (!img) return "https://via.placeholder.com/400x200";
+    if (img.startsWith('http')) return img;
+    return `http://localhost:5050${img}`;
   };
 
   return (
@@ -55,14 +55,14 @@ const Packages = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {packages.map((pkg) => (
             <div key={pkg._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
-              
-              {}
-              <img 
-                src={getImageUrl(pkg.image)} 
-                alt={pkg.title} 
+
+              { }
+              <img
+                src={getImageUrl(pkg.images?.[0])}
+                alt={pkg.title}
                 className="w-full h-48 object-cover"
               />
-              
+
               <div className="p-4">
                 <div className="flex justify-between items-start">
                   <h2 className="text-xl font-bold mb-2">{pkg.title}</h2>
@@ -70,15 +70,15 @@ const Packages = () => {
                     ${pkg.price}
                   </span>
                 </div>
-                
+
                 <p className="text-gray-600 text-sm mb-4 line-clamp-2">{pkg.description}</p>
-                
+
                 <div className="flex justify-between items-center text-sm text-gray-500 mb-4">
-                  <span>📍 {pkg.location}</span>
+                  <span>📍 {pkg.destination}</span>
                   <span>⏳ {pkg.duration}</span>
                 </div>
 
-                <button 
+                <button
                   onClick={() => handleBook(pkg._id)}
                   className="w-full bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700"
                 >

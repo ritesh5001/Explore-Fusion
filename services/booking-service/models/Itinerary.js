@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const ItinerarySchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  plan: { type: Object, required: true }, 
+const itinerarySchema = new mongoose.Schema({
+  userId: String,
+  plan: Object
 }, { timestamps: true });
 
-module.exports = mongoose.model('Itinerary', ItinerarySchema);
+module.exports = mongoose.model('Itinerary', itinerarySchema);

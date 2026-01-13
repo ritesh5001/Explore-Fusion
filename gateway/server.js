@@ -55,7 +55,6 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
-    pathRewrite: (path) => `/api/v1/itineraries${path}`,
   })
 );
 
@@ -64,7 +63,6 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
-    pathRewrite: (path) => `/api/v1/packages${path}`,
   })
 );
 
@@ -73,7 +71,6 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
-    pathRewrite: (path) => `/api/v1/bookings${path}`,
   })
 );
 

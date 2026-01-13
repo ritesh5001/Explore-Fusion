@@ -8,9 +8,11 @@
     "install:all": "npm --prefix client install && npm --prefix gateway install && npm --prefix services/ai-service install && npm --prefix services/auth-service install && npm --prefix services/booking-service install && npm --prefix services/chat-service install && npm --prefix services/post-service install && npm --prefix services/upload-service install",
     "dev:client": "npm --prefix client run dev",
     "dev:gateway": "npm --prefix gateway run dev",
-    "dev:services": "concurrently -k -n ai,auth,booking,chat,post,upload -c green,yellow,blue,white,red,gray \"npm --prefix services/ai-service run dev\" \"npm --prefix services/auth-service run dev\" \"npm --prefix services/booking-service run dev\" \"npm --prefix services/chat-service run dev\" \"npm --prefix services/post-service run dev\" \"npm --prefix services/upload-service run dev\""
+    "dev:services": "concurrently -k -n ai,auth,booking,chat,post,upload -c green,yellow,blue,white,red,gray \"npm --prefix services/ai-service run dev\" \"npm --prefix services/auth-service run dev\" \"npm --prefix services/booking-service run dev\" \"npm --prefix services/chat-service run dev\" \"npm --prefix services/post-service run dev\" \"npm --prefix services/upload-service run dev\"",
+    "strip:comments": "node scripts/strip-comments.js"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "strip-comments": "^2.0.1"
   }
 }

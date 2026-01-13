@@ -31,19 +31,19 @@ declare module 'mongoose' {
     TTransformOptions = { bufferToBinary: false }
   > = Require_id<InferRawDocTypeWithout_id<SchemaDefinition, TSchemaOptions, TTransformOptions>>;
 
-  /**
-   * @summary Allows users to optionally choose their own type for a schema field for stronger typing.
-   * Make sure to check for `any` because `T extends { __rawDocTypeHint: infer U }` will infer `unknown` if T is `any`.
-   */
+  
+
+
+
   type RawDocTypeHint<T> = IsAny<T> extends true ? never
     : T extends { __rawDocTypeHint: infer U } ? U: never;
 
-  /**
-   * @summary Obtains schema Path type.
-   * @description Obtains Path type by separating path type from other options and calling {@link ResolveRawPathType}
-   * @param {PathValueType} PathValueType Document definition path type.
-   * @param {TypeKey} TypeKey A generic refers to document definition.
-   */
+  
+
+
+
+
+
    type ObtainRawDocumentPathType<
      PathValueType,
      TypeKey extends string = DefaultTypeKey,
@@ -66,19 +66,19 @@ declare module 'mongoose' {
 
   type neverOrAny = ' ~neverOrAny~';
 
-  /**
-   * Same as inferSchemaType, except:
-   *
-   * 1. Replace `Types.DocumentArray` and `Types.Array` with vanilla `Array`
-   * 2. Replace `ObtainDocumentPathType` with `ObtainRawDocumentPathType`
-   * 3. Replace `ResolvePathType` with `ResolveRawPathType`
-   *
-   * @summary Resolve path type by returning the corresponding type.
-   * @param {PathValueType} PathValueType Document definition path type.
-   * @param {Options} Options Document definition path options except path type.
-   * @param {TypeKey} TypeKey A generic of literal string type."Refers to the property used for path type definition".
-   * @returns Number, "Number" or "number" will be resolved to number type.
-   */
+  
+
+
+
+
+
+
+
+
+
+
+
+
    type ResolveRawPathType<
        PathValueType,
        Options extends SchemaTypeOptions<PathValueType> = {},
@@ -92,15 +92,15 @@ declare module 'mongoose' {
        : PathValueType extends ReadonlyArray<infer Item> ?
          IfEquals<Item, never> extends true ? any[]
          : Item extends Schema<infer RawDocType, any, any, any, any, any, any, any, any, infer TSchemaDefinition> ?
-           // If Item is a schema, infer its type.
+           
            Array<IsItRecordAndNotAny<RawDocType> extends true ? RawDocType : InferRawDocType<TSchemaDefinition, DefaultSchemaOptions, TTransformOptions>>
          : TypeKey extends keyof Item ?
            Item[TypeKey] extends Function | String ?
-             // If Item has a type key that's a string or a callable, it must be a scalar,
-             // so we can directly obtain its path type.
+             
+             
              ObtainRawDocumentPathType<Item, TypeKey, TTransformOptions>[]
-           : // If the type key isn't callable, then this is an array of objects, in which case
-             // we need to call InferRawDocType to correctly infer its type.
+           : 
+             
              Array<InferRawDocType<Item, DefaultSchemaOptions, TTransformOptions>>
          : IsSchemaTypeFromBuiltinClass<Item> extends true ? ResolveRawPathType<Item, { enum: Options['enum'] }, TypeKey, TTransformOptions>[]
          : IsItRecordAndNotAny<Item> extends true ?

@@ -32,7 +32,7 @@ const Profile = () => {
       <Navbar />
       
       <div className="max-w-4xl mx-auto py-10 px-4">
-        {/* Profile Header */}
+        {}
         <div className="bg-white rounded-lg shadow-md p-8 mb-8 flex items-center gap-6">
           <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-4xl">
             👤
@@ -46,10 +46,10 @@ const Profile = () => {
           </div>
         </div>
 
-        {/* Action Grid */}
+        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           
-          {/* Card 1: For Travelers */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer" onClick={() => navigate('/bookings')}>
             <div className="text-4xl mb-4">✈️</div>
             <h2 className="text-xl font-bold mb-2">My Travels</h2>
@@ -57,7 +57,7 @@ const Profile = () => {
             <span className="text-blue-600 font-bold hover:underline">Go to My Trips &rarr;</span>
           </div>
 
-          {/* Card 2: For Creators */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer border-l-4 border-purple-500" onClick={() => navigate('/creator')}>
             <div className="text-4xl mb-4">📈</div>
             <h2 className="text-xl font-bold mb-2">Creator Dashboard</h2>
@@ -65,7 +65,7 @@ const Profile = () => {
             <span className="text-purple-600 font-bold hover:underline">View Sales &rarr;</span>
           </div>
 
-           {/* Card 3: Create */}
+           {}
            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer" onClick={() => navigate('/create-package')}>
             <div className="text-4xl mb-4">💎</div>
             <h2 className="text-xl font-bold mb-2">Sell a Trip</h2>
@@ -73,7 +73,7 @@ const Profile = () => {
             <span className="text-green-600 font-bold hover:underline">Create Package &rarr;</span>
           </div>
 
-          {/* Card 4: Settings/Logout */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer bg-red-50" onClick={handleLogout}>
             <div className="text-4xl mb-4">🚪</div>
             <h2 className="text-xl font-bold mb-2 text-red-700">Logout</h2>

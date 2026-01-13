@@ -28,7 +28,7 @@ const BuddyMatcher = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* Form */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">Who are you?</h2>
             <form onSubmit={handleMatch} className="space-y-4">
@@ -58,7 +58,7 @@ const BuddyMatcher = () => {
             </form>
           </div>
 
-          {/* Result Card */}
+          {}
           <div className="flex items-center justify-center">
             {buddy ? (
               <div className="bg-white p-6 rounded-xl shadow-xl border-2 border-pink-200 w-full transform hover:scale-105 transition-transform">

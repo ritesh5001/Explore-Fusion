@@ -34,11 +34,11 @@ const Packages = () => {
     }
   };
 
-  // ✅ HELPER: Fixes the image URL so it works for both uploads and external links
+  
   const getImageUrl = (img) => {
-    if (!img) return "https://via.placeholder.com/400x200"; // Fallback if no image
-    if (img.startsWith('http')) return img; // It's an external link (e.g. Google Images)
-    return `http://localhost:5050${img}`; // It's a local upload (prepend Gateway URL)
+    if (!img) return "https://via.placeholder.com/400x200"; 
+    if (img.startsWith('http')) return img; 
+    return `http://localhost:5050${img}`; 
   };
 
   return (
@@ -56,7 +56,7 @@ const Packages = () => {
           {packages.map((pkg) => (
             <div key={pkg._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
               
-              {/* ✅ UPDATED IMAGE TAG */}
+              {}
               <img 
                 src={getImageUrl(pkg.image)} 
                 alt={pkg.title} 

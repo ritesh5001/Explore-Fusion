@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-// --- HELPER: Fallback Trip (When AI fails) ---
+
 const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds }) => {
   const safeDays = Math.max(1, Number(days) || 3);
   const safeBudget = Number(budget) || 1000;
@@ -32,7 +32,7 @@ const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds 
   };
 };
 
-// --- HELPER: Fallback Buddy (When AI fails) ---
+
 const buildFallbackBuddy = (reason = "AI Matchmaker is busy, meeting a popular local instead!") => {
   return {
     match_found: true,
@@ -48,7 +48,7 @@ const buildFallbackBuddy = (reason = "AI Matchmaker is busy, meeting a popular l
   };
 };
 
-// --- HELPER: Parse Retry Time ---
+
 const parseRetryAfterSeconds = (error) => {
   const details = Array.isArray(error?.errorDetails) ? error.errorDetails : [];
   const retryInfo = details.find((d) => d && d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
@@ -58,7 +58,7 @@ const parseRetryAfterSeconds = (error) => {
   return match ? Number(match[1]) : null;
 };
 
-// --- SETUP: Initialize Gemini ---
+
 const getGenAI = () => {
   const key = (process.env.GEMINI_API_KEY || '').trim();
   if (!key) return null;
@@ -80,9 +80,9 @@ const getCandidateModels = () => {
   return [...new Set(candidates)];
 };
 
-// ==========================================
-// 1. PLAN TRIP (AI)
-// ==========================================
+
+
+
 const planTrip = async (req, res) => {
   const { destination, days, budget } = req.body;
 
@@ -142,7 +142,7 @@ const planTrip = async (req, res) => {
         lastError = error;
         const status = error?.status;
 
-        // 429 is quota/rate-limit. Trying more models won't help; return fallback quickly.
+        
         if (status === 429) {
           const retryAfterSeconds = parseRetryAfterSeconds(error);
           console.warn(`Gemini quota/rate-limit hit (429) on ${modelName}. Returning fallback.`);
@@ -161,8 +161,8 @@ const planTrip = async (req, res) => {
           console.warn(`Model ${modelName} overloaded (503). Switching...`);
           continue;
         }
-        if (status === 404) continue; // Model not found, try next
-        break; // Unknown error, stop
+        if (status === 404) continue; 
+        break; 
       }
     }
 
@@ -180,9 +180,9 @@ const planTrip = async (req, res) => {
   }
 };
 
-// ==========================================
-// 2. FIND BUDDY (AI)
-// ==========================================
+
+
+
 const findBuddy = async (req, res) => {
   const { destination, interests, travelStyle } = req.body;
 

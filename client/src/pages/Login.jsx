@@ -12,14 +12,14 @@ const Login = () => {
     try {
       const { data } = await API.post('/auth/login', { email, password });
       
-      // Save the token and user info
+      
       localStorage.setItem('token', data.token);
 
       const meRes = await API.get('/auth/me');
       localStorage.setItem('user', JSON.stringify(meRes.data));
       
       alert('Login Successful! 🚀');
-      navigate('/'); // Go to Home
+      navigate('/'); 
     } catch (error) {
       alert('Login Failed: ' + (error.response?.data?.message || 'Server Error'));
     }

@@ -57,11 +57,11 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar /> {/* <--- Add Navbar here */}
+      <Navbar /> {}
 
       <div className="max-w-2xl mx-auto py-8 px-4">
         
-        {/* Create Post Form */}
+        {}
         <div className="bg-white p-6 rounded-lg shadow mb-8">
           <h2 className="text-lg font-bold mb-4">Share your journey ✈️</h2>
           <form onSubmit={handleCreatePost} className="space-y-4">
@@ -86,7 +86,7 @@ const Home = () => {
           </form>
         </div>
 
-        {/* Post Feed */}
+        {}
         <h3 className="text-xl font-bold mb-4">Recent Stories</h3>
         <div className="space-y-6">
           {posts.map((post) => (

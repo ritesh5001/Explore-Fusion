@@ -1,6 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const adminRoutes = require('./routes/adminRoutes');
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
@@ -16,6 +17,7 @@ app.get('/', (req, res) => {
     res.send('Auth Service is running');
 });
 app.use('/', authRoutes);
+app.use('/api/v1/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {

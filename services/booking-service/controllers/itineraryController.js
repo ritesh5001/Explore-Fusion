@@ -1,6 +1,6 @@
 const Itinerary = require('../models/Itinerary');
 
-// POST /api/v1/itineraries
+
 exports.saveItinerary = async (req, res) => {
   try {
     const itin = await Itinerary.create(req.body);
@@ -10,7 +10,7 @@ exports.saveItinerary = async (req, res) => {
   }
 };
 
-// GET /api/v1/itineraries/my?userId=123
+
 exports.getUserItineraries = async (req, res) => {
   try {
     const { userId } = req.query;

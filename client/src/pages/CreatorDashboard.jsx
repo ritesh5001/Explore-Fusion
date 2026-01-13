@@ -33,7 +33,7 @@ const CreatorDashboard = () => {
           <div className="bg-white p-6 rounded shadow-md border-l-4 border-blue-500">
             <h3 className="text-gray-500">Total Revenue (Est.)</h3>
             <p className="text-3xl font-bold">
-              ${sales.reduce((acc, curr) => acc + (curr.package_id?.price || 0), 0)}
+              ${sales.reduce((acc, curr) => acc + (curr.packageId?.price || 0), 0)}
             </p>
           </div>
         </div>
@@ -52,8 +52,8 @@ const CreatorDashboard = () => {
             <tbody>
               {sales.map((sale) => (
                 <tr key={sale._id} className="border-b">
-                  <td className="p-4 font-medium">{sale.package_id?.title || 'Unknown Package'}</td>
-                  <td className="p-4">${sale.package_id?.price}</td>
+                  <td className="p-4 font-medium">{sale.packageId?.title || 'Unknown Package'}</td>
+                  <td className="p-4">${sale.packageId?.price}</td>
                   <td className="p-4 text-gray-500 text-sm">{sale.userId}</td>
                   <td className="p-4">
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">

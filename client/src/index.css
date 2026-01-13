@@ -17,7 +17,7 @@
 	h4,
 	h5,
 	h6 {
-		@apply font-heading font-bold tracking-tight text-mountain;
+		@apply font-heading font-bold tracking-tight text-mountain dark:text-sand;
 	}
 }
 
@@ -31,7 +31,7 @@
 	}
 
 	.section-title {
-		@apply text-2xl md:text-3xl font-heading font-bold tracking-tight text-mountain;
+		@apply text-2xl md:text-3xl font-heading font-bold tracking-tight text-mountain dark:text-sand;
 	}
 
 	.btn-primary {

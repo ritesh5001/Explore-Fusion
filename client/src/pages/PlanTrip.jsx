@@ -11,7 +11,7 @@ const PlanTrip = () => {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem('user'));
 
-  // 1. Function to Call AI (Gemini)
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -25,7 +25,7 @@ const PlanTrip = () => {
     setLoading(false);
   };
 
-  // 2. Function to Save Trip to Database
+  
   const handleSaveTrip = async () => {
     if (!user) {
       alert("Please login to save trips!");
@@ -34,7 +34,7 @@ const PlanTrip = () => {
 
     try {
       await API.post('/itineraries', {
-        user_id: user._id, // Using the ID from local storage
+        user_id: user._id, 
         destination: formData.destination,
         duration: formData.days,
         budget: formData.budget,
@@ -44,7 +44,7 @@ const PlanTrip = () => {
         note: plan.note
       });
       alert("Trip Saved Successfully! 🎉");
-      navigate('/bookings'); // Redirect to "My Trips" page
+      navigate('/bookings'); 
     } catch (error) {
       console.error(error);
       alert("Failed to save trip.");
@@ -60,7 +60,7 @@ const PlanTrip = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           
-          {/* LEFT SIDE: Input Form */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md h-fit">
             <h2 className="text-xl font-semibold mb-4">Tell me your plans</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -105,7 +105,7 @@ const PlanTrip = () => {
             </form>
           </div>
 
-          {/* RIGHT SIDE: The Result */}
+          {}
           <div className="bg-white p-6 rounded-lg shadow-md min-h-[300px]">
             {plan ? (
               <div>
@@ -132,7 +132,7 @@ const PlanTrip = () => {
                   ⚠️ Note: {plan.note}
                 </div>
 
-                {/* SAVE BUTTON */}
+                {}
                 <button 
                   onClick={handleSaveTrip}
                   className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-bold shadow-sm transition-colors"

@@ -18,7 +18,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Home />} />
           <Route path="/plan-trip" element={<PlanTrip />} />
-          <Route path="/bookings" element={<MyTrips />} /> {/* <--- 2. Add Route */}
+          <Route path="/bookings" element={<MyTrips />} /> {}
           <Route path="/buddy" element={<BuddyMatcher />} />
           <Route path="/packages" element={<Packages />} />
           <Route path="/create-package" element={<CreatePackage />} />

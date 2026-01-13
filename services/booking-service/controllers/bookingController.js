@@ -32,9 +32,9 @@ const createBooking = async (req, res) => {
 const getMyBookings = async (req, res) => {
   try {
     const { user_id } = req.body;
-    // We populate 'package_id' to get the Title/Price details of the trip
-    // Note: In true microservices, we can't 'populate' across databases.
-    // BUT since Package and Booking are in the SAME service, we CAN do this!
+    
+    
+    
     const bookings = await Booking.find({ user_id }).populate('package_id');
     res.json(bookings);
   } catch (error) {
@@ -46,13 +46,13 @@ const getCreatorBookings = async (req, res) => {
   try {
     const { creatorId } = req.params;
     
-    // 1. Find all packages created by this person
+    
     const myPackages = await Package.find({ creator_id: creatorId });
     const packageIds = myPackages.map(pkg => pkg._id);
 
-    // 2. Find all bookings for these packages
+    
     const sales = await Booking.find({ package_id: { $in: packageIds } })
-      .populate('package_id', 'title price'); // Get title/price for display
+      .populate('package_id', 'title price'); 
 
     res.json(sales);
   } catch (error) {
@@ -71,14 +71,32 @@ const createItinerary = async (req, res) => {
 
 const getMyItineraries = async (req, res) => {
   try {
-    const userId = req.headers['x-user-id']; // Gateway passes this, or we send in body
-    // For simplicity, let's assume Frontend sends user_id in the body for now, 
-    // OR we filter by what we receive.
-    // Let's rely on the body.user_id for this step to keep it simple.
+    const userId = req.headers['x-user-id']; 
+    
+    
+    
     const itineraries = await Itinerary.find({ user_id: req.query.user_id }); 
     res.json(itineraries);
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+exports.createBooking = async (req, res) => {
+  try {
+    const booking = await Booking.create(req.body);
+    res.status(201).json(booking);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+exports.getUserBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find({ userId: req.params.userId }).populate('packageId');
+    res.json(bookings);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };
 

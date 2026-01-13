@@ -25,15 +25,15 @@ const CreatePackage = () => {
 
     setUploading(true);
     try {
-      // 1. Upload the file to our new Service
+      
       const response = await API.post('/upload', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       
-      // 2. Get the returned URL (e.g., "/uploads/123-bali.jpg")
+      
       const uploadedUrl = response.data.imageUrl;
       
-      // 3. Save that URL into our form state
+      
       setFormData({ ...formData, image: uploadedUrl });
       alert("Image uploaded successfully! ✅");
     } catch (error) {
@@ -117,14 +117,14 @@ const CreatePackage = () => {
             />
           </div>
 
-          {/* UPDATED IMAGE UPLOAD SECTION */}
+          {}
           <div className="border-2 border-dashed border-gray-300 p-4 rounded text-center">
             <label className="block text-gray-700 font-bold mb-2">Trip Image</label>
             
             {formData.image ? (
               <div className="relative">
-                {/* Preview the uploaded image */}
-                {/* Note: We prepend the Gateway URL to view it */}
+                {}
+                {}
                 <img 
                   src={`http://localhost:5050${formData.image}`} 
                   alt="Preview" 
@@ -162,7 +162,7 @@ const CreatePackage = () => {
           </div>
 
           <button 
-            disabled={uploading || !formData.image} // Disable if uploading or no image
+            disabled={uploading || !formData.image} 
             className="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 transition disabled:bg-gray-400"
           >
             🚀 Launch Trip

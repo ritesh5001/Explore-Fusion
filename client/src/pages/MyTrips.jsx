@@ -15,11 +15,11 @@ const MyTrips = () => {
 
   const fetchData = async () => {
     try {
-      // 1. Fetch AI Itineraries
+      
       const aiRes = await API.get(`/itineraries/my?user_id=${user._id}`);
       setItineraries(aiRes.data);
 
-      // 2. Fetch Booked Packages
+      
       const bookingRes = await API.post(`/bookings/my`, { user_id: user._id });
       setBookings(bookingRes.data);
     } catch (error) {
@@ -35,7 +35,7 @@ const MyTrips = () => {
       <div className="max-w-6xl mx-auto py-10 px-4">
         <h1 className="text-3xl font-bold mb-8">✈️ My Trips</h1>
 
-        {/* SECTION 1: BOOKED PACKAGES */}
+        {}
         <h2 className="text-xl font-bold mb-4 text-purple-700">📦 Booked Packages</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {bookings.map((booking) => (
@@ -54,7 +54,7 @@ const MyTrips = () => {
           {bookings.length === 0 && <p className="text-gray-500">No packages booked yet.</p>}
         </div>
 
-        {/* SECTION 2: AI ITINERARIES */}
+        {}
         <h2 className="text-xl font-bold mb-4 text-indigo-700">🤖 Saved AI Plans</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {itineraries.map((trip) => (

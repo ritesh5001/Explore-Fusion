@@ -12,12 +12,12 @@ const Navbar = () => {
 
   return (
     <nav className="bg-white shadow-md p-4 flex justify-between items-center">
-      {/* Logo */}
+      {}
       <Link to="/" className="text-2xl font-bold text-blue-600">
         Explore Fusion 🌍
       </Link>
 
-      {/* Links */}
+      {}
       <div className="space-x-6 font-medium">
         <Link to="/" className="hover:text-blue-500">Feed</Link>
         <Link to="/plan-trip" className="hover:text-blue-500">AI Planner</Link>
@@ -27,7 +27,7 @@ const Navbar = () => {
         <Link to="/chat" className="hover:text-blue-500">Community Chat</Link>
       </div>
 
-      {/* User Actions */}
+      {}
       <div className="flex items-center gap-4">
         {user ? (
           <>

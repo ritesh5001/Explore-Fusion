@@ -1,17 +1,32 @@
 const express = require('express');
-const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 const cors = require('cors');
-const bookingRoutes = require('./routes/bookingRoutes');
-const connectDB = require('./config/db');
+const dotenv = require('dotenv');
+
+
+const packageRoutes = require('./routes/packages');
+const bookingRoutes = require('./routes/bookings');
+const itineraryRoutes = require('./routes/itineraries');
 
 dotenv.config();
 
 const app = express();
+
+
 app.use(express.json());
 app.use(cors());
-connectDB();
 
-app.use('/api/v1', bookingRoutes);
+
+mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ef_booking_db')
+  .then(() => console.log('✅ Booking DB Connected'))
+  .catch(err => console.error('DB Error:', err));
+
+
+
+app.use('/packages', packageRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/itineraries', itineraryRoutes);
+
 
 const PORT = process.env.PORT || 5003;
-app.listen(PORT, () => console.log(`Booking Service running on port ${PORT}`));
+app.listen(PORT, () => console.log(`📅 Booking Service running on port ${PORT}`));

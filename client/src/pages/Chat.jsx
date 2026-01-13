@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import Navbar from '../components/Navbar';
 
-// Connect to Gateway (Port 5050)
+
 const socket = io.connect("http://localhost:5050");
 
 const Chat = () => {
@@ -14,22 +14,22 @@ const Chat = () => {
   const room = "Global Travelers Lounge"; 
 
   useEffect(() => {
-    // 1. Join Room on load
+    
     if (user) {
       socket.emit("join_room", room);
     }
 
-    // 2. Listen for history
+    
     socket.on("load_history", (history) => {
       setMessageList(history);
     });
 
-    // 3. Listen for incoming messages
+    
     socket.on("receive_message", (data) => {
       setMessageList((list) => [...list, data]);
     });
 
-    // Cleanup listener to prevent duplicates
+    
     return () => {
       socket.off("receive_message");
       socket.off("load_history");
@@ -47,7 +47,7 @@ const Chat = () => {
 
       await socket.emit("send_message", messageData);
       
-      // Add my own message to the list locally
+      
       setMessageList((list) => [...list, messageData]);
       setCurrentMessage("");
     }
@@ -63,7 +63,7 @@ const Chat = () => {
 
         <div className="bg-white border rounded-lg shadow-md h-[500px] flex flex-col">
           
-          {/* Messages Area */}
+          {}
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messageList.map((msg, index) => {
               const isMe = msg.author === user.name;
@@ -81,7 +81,7 @@ const Chat = () => {
             })}
           </div>
 
-          {/* Input Area */}
+          {}
           <div className="p-4 border-t flex gap-2">
             <input
               type="text"

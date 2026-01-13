@@ -61,7 +61,9 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | **Client** | `5173` | React Frontend |
 
 Notes:
-* The frontend should call the **Gateway** (`http://localhost:5050`) for API requests.
+* The frontend should call the **Gateway** for API requests.
+  * Local dev: `http://localhost:5050`
+  * Production (Render): `https://explore-fusion-gateway.onrender.com`
 
 ---
 
@@ -123,7 +125,9 @@ Common ones used by the services:
 **Client (client)**
 * `VITE_IMAGEKIT_PUBLIC_KEY`
 * `VITE_IMAGEKIT_URL_ENDPOINT`
-* `VITE_IMAGEKIT_AUTH_ENDPOINT` (recommended: `http://localhost:5050/api/v1/imagekit-auth`)
+* `VITE_IMAGEKIT_AUTH_ENDPOINT`
+  * Local dev recommended: `http://localhost:5050/api/v1/imagekit-auth`
+  * Production recommended: `https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth`
 
 ### 5. Run Everything (One Command)
 Start client + gateway + all microservices together:
@@ -143,7 +147,7 @@ npm run start
 The preferred flow is direct client upload to ImageKit using a protected auth endpoint.
 
 * Auth endpoint (protected): `POST /api/v1/imagekit-auth`
-  * Via gateway (recommended): `http://localhost:5050/api/v1/imagekit-auth`
+  * Via gateway (recommended): `http://localhost:5050/api/v1/imagekit-auth` (local) or `https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth` (prod)
   * Direct to auth-service: `http://localhost:5001/api/v1/imagekit-auth`
 * The response shape must be exactly: `{ token, signature, expire }` (required by the ImageKit JS SDK).
 

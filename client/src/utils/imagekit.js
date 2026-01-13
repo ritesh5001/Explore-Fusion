@@ -1,11 +1,11 @@
 import ImageKit from "imagekit-javascript";
+import { getImagekitAuthEndpoint } from './runtimeUrls';
 
 const imagekit = new ImageKit({
   publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
   urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
   authenticationEndpoint:
-    import.meta.env.VITE_IMAGEKIT_AUTH_ENDPOINT ||
-    "http://localhost:5050/api/v1/imagekit-auth",
+    getImagekitAuthEndpoint(),
 });
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -26,9 +26,7 @@ const fetchAuth = async () => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("Not logged in: please login to upload");
 
-  const endpoint =
-    import.meta.env.VITE_IMAGEKIT_AUTH_ENDPOINT ||
-    "http://localhost:5050/api/v1/imagekit-auth";
+  const endpoint = getImagekitAuthEndpoint();
 
   const resp = await fetch(endpoint, {
     method: "POST",

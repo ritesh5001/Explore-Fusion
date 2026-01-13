@@ -1,9 +1,6 @@
 import { useEffect, useState } from 'react';
-import io from 'socket.io-client';
 import useAuth from '../auth/useAuth';
-
-
-const socket = io.connect("http://localhost:5050");
+import { socket } from '../utils/socket';
 
 const Chat = () => {
   const [currentMessage, setCurrentMessage] = useState("");
@@ -13,6 +10,7 @@ const Chat = () => {
 
   useEffect(() => {
     if (user) {
+      if (!socket.connected) socket.connect();
       socket.emit("join_room", room);
     }
 

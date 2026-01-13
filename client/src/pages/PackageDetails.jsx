@@ -6,6 +6,7 @@ import BookPackageButton from '../components/BookPackageButton';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
+import { resolveGatewayUrl } from '../utils/runtimeUrls';
 
 const PackageDetails = () => {
 	const { id } = useParams();
@@ -23,7 +24,7 @@ const PackageDetails = () => {
 			}
 			return raw;
 		}
-		return `http://localhost:5050${first}`;
+		return resolveGatewayUrl(first);
 	}, [pkg]);
 
 	useEffect(() => {

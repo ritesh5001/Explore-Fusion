@@ -1,6 +1,7 @@
 import { io } from 'socket.io-client';
+import { getSocketUrl } from './runtimeUrls';
 
-export const socket = io('http://localhost:5050', {
+export const socket = io(getSocketUrl(), {
 	autoConnect: false,
 });
 

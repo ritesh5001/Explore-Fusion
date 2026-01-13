@@ -10,6 +10,15 @@ const app = express();
 
 app.use(securityMiddleware());
 
+const isProd = process.env.NODE_ENV === 'production';
+
+const serviceUrl = (envKey, devFallback) => {
+  const value = process.env[envKey];
+  if (value) return value;
+  if (!isProd) return devFallback;
+  throw new Error(`${envKey} is required in production`);
+};
+
 const proxyJsonBody = (proxyReq, req) => {
   const method = String(req.method || '').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
@@ -49,15 +58,19 @@ app.get('/', (req, res) => {
   res.send('Explore Fusion Gateway is running');
 });
 
-const ADMIN_SERVICE_URL = process.env.ADMIN_SERVICE_URL || 'http://localhost:5007';
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
-const POST_SERVICE_URL = process.env.POST_SERVICE_URL || 'http://localhost:5002';
-const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://localhost:5003';
+const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007');
+const AUTH_SERVICE_URL = serviceUrl('AUTH_SERVICE_URL', 'http://localhost:5001');
+const POST_SERVICE_URL = serviceUrl('POST_SERVICE_URL', 'http://localhost:5002');
+const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:5003');
+
+// Matches/Notifications can run as separate services in production.
+// If not configured, fall back to booking-service (still safe in production because BOOKING_SERVICE_URL is required).
 const MATCHES_SERVICE_URL = process.env.MATCHES_SERVICE_URL || BOOKING_SERVICE_URL;
 const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || BOOKING_SERVICE_URL;
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5004';
-const UPLOAD_SERVICE_URL = process.env.UPLOAD_SERVICE_URL || 'http://localhost:5005';
-const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL || 'http://localhost:5006';
+
+const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004');
+const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005');
+const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006');
 
 app.use(
   '/api/v1/admin',

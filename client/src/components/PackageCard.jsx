@@ -1,4 +1,6 @@
 import { Link } from 'react-router-dom';
+import Card from './ui/Card';
+import Button from './ui/Button';
 
 const FALLBACK_IMAGE =
 	'data:image/svg+xml;utf8,' +
@@ -25,7 +27,7 @@ const normalizeImageUrl = (img) => {
 
 export default function PackageCard({ id, title, price, image, destination }) {
 	return (
-		<div className="bg-sand border border-soft rounded-2xl shadow-sm overflow-hidden transition transform hover:-translate-y-1 hover:shadow-md">
+		<Card className="overflow-hidden">
 			<img src={normalizeImageUrl(image)} alt={title} className="w-full h-44 object-cover" />
 			<div className="p-6">
 				<div className="flex items-start justify-between gap-3">
@@ -34,15 +36,12 @@ export default function PackageCard({ id, title, price, image, destination }) {
 						${price}
 					</span>
 				</div>
-				<p className="mt-2 text-sm text-gray-600 line-clamp-1">📍 {destination}</p>
+				<p className="mt-2 text-sm text-charcoal/70 dark:text-sand/70 line-clamp-1">📍 {destination}</p>
 
-				<Link
-					to={`/packages/${id}`}
-					className="btn-primary w-full mt-4"
-				>
+				<Button as={Link} to={`/packages/${id}`} className="w-full mt-4">
 					View Details
-				</Link>
+				</Button>
 			</div>
-		</div>
+		</Card>
 	);
 }

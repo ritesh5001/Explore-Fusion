@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import API from '../api';
 import { useToast } from './ToastProvider';
+import Button from './ui/Button';
 
 export default function BookPackageButton({ packageId }) {
 	const { showToast } = useToast();
@@ -30,23 +31,23 @@ export default function BookPackageButton({ packageId }) {
 	return (
 		<div>
 			<div className="flex items-center gap-3">
-				<label className="text-sm font-medium text-gray-700">Guests</label>
+				<label className="text-sm font-medium text-charcoal/80 dark:text-sand/80">Guests</label>
 				<input
 					type="number"
 					min={1}
 					value={guests}
 					onChange={(e) => setGuests(e.target.value)}
-					className="w-24 border border-soft rounded-xl px-3 py-2 bg-white/70"
+					className="w-24 border border-soft dark:border-white/10 rounded-xl px-3 py-2 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand"
 				/>
-				<button
+				<Button
 					onClick={onBook}
 					disabled={loading}
-					className="ml-auto btn-primary"
+					className="ml-auto"
 				>
 					{loading ? 'Booking…' : 'Book Now'}
-				</button>
+				</Button>
 			</div>
-			{!!error && <div className="mt-2 text-sm text-red-600">{error}</div>}
+			{!!error && <div className="mt-2 text-sm text-red-600 dark:text-red-300">{error}</div>}
 		</div>
 	);
 }

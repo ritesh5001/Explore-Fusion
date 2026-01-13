@@ -5,10 +5,14 @@ const connectDb = async () => {
   const bookingUri = process.env.BOOKING_MONGO_URI || process.env.MONGO_URI;
 
   if (!authUri) {
-    throw new Error('AUTH_MONGO_URI (or MONGO_URI) is missing');
+		throw new Error(
+			'AUTH_MONGO_URI (or MONGO_URI) is missing. Set this in the admin-service environment on Render.'
+		);
   }
   if (!bookingUri) {
-    throw new Error('BOOKING_MONGO_URI (or MONGO_URI) is missing');
+		throw new Error(
+			'BOOKING_MONGO_URI (or MONGO_URI) is missing. Set this in the admin-service environment on Render.'
+		);
   }
 
   const authConn = mongoose.createConnection(authUri);

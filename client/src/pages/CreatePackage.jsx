@@ -11,8 +11,37 @@ const CreatePackage = () => {
     description: '',
     location: '',
     duration: '',
-    image: '' // We will just use a URL for now
+    image: '' // This will store the URL string after upload
   });
+  const [uploading, setUploading] = useState(false);
+
+  // New Function: Handles the File Selection
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const data = new FormData();
+    data.append('image', file);
+
+    setUploading(true);
+    try {
+      // 1. Upload the file to our new Service
+      const response = await API.post('/upload', data, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      // 2. Get the returned URL (e.g., "/uploads/123-bali.jpg")
+      const uploadedUrl = response.data.imageUrl;
+      
+      // 3. Save that URL into our form state
+      setFormData({ ...formData, image: uploadedUrl });
+      alert("Image uploaded successfully! ✅");
+    } catch (error) {
+      console.error("Upload failed", error);
+      alert("Failed to upload image");
+    }
+    setUploading(false);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,18 +55,12 @@ const CreatePackage = () => {
     try {
       await API.post('/packages', {
         ...formData,
-        creator_id: user._id // Link the package to the logged-in user
+        creator_id: user._id
       });
       alert('Package Created Successfully! 🎉');
-      navigate('/packages'); // Redirect to the marketplace
+      navigate('/packages'); 
     } catch (error) {
-      console.error('Create package failed:', error);
-      const message =
-        error?.response?.data?.message ||
-        (typeof error?.response?.data === 'string' ? error.response.data : null) ||
-        error?.message ||
-        'Failed to create package';
-      alert(message);
+      alert('Failed to create package');
     }
   };
 
@@ -94,16 +117,37 @@ const CreatePackage = () => {
             />
           </div>
 
-          <div>
-            <label className="block text-gray-700 font-bold mb-1">Image URL</label>
-            <input 
-              required
-              className="w-full border p-2 rounded" 
-              placeholder="https://example.com/image.jpg"
-              value={formData.image} 
-              onChange={e => setFormData({...formData, image: e.target.value})}
-            />
-            <p className="text-xs text-gray-400 mt-1">Tip: Search Google Images, right click, "Copy Image Address"</p>
+          {/* UPDATED IMAGE UPLOAD SECTION */}
+          <div className="border-2 border-dashed border-gray-300 p-4 rounded text-center">
+            <label className="block text-gray-700 font-bold mb-2">Trip Image</label>
+            
+            {formData.image ? (
+              <div className="relative">
+                {/* Preview the uploaded image */}
+                {/* Note: We prepend the Gateway URL to view it */}
+                <img 
+                  src={`http://localhost:5050${formData.image}`} 
+                  alt="Preview" 
+                  className="h-40 w-full object-cover rounded mb-2"
+                />
+                <button 
+                  type="button"
+                  onClick={() => setFormData({...formData, image: ''})}
+                  className="text-red-500 text-sm font-bold underline"
+                >
+                  Remove Image
+                </button>
+              </div>
+            ) : (
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+              />
+            )}
+            {uploading && <p className="text-blue-500 text-sm mt-2">Uploading...</p>}
           </div>
 
           <div>
@@ -117,7 +161,10 @@ const CreatePackage = () => {
             />
           </div>
 
-          <button className="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 transition">
+          <button 
+            disabled={uploading || !formData.image} // Disable if uploading or no image
+            className="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 transition disabled:bg-gray-400"
+          >
             🚀 Launch Trip
           </button>
 

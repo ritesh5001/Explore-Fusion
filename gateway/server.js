@@ -77,6 +77,22 @@ app.use(
   })
 );
 
+app.use('/api/v1/upload', createProxyMiddleware({
+  target: 'http://localhost:5005',
+  changeOrigin: true,
+}));
+
+app.use('/uploads', createProxyMiddleware({
+  target: 'http://localhost:5005',
+  changeOrigin: true,
+}));
+
+app.use('/socket.io', createProxyMiddleware({
+  target: 'http://localhost:5006',
+  changeOrigin: true,
+  ws: true, 
+}));
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);

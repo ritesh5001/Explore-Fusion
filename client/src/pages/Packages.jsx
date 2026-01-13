@@ -34,6 +34,13 @@ const Packages = () => {
     }
   };
 
+  // ✅ HELPER: Fixes the image URL so it works for both uploads and external links
+  const getImageUrl = (img) => {
+    if (!img) return "https://via.placeholder.com/400x200"; // Fallback if no image
+    if (img.startsWith('http')) return img; // It's an external link (e.g. Google Images)
+    return `http://localhost:5050${img}`; // It's a local upload (prepend Gateway URL)
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -48,7 +55,13 @@ const Packages = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {packages.map((pkg) => (
             <div key={pkg._id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition">
-              <img src={pkg.image || "https://via.placeholder.com/400x200"} alt={pkg.title} className="w-full h-48 object-cover"/>
+              
+              {/* ✅ UPDATED IMAGE TAG */}
+              <img 
+                src={getImageUrl(pkg.image)} 
+                alt={pkg.title} 
+                className="w-full h-48 object-cover"
+              />
               
               <div className="p-4">
                 <div className="flex justify-between items-start">

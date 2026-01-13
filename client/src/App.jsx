@@ -8,6 +8,7 @@ import CreatePackage from './pages/CreatePackage';
 import Packages from './pages/Packages';
 import CreatorDashboard from './pages/CreatorDashboard';
 import Profile from './pages/Profile';
+import Chat from './pages/Chat';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/create-package" element={<CreatePackage />} />
           <Route path="/creator" element={<CreatorDashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/chat" element={<Chat />} />
         </Routes>
       </div>
     </Router>

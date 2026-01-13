@@ -9,8 +9,11 @@ dotenv.config();
 const app = express();
 app.use(cors());
 
-const server = http.createServer(app);
+app.get('/health', (req, res) => {
+  res.json({ ok: true, service: 'chat-service' });
+});
 
+const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
@@ -18,8 +21,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
-
-
 
 let chatHistory = [];
 
@@ -36,14 +37,11 @@ io.on('connection', (socket) => {
     socket.emit('load_history', roomHistory);
   });
 
-  
   socket.on('send_message', (data) => {
     
     const messageData = { ...data, id: Date.now() };
     
-    
     chatHistory.push(messageData);
-    
     
     socket.to(data.room).emit('receive_message', messageData);
   });
@@ -53,5 +51,5 @@ io.on('connection', (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5006;
-server.listen(PORT, () => console.log(`Chat Service running on port ${PORT}`));
+const CHAT_PORT = Number(process.env.CHAT_PORT) || 5006;
+server.listen(CHAT_PORT, () => console.log(`Chat Service running on port ${CHAT_PORT}`));

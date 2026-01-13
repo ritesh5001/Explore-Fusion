@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
-import Navbar from '../components/Navbar';
+import useAuth from '../auth/useAuth';
 
 
 const socket = io.connect("http://localhost:5050");
@@ -8,7 +8,7 @@ const socket = io.connect("http://localhost:5050");
 const Chat = () => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user } = useAuth();
   const room = "Global Travelers Lounge"; 
 
   useEffect(() => {
@@ -52,13 +52,11 @@ const Chat = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
       <div className="max-w-4xl mx-auto py-10 px-4">
         <h1 className="text-3xl font-bold mb-8 text-center">💬 {room}</h1>
 
         <div className="bg-white border rounded-lg shadow-md h-[500px] flex flex-col">
-          
-          {}
+
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {messageList.map((msg, index) => {
               const isMe = msg.author === user.name;
@@ -76,7 +74,6 @@ const Chat = () => {
             })}
           </div>
 
-          {}
           <div className="p-4 border-t flex gap-2">
             <input
               type="text"

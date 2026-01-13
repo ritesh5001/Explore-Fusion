@@ -1,31 +1,34 @@
 import { useEffect, useState } from 'react';
 import API from '../api';
-import Navbar from '../components/Navbar'; 
+import useAuth from '../auth/useAuth';
+import { useToast } from '../components/ToastProvider';
 
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ title: '', content: '', location: '' });
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user } = useAuth();
+	const { showToast } = useToast();
   
   if (!user) {
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-      <Navbar />
-      <div className="flex flex-col items-center justify-center h-[80vh] text-center px-4">
-        <h1 className="text-5xl font-bold mb-6">Explore the World with AI 🌍</h1>
+    <div className="min-h-screen gradient-header">
+      <div className="container-app page-section">
+			<div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+				<h1 className="text-4xl md:text-5xl font-heading font-extrabold tracking-tight text-white mb-6">Explore the World with AI</h1>
         <p className="text-xl mb-8 max-w-2xl">
           Plan trips in seconds, find travel buddies, and book exclusive influencer packages.
         </p>
-        <div className="space-x-4">
-          <a href="/login" className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+				<div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+				  <a href="/login" className="btn-outline bg-white text-mountain px-8 py-3 rounded-xl shadow-md hover:shadow-lg">
             Get Started
           </a>
-          <a href="/packages" className="border-2 border-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-blue-600 transition">
+				  <a href="/packages" className="btn-outline border-white text-white hover:bg-white hover:text-mountain px-8 py-3 rounded-xl">
             Browse Trips
           </a>
         </div>
       </div>
+		</div>
     </div>
   );
 }
@@ -34,13 +37,16 @@ const Home = () => {
   useEffect(() => {
     fetchPosts();
   }, []);
-
   const fetchPosts = async () => {
     try {
-      const { data } = await API.get('/posts');
-      setPosts(data);
+      const res = await API.get('/posts');
+      const body = res?.data;
+      const postsList = body?.data?.posts ?? body?.posts ?? body;
+      setPosts(Array.isArray(postsList) ? postsList : []);
     } catch (error) {
       console.error('Error fetching posts:', error);
+      setPosts([]);
+		showToast('Failed to load posts', 'error');
     }
   };
 
@@ -51,49 +57,45 @@ const Home = () => {
       setNewPost({ title: '', content: '', location: '' }); 
       fetchPosts(); 
     } catch (error) {
-      alert('Failed to create post');
+		showToast('Failed to create post', 'error');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar /> {}
-
-      <div className="max-w-2xl mx-auto py-8 px-4">
+    <div className="min-h-screen">
+      <div className="container-app page-section max-w-2xl">
         
-        {}
-        <div className="bg-white p-6 rounded-lg shadow mb-8">
-          <h2 className="text-lg font-bold mb-4">Share your journey ✈️</h2>
+        <div className="glass-card p-6 rounded-2xl shadow-sm mb-8">
+			<div className="text-lg font-heading font-bold tracking-tight text-mountain mb-4">Share your journey</div>
           <form onSubmit={handleCreatePost} className="space-y-4">
             <input 
               type="text" placeholder="Trip Title (e.g., Weekend in Manali)" 
-              className="w-full border p-2 rounded"
+              className="w-full border border-soft p-3 rounded-xl bg-white/70"
               value={newPost.title} onChange={(e) => setNewPost({...newPost, title: e.target.value})}
             />
             <textarea 
               placeholder="Share your experience..." 
-              className="w-full border p-2 rounded h-24"
+              className="w-full border border-soft p-3 rounded-xl h-24 bg-white/70"
               value={newPost.content} onChange={(e) => setNewPost({...newPost, content: e.target.value})}
             />
             <input 
               type="text" placeholder="Location" 
-              className="w-full border p-2 rounded"
+              className="w-full border border-soft p-3 rounded-xl bg-white/70"
               value={newPost.location} onChange={(e) => setNewPost({...newPost, location: e.target.value})}
             />
-            <button className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 w-full">
+            <button className="btn-primary w-full">
               Post Trip
             </button>
           </form>
         </div>
 
-        {}
-        <h3 className="text-xl font-bold mb-4">Recent Stories</h3>
+        <h3 className="text-xl font-heading font-bold tracking-tight text-mountain mb-4">Recent Stories</h3>
         <div className="space-y-6">
-          {posts.map((post) => (
-            <div key={post._id} className="bg-white p-6 rounded-lg shadow">
+          {(Array.isArray(posts) ? posts : []).map((post) => (
+            <div key={post._id} className="glass-card p-6 rounded-2xl shadow-sm">
               <div className="flex justify-between items-start mb-2">
-                <h2 className="text-xl font-bold text-gray-800">{post.title}</h2>
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain">{post.title}</h2>
+                <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full">
                   📍 {post.location}
                 </span>
               </div>

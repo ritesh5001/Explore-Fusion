@@ -91,9 +91,10 @@ app.use('/socket.io', createProxyMiddleware({
   target: 'http://localhost:5006',
   changeOrigin: true,
   ws: true, 
+  pathRewrite: (path) => `/socket.io${path}`,
 }));
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);
 });

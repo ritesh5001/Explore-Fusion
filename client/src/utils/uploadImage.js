@@ -1,4 +1,5 @@
 import ImageKit from "imagekit-javascript";
+import { getImagekitAuthEndpoint } from './runtimeUrls';
 
 const imagekit = new ImageKit({
   publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
@@ -8,10 +9,7 @@ const imagekit = new ImageKit({
 const MAX_BYTES = 5 * 1024 * 1024;
 
 const getAuthEndpoint = () => {
-  return (
-    import.meta.env.VITE_IMAGEKIT_AUTH_ENDPOINT ||
-    "http://localhost:5050/api/v1/imagekit-auth"
-  );
+	return getImagekitAuthEndpoint();
 };
 
 const getAccessToken = () => {

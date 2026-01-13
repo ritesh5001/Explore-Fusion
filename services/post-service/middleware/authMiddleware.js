@@ -1,5 +1,12 @@
 const jwt = require('jsonwebtoken');
 
+const isProd = process.env.NODE_ENV === 'production';
+const AUTH_SERVICE_URL =
+  process.env.AUTH_SERVICE_URL || (!isProd ? 'http://localhost:5001' : null);
+if (!AUTH_SERVICE_URL) {
+  throw new Error('AUTH_SERVICE_URL is required in production');
+}
+
 const jsonError = (res, status, message) => {
   return res.status(status).json({
     success: false,
@@ -28,10 +35,7 @@ const protect = async (req, res, next) => {
 
     jwt.verify(token, process.env.JWT_SECRET);
 
-    const authServiceUrl =
-      process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
-
-    const meUrl = `${authServiceUrl}/api/v1/auth/me`;
+    const meUrl = `${AUTH_SERVICE_URL}/api/v1/auth/me`;
 
     let resp;
     try {

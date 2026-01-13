@@ -1,9 +1,15 @@
 const User = require('../models/User');
 
+const isProd = process.env.NODE_ENV === 'production';
+const BOOKING_SERVICE_URL =
+  process.env.BOOKING_SERVICE_URL || (!isProd ? 'http://localhost:5003' : null);
+if (!BOOKING_SERVICE_URL) {
+  throw new Error('BOOKING_SERVICE_URL is required in production');
+}
+
 const sendAdminNotification = async ({ token, userId, action }) => {
-  const bookingServiceUrl = process.env.BOOKING_SERVICE_URL || 'http://localhost:5003';
   try {
-    await fetch(`${bookingServiceUrl}/api/v1/notifications`, {
+    await fetch(`${BOOKING_SERVICE_URL}/api/v1/notifications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

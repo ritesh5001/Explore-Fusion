@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import Card from './ui/Card';
 import Button from './ui/Button';
+import { resolveGatewayUrl } from '../utils/runtimeUrls';
 
 const FALLBACK_IMAGE =
 	'data:image/svg+xml;utf8,' +
@@ -29,7 +30,7 @@ const normalizeImageUrl = (img) => {
 		}
 		return raw;
 	}
-	return `http://localhost:5050${img}`;
+	return resolveGatewayUrl(img);
 };
 
 export default function PackageCard({ id, title, price, image, destination, duration }) {

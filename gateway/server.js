@@ -39,6 +39,8 @@ const ADMIN_SERVICE_URL = process.env.ADMIN_SERVICE_URL || 'http://localhost:500
 const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
 const POST_SERVICE_URL = process.env.POST_SERVICE_URL || 'http://localhost:5002';
 const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://localhost:5003';
+const MATCHES_SERVICE_URL = process.env.MATCHES_SERVICE_URL || BOOKING_SERVICE_URL;
+const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || BOOKING_SERVICE_URL;
 const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5004';
 const UPLOAD_SERVICE_URL = process.env.UPLOAD_SERVICE_URL || 'http://localhost:5005';
 const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL || 'http://localhost:5006';
@@ -147,7 +149,7 @@ app.use(
 app.use(
   '/api/v1/matches',
   createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
+    target: MATCHES_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/matches${path}`,
   })
@@ -156,7 +158,7 @@ app.use(
 app.use(
   '/api/v1/notifications',
   createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
+    target: NOTIFICATION_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/notifications${path}`,
   })

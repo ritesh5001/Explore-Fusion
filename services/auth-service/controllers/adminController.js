@@ -1,15 +1,26 @@
 const User = require('../models/User');
 
 const isProd = process.env.NODE_ENV === 'production';
-const BOOKING_SERVICE_URL =
-  process.env.BOOKING_SERVICE_URL || (!isProd ? 'http://localhost:5003' : null);
-if (!BOOKING_SERVICE_URL) {
-  throw new Error('BOOKING_SERVICE_URL is required in production');
-}
+let warnedMissingBookingServiceUrl = false;
+
+const getBookingServiceUrl = () => {
+  if (process.env.BOOKING_SERVICE_URL) return process.env.BOOKING_SERVICE_URL;
+  if (!isProd) return 'http://localhost:5003';
+  return null;
+};
 
 const sendAdminNotification = async ({ token, userId, action }) => {
+	const bookingServiceUrl = getBookingServiceUrl();
+	if (!bookingServiceUrl) {
+		if (!warnedMissingBookingServiceUrl) {
+			warnedMissingBookingServiceUrl = true;
+			console.warn('BOOKING_SERVICE_URL is not set; skipping admin notifications');
+		}
+		return;
+	}
+
   try {
-    await fetch(`${BOOKING_SERVICE_URL}/api/v1/notifications`, {
+    await fetch(`${bookingServiceUrl}/api/v1/notifications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

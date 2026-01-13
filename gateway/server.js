@@ -2,19 +2,51 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createProxyMiddleware } = require('http-proxy-middleware');
+const securityMiddleware = require('./middleware/security');
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+
+app.use(securityMiddleware());
+
+const defaultCorsOrigins = ['http://localhost:5173', 'https://explore-fusion.vercel.app'];
+const corsOrigins = String(process.env.CORS_ORIGINS || '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: corsOrigins.length ? corsOrigins : defaultCorsOrigins,
+    credentials: true,
+  })
+);
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'gateway',
+    env: process.env.NODE_ENV,
+  });
+});
 
 app.get('/', (req, res) => {
   res.send('Explore Fusion Gateway is running');
 });
+
+const ADMIN_SERVICE_URL = process.env.ADMIN_SERVICE_URL || 'http://localhost:5007';
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL || 'http://localhost:5001';
+const POST_SERVICE_URL = process.env.POST_SERVICE_URL || 'http://localhost:5002';
+const BOOKING_SERVICE_URL = process.env.BOOKING_SERVICE_URL || 'http://localhost:5003';
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:5004';
+const UPLOAD_SERVICE_URL = process.env.UPLOAD_SERVICE_URL || 'http://localhost:5005';
+const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL || 'http://localhost:5006';
+
 app.use(
   '/api/v1/admin',
   createProxyMiddleware({
-    target: 'http://localhost:5007',
+    target: ADMIN_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/admin${path}`,
   })
@@ -22,7 +54,7 @@ app.use(
 app.use(
   '/api/v1/auth',
   createProxyMiddleware({
-    target: 'http://localhost:5001',
+    target: AUTH_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: {
       '^/api/v1/auth': '',
@@ -33,7 +65,7 @@ app.use(
 app.use(
   '/api/v1/imagekit-auth',
   createProxyMiddleware({
-    target: 'http://localhost:5001',
+    target: AUTH_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
   })
@@ -42,7 +74,7 @@ app.use(
 app.use(
   '/api/v1/users',
   createProxyMiddleware({
-    target: 'http://localhost:5001',
+    target: AUTH_SERVICE_URL,
     changeOrigin: true,
   })
 );
@@ -50,14 +82,14 @@ app.use(
 app.use(
   '/auth',
   createProxyMiddleware({
-    target: 'http://localhost:5001',
+    target: AUTH_SERVICE_URL,
     changeOrigin: true,
   })
 );
 app.use(
   '/api/v1/posts',
   createProxyMiddleware({
-    target: 'http://localhost:5002',
+    target: POST_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: {
       '^/api/v1/posts': '',
@@ -68,7 +100,7 @@ app.use(
 app.use(
   '/api/v1/ai',
   createProxyMiddleware({
-    target: 'http://localhost:5004',
+    target: AI_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: {
       '^/api/v1/ai': '',
@@ -79,7 +111,7 @@ app.use(
 app.use(
   '/api/v1/itineraries',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/itineraries${path}`,
   })
@@ -88,7 +120,7 @@ app.use(
 app.use(
   '/api/v1/packages',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/packages${path}`,
   })
@@ -97,7 +129,7 @@ app.use(
 app.use(
   '/api/v1/bookings',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/bookings${path}`,
   })
@@ -106,7 +138,7 @@ app.use(
 app.use(
   '/api/v1/reviews',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/reviews${path}`,
   })
@@ -115,7 +147,7 @@ app.use(
 app.use(
   '/api/v1/matches',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/matches${path}`,
   })
@@ -124,7 +156,7 @@ app.use(
 app.use(
   '/api/v1/notifications',
   createProxyMiddleware({
-    target: 'http://localhost:5003',
+    target: BOOKING_SERVICE_URL,
     changeOrigin: true,
     pathRewrite: (path) => `/api/v1/notifications${path}`,
   })
@@ -133,18 +165,18 @@ app.use(
 app.use(
   "/api/v1/upload",
   createProxyMiddleware({
-    target: "http://localhost:5005",
+    target: UPLOAD_SERVICE_URL,
     changeOrigin: true,
   })
 );
 
 app.use('/uploads', createProxyMiddleware({
-  target: 'http://localhost:5005',
+  target: UPLOAD_SERVICE_URL,
   changeOrigin: true,
 }));
 
 app.use('/socket.io', createProxyMiddleware({
-  target: 'http://localhost:5006',
+  target: CHAT_SERVICE_URL,
   changeOrigin: true,
   ws: true, 
   proxyTimeout: 30_000,
@@ -159,7 +191,7 @@ app.use('/socket.io', createProxyMiddleware({
   pathRewrite: (path) => (path.startsWith('/socket.io') ? path : `/socket.io${path}`),
 }));
 
-const PORT = Number(process.env.GATEWAY_PORT) || 5050;
+const PORT = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 5050;
 app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);
 });

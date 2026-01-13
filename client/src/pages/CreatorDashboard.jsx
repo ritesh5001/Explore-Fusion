@@ -54,7 +54,7 @@ const CreatorDashboard = () => {
                 <tr key={sale._id} className="border-b">
                   <td className="p-4 font-medium">{sale.package_id?.title || 'Unknown Package'}</td>
                   <td className="p-4">${sale.package_id?.price}</td>
-                  <td className="p-4 text-gray-500 text-sm">{sale.user_id}</td>
+                  <td className="p-4 text-gray-500 text-sm">{sale.userId}</td>
                   <td className="p-4">
                     <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
                       {sale.status}

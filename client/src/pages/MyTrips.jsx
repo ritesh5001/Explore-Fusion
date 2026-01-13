@@ -16,11 +16,11 @@ const MyTrips = () => {
   const fetchData = async () => {
     try {
       
-      const aiRes = await API.get(`/itineraries/my?user_id=${user._id}`);
+      const aiRes = await API.get(`/itineraries/my?userId=${user._id}`);
       setItineraries(aiRes.data);
 
       
-      const bookingRes = await API.post(`/bookings/my`, { user_id: user._id });
+      const bookingRes = await API.get(`/bookings/my?userId=${user._id}`);
       setBookings(bookingRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);

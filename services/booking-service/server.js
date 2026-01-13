@@ -23,9 +23,9 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ef_booking_
 
 
 
-app.use('/packages', packageRoutes);
-app.use('/bookings', bookingRoutes);
-app.use('/itineraries', itineraryRoutes);
+app.use('/api/v1/packages', packageRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/itineraries', itineraryRoutes);
 
 
 const PORT = process.env.PORT || 5003;

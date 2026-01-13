@@ -1,13 +1,13 @@
 const mongoose = require('mongoose');
 
-const PackageSchema = new mongoose.Schema({
-  title: { type: String, required: true },
+const packageSchema = new mongoose.Schema({
+  title: String,
   description: String,
   destination: String,
   price: Number,
-  duration: String, 
+  duration: String,
   images: [String],
-  activities: [String],
+  creatorId: String
 }, { timestamps: true });
 
-module.exports = mongoose.model('Package', PackageSchema);
+module.exports = mongoose.model('Package', packageSchema);

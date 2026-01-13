@@ -286,4 +286,71 @@ const listModels = async (req, res) => {
   }
 };
 
-module.exports = { planTrip, findBuddy, listModels };
+const generateItinerary = async (req, res) => {
+  return planTrip(req, res);
+};
+
+const chatSupport = async (req, res) => {
+  try {
+    const message = String(req.body?.message ?? req.body?.prompt ?? '').trim();
+    if (!message) {
+      return res.status(400).json({ message: 'message is required' });
+    }
+
+    if (!genAI) {
+      return res.json({
+        reply: 'AI is not configured on the server. Please set GEMINI_API_KEY and try again.',
+        ai_used: false,
+      });
+    }
+
+    const prompt = `You are Explore Fusion support, a helpful travel assistant.\nUser: ${message}\nReply in plain text.`;
+    const candidates = getCandidateModels();
+    let lastError;
+
+    for (const modelName of candidates) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = String(response.text() ?? '').trim();
+
+        if (!text) {
+          return res.status(502).json({ message: 'Empty response from AI model' });
+        }
+
+        return res.json({ reply: text, ai_used: true, model: modelName });
+      } catch (error) {
+        lastError = error;
+        const status = error?.status;
+
+        if (status === 429) {
+          const retryAfterSeconds = parseRetryAfterSeconds(error);
+          return res.json({
+            reply: retryAfterSeconds
+              ? `AI is rate-limited. Try again in ~${retryAfterSeconds}s.`
+              : 'AI is rate-limited. Please try again shortly.',
+            ai_used: false,
+            retryAfterSeconds: retryAfterSeconds ?? null,
+          });
+        }
+
+        if (status === 503 || status === 404) continue;
+        break;
+      }
+    }
+
+    console.error('All AI models failed for chat:', lastError);
+    return res.status(503).json({ message: 'AI service unavailable right now' });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { 
+  planTrip, 
+  findBuddy, 
+  listModels, 
+  generateItinerary, 
+  chatSupport 
+};

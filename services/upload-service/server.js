@@ -6,6 +6,10 @@ const fs = require('fs');
 const dotenv = require('dotenv');
 
 dotenv.config();
+// Dev-friendly fallback: reuse auth-service env (contains ImageKit keys)
+dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
+
+const uploadRoutes = require('./routes/uploadRoutes');
 
 const app = express();
 app.use(cors());
@@ -30,6 +34,7 @@ const upload = multer({ storage });
 
 
 
+app.use("/api/v1/upload", uploadRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
@@ -46,5 +51,5 @@ app.post('/api/v1/upload', upload.single('image'), (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5005;
+const PORT = Number(process.env.UPLOAD_PORT) || 5005;
 app.listen(PORT, () => console.log(`Upload Service running on port ${PORT}`));

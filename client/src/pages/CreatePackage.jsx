@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
 import Navbar from '../components/Navbar';
+import { uploadImage } from "../utils/uploadImage";
 
 const CreatePackage = () => {
   const navigate = useNavigate();
@@ -14,39 +15,25 @@ const CreatePackage = () => {
     image: ''
   });
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
-  const getPreviewSrc = (imagePathOrUrl) => {
-    if (!imagePathOrUrl) return '';
-    if (imagePathOrUrl.startsWith('http://') || imagePathOrUrl.startsWith('https://')) {
-      return imagePathOrUrl;
-    }
-    return `http://localhost:5050${imagePathOrUrl}`;
-  };
+  const getPreviewSrc = (imageUrl) => imageUrl || '';
 
   
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const data = new FormData();
-    data.append('image', file);
-
+    setUploadError('');
     setUploading(true);
     try {
-      const response = await API.post('/upload', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${localStorage.getItem('token') || ''}`
-        }
-      });
-
-      const uploadedUrl = response.data.imageUrl;
+      const uploadedUrl = await uploadImage(file);
 
       setFormData({ ...formData, image: uploadedUrl });
-      alert("Image uploaded successfully! ✅");
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Image upload failed, you can still create the package without image.");
+      const message = error?.message || 'Upload failed';
+      setUploadError(message);
     }
     setUploading(false);
   };
@@ -171,6 +158,9 @@ const CreatePackage = () => {
               />
             )}
             {uploading && <p className="text-blue-500 text-sm mt-2">Uploading...</p>}
+            {!!uploadError && (
+              <p className="text-red-600 text-sm mt-2">{uploadError}</p>
+            )}
           </div>
 
           <div>

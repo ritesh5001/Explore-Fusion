@@ -31,10 +31,10 @@ const start = async () => {
   const controller = makeAdminController(models);
   const routes = makeAdminRoutes({ auth, controller });
 
-  // Primary versioned mount.
+
   app.use('/api/v1/admin', routes);
 
-  // Compatibility mount: some gateways/proxies may strip the prefix.
+
   app.use('/', routes);
 
   app.use((req, res) => {

@@ -1,22 +1,28 @@
 const express = require('express');
 const router = express.Router();
-const { 
-  getCreatorBookings 
-} = require('../controllers/bookingController');
+
 const {
-  getAllPackages,
-  createPackage,
   createBooking,
   getMyBookings,
-  createItinerary,
-  getMyItineraries 
+  getBookingById,
+  cancelBooking,
+  getAllBookings,
+  updateBookingStatus,
+  deleteBooking,
 } = require('../controllers/bookingController');
-router.get('/packages', getAllPackages);
-router.post('/packages', createPackage);
-router.post('/bookings', createBooking);
-router.post('/bookings/my', getMyBookings);
-router.post('/itineraries', createItinerary);
-router.get('/itineraries/my', getMyItineraries);
-router.get('/bookings/creator/:creatorId', getCreatorBookings);
+
+const { protect, isSuperAdmin } = require('../middleware/authMiddleware');
+
+router.use(protect);
+
+router.post('/', createBooking);
+router.get('/my', getMyBookings);
+
+router.get('/', getAllBookings);
+
+router.get('/:id', getBookingById);
+router.put('/:id/cancel', cancelBooking);
+router.put('/:id/status', updateBookingStatus);
+router.delete('/:id', isSuperAdmin, deleteBooking);
 
 module.exports = router;

@@ -1,12 +1,15 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+dotenv.config();
+
 const adminRoutes = require('./routes/adminRoutes');
 
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const imagekitRoutes = require('./routes/imagekitRoutes');
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -20,6 +23,9 @@ app.get('/', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/', authRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1', imagekitRoutes);
+app.use('/', imagekitRoutes);
 
 app.use((req, res) => {
     res.status(404).json({

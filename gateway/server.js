@@ -31,6 +31,23 @@ app.use(
 );
 
 app.use(
+  '/api/v1/imagekit-auth',
+  createProxyMiddleware({
+    target: 'http://localhost:5001',
+    changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
+  })
+);
+
+app.use(
+  '/api/v1/users',
+  createProxyMiddleware({
+    target: 'http://localhost:5001',
+    changeOrigin: true,
+  })
+);
+
+app.use(
   '/auth',
   createProxyMiddleware({
     target: 'http://localhost:5001',
@@ -83,10 +100,37 @@ app.use(
   })
 );
 
-app.use('/api/v1/upload', createProxyMiddleware({
-  target: 'http://localhost:5005',
-  changeOrigin: true,
-}));
+app.use(
+  '/api/v1/reviews',
+  createProxyMiddleware({
+    target: 'http://localhost:5003',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  '/api/v1/matches',
+  createProxyMiddleware({
+    target: 'http://localhost:5003',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  '/api/v1/notifications',
+  createProxyMiddleware({
+    target: 'http://localhost:5003',
+    changeOrigin: true,
+  })
+);
+
+app.use(
+  "/api/v1/upload",
+  createProxyMiddleware({
+    target: "http://localhost:5005",
+    changeOrigin: true,
+  })
+);
 
 app.use('/uploads', createProxyMiddleware({
   target: 'http://localhost:5005',

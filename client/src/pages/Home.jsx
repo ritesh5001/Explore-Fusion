@@ -2,9 +2,33 @@ import { useEffect, useState } from 'react';
 import API from '../api';
 import Navbar from '../components/Navbar'; 
 
+
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState({ title: '', content: '', location: '' });
+  const user = JSON.parse(localStorage.getItem('user'));
+  
+  if (!user) {
+  return (
+    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+      <Navbar />
+      <div className="flex flex-col items-center justify-center h-[80vh] text-center px-4">
+        <h1 className="text-5xl font-bold mb-6">Explore the World with AI 🌍</h1>
+        <p className="text-xl mb-8 max-w-2xl">
+          Plan trips in seconds, find travel buddies, and book exclusive influencer packages.
+        </p>
+        <div className="space-x-4">
+          <a href="/login" className="bg-white text-blue-600 px-8 py-3 rounded-full font-bold hover:bg-gray-100 transition">
+            Get Started
+          </a>
+          <a href="/packages" className="border-2 border-white px-8 py-3 rounded-full font-bold hover:bg-white hover:text-blue-600 transition">
+            Browse Trips
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 
   useEffect(() => {

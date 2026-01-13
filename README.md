@@ -33,11 +33,12 @@
 
 **Backend (Microservices):**
 * **API Gateway:** Node.js, Express, `http-proxy-middleware`
+* **Admin Service:** Admin APIs
 * **Auth Service:** JWT, Bcrypt
 * **Post Service:** Social feed management
 * **Booking Service:** Marketplace logic & Order management
 * **AI Service:** Google Gemini API (`@google/generative-ai`)
-* **Upload Service:** Multer (File Handling)
+* **Upload Service:** Legacy Multer uploads + optional ImageKit auth
 * **Chat Service:** Socket.IO (Real-time WebSocket)
 * **Database:** MongoDB (Mongoose)
 
@@ -50,6 +51,7 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | Service | Port | Description |
 | :--- | :--- | :--- |
 | **Gateway** | `5050` | Unified entry point for the frontend |
+| **Admin** | `5007` | Admin APIs (cross-service DB access) |
 | **Auth** | `5001` | Handles User Registration & Login |
 | **Post** | `5002` | Manages User Posts & Feeds |
 | **Booking** | `5003` | Handles Packages, Itineraries & Orders |
@@ -58,14 +60,18 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | **Chat** | `5006` | WebSocket Server for Real-Time Chat |
 | **Client** | `5173` | React Frontend |
 
+Notes:
+* The frontend should call the **Gateway** (`http://localhost:5050`) for API requests.
+
 ---
 
 ## ⚙️ Installation & Setup
 
 ### 1. Prerequisites
 * Node.js installed
-* MongoDB installed and running locally (or MongoDB Atlas URI)
+* MongoDB running locally (or MongoDB Atlas URI)
 * Google Gemini API Key
+* (Optional) ImageKit account/keys for image uploads
 
 ### 2. Clone the Repository
 ```bash
@@ -83,9 +89,41 @@ npm run install:all
 This repo ignores `.env` files (they are required locally).
 
 Common ones used by the services:
-* `MONGO_URI` (auth/post/booking services)
-* `JWT_SECRET` (auth service)
-* `GEMINI_API_KEY` and optional `GEMINI_MODEL` (ai service)
+
+**Auth Service (services/auth-service)**
+* `PORT` (default: `5001`)
+* `MONGO_URI`
+* `JWT_SECRET`
+* `IMAGEKIT_PUBLIC_KEY`
+* `IMAGEKIT_PRIVATE_KEY`
+* `IMAGEKIT_URL_ENDPOINT`
+
+**Booking Service (services/booking-service)**
+* `PORT` (default: `5003`)
+* `MONGO_URI`
+* `JWT_SECRET`
+
+**Post Service (services/post-service)**
+* `PORT` (default: `5002`)
+* `MONGO_URI`
+* `JWT_SECRET`
+
+**AI Service (services/ai-service)**
+* `PORT` (default: `5004`)
+* `GEMINI_API_KEY`
+* `GEMINI_MODEL` (optional)
+
+**Upload Service (services/upload-service)**
+* `UPLOAD_PORT` (default: `5005`)
+* (Only needed if you use the upload-service ImageKit auth endpoint) `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT`
+
+**Gateway (gateway)**
+* `GATEWAY_PORT` (default: `5050`)
+
+**Client (client)**
+* `VITE_IMAGEKIT_PUBLIC_KEY`
+* `VITE_IMAGEKIT_URL_ENDPOINT`
+* `VITE_IMAGEKIT_AUTH_ENDPOINT` (recommended: `http://localhost:5050/api/v1/imagekit-auth`)
 
 ### 5. Run Everything (One Command)
 Start client + gateway + all microservices together:
@@ -97,3 +135,24 @@ If you only want the backend processes (gateway + services):
 ```bash
 npm run start
 ```
+
+---
+
+## 🖼️ Image Uploads (ImageKit)
+
+The preferred flow is direct client upload to ImageKit using a protected auth endpoint.
+
+* Auth endpoint (protected): `POST /api/v1/imagekit-auth`
+  * Via gateway (recommended): `http://localhost:5050/api/v1/imagekit-auth`
+  * Direct to auth-service: `http://localhost:5001/api/v1/imagekit-auth`
+* The response shape must be exactly: `{ token, signature, expire }` (required by the ImageKit JS SDK).
+
+---
+
+## 🧯 Troubleshooting
+
+* **`Missing publicKey during ImageKit initialization`**
+  * Ensure `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, and `IMAGEKIT_URL_ENDPOINT` are set.
+
+* **Port already in use (`EADDRINUSE`)**
+  * Stop the process using the port or change `PORT` / `UPLOAD_PORT` / `GATEWAY_PORT`.

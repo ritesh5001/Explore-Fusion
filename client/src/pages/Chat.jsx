@@ -9,22 +9,17 @@ const Chat = () => {
   const [currentMessage, setCurrentMessage] = useState("");
   const [messageList, setMessageList] = useState([]);
   const user = JSON.parse(localStorage.getItem('user'));
-  
-  // Room Name (Could be dynamic based on Trip ID)
   const room = "Global Travelers Lounge"; 
 
   useEffect(() => {
-    
     if (user) {
       socket.emit("join_room", room);
     }
 
-    
     socket.on("load_history", (history) => {
       setMessageList(history);
     });
 
-    
     socket.on("receive_message", (data) => {
       setMessageList((list) => [...list, data]);
     });

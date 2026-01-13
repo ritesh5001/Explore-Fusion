@@ -11,11 +11,19 @@ const CreatePackage = () => {
     description: '',
     location: '',
     duration: '',
-    image: '' // This will store the URL string after upload
+    image: ''
   });
   const [uploading, setUploading] = useState(false);
 
-  // New Function: Handles the File Selection
+  const getPreviewSrc = (imagePathOrUrl) => {
+    if (!imagePathOrUrl) return '';
+    if (imagePathOrUrl.startsWith('http://') || imagePathOrUrl.startsWith('https://')) {
+      return imagePathOrUrl;
+    }
+    return `http://localhost:5050${imagePathOrUrl}`;
+  };
+
+  
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -25,20 +33,20 @@ const CreatePackage = () => {
 
     setUploading(true);
     try {
-
       const response = await API.post('/upload', data, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${localStorage.getItem('token') || ''}`
+        }
       });
 
-
       const uploadedUrl = response.data.imageUrl;
-
 
       setFormData({ ...formData, image: uploadedUrl });
       alert("Image uploaded successfully! ✅");
     } catch (error) {
       console.error("Upload failed", error);
-      alert("Failed to upload image");
+      alert("Image upload failed, you can still create the package without image.");
     }
     setUploading(false);
   };
@@ -53,14 +61,29 @@ const CreatePackage = () => {
     }
 
     try {
-      await API.post('/packages', {
-        ...formData,
-        creatorId: user._id
-      });
+      const payload = {
+        title: formData.title,
+        price: Number(formData.price),
+        description: formData.description,
+        
+        destination: formData.location,
+        duration: formData.duration,
+        
+        creatorId: user._id,
+      };
+
+      
+      if (formData.image) payload.images = [formData.image];
+
+      await API.post('/packages', payload);
       alert('Package Created Successfully! 🎉');
       navigate('/packages');
     } catch (error) {
-      alert('Failed to create package');
+      console.error('Create package failed:', error);
+      const status = error?.response?.status;
+      const serverMessage = error?.response?.data?.message || error?.response?.data?.error;
+      const message = serverMessage || error?.message || 'Unknown error';
+      alert(`Failed to create package${status ? ` (HTTP ${status})` : ''}: ${message}`);
     }
   };
 
@@ -126,7 +149,7 @@ const CreatePackage = () => {
                 { }
                 { }
                 <img
-                  src={`http://localhost:5050${formData.image}`}
+                  src={getPreviewSrc(formData.image)}
                   alt="Preview"
                   className="h-40 w-full object-cover rounded mb-2"
                 />
@@ -162,7 +185,7 @@ const CreatePackage = () => {
           </div>
 
           <button
-            disabled={uploading || !formData.image}
+            disabled={uploading}
             className="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 transition disabled:bg-gray-400"
           >
             🚀 Launch Trip

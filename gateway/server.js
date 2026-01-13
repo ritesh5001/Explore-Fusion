@@ -29,6 +29,13 @@ app.use(
   })
 );
 app.use(
+  '/api/v1/admin',
+  createProxyMiddleware({
+    target: 'http://localhost:5001',
+    changeOrigin: true,
+  })
+);
+app.use(
   '/api/v1/posts',
   createProxyMiddleware({
     target: 'http://localhost:5002',

@@ -71,11 +71,8 @@ const getGenAI = () => {
 
 const genAI = getGenAI();
 
-// --- SETUP: Model List (Prioritizes 1.5 Flash for stability) ---
 const getCandidateModels = () => {
   const configured = (process.env.GEMINI_MODEL || '').trim();
-  // Keep the list short to avoid retry loops and unsupported models.
-  // Use GET /models to see what your API key supports.
   const candidates = [configured, 'gemini-2.0-flash', 'gemini-1.5-flash'].filter(Boolean);
   return [...new Set(candidates)];
 };
@@ -256,9 +253,6 @@ const findBuddy = async (req, res) => {
   }
 };
 
-// ==========================================
-// 3. LIST MODELS
-// ==========================================
 const listModels = async (req, res) => {
   try {
     const key = process.env.GEMINI_API_KEY;

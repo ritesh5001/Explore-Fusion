@@ -41,8 +41,8 @@ const MyTrips = () => {
           {bookings.map((booking) => (
             <div key={booking._id} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-purple-500">
               <div className="p-4">
-                <h3 className="font-bold text-lg">{booking.package_id?.title}</h3>
-                <p className="text-gray-600">${booking.package_id?.price}</p>
+                <h3 className="font-bold text-lg">{booking.packageId?.title}</h3>
+                <p className="text-gray-600">${booking.packageId?.price}</p>
                 <div className="mt-2">
                   <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded uppercase font-bold">
                     {booking.status}

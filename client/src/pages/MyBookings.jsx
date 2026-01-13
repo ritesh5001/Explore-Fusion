@@ -1,6 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import API from '../api';
 import { useToast } from '../components/ToastProvider';
+import SectionHeader from '../components/ui/SectionHeader';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import PageLoader from '../components/ui/PageLoader';
+import ErrorState from '../components/ui/ErrorState';
+import EmptyState from '../components/ui/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -76,23 +82,29 @@ export default function MyBookings() {
 	};
 
 	return (
-		<div className="max-w-6xl mx-auto px-4 py-10">
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<h1 className="text-2xl font-bold">My Bookings</h1>
-				<button onClick={load} className="text-sm font-semibold text-blue-600 hover:underline">
-					Refresh
-				</button>
-			</div>
+		<div className="container-app page-section max-w-6xl">
+			<SectionHeader
+				title="My Bookings"
+				subtitle="Manage your upcoming trips and reservations."
+				right={
+					<Button variant="outline" size="sm" onClick={load} aria-label="Refresh bookings">
+						Refresh
+					</Button>
+				}
+			/>
 
 			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading bookings…</div>
+				<PageLoader label="Loading bookings…" />
 			) : error ? (
-				<div className="bg-white border rounded-lg p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
+				<ErrorState title="Couldn’t load bookings" description={error} onRetry={load} />
 			) : !hasBookings ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">No bookings yet.</div>
+				<EmptyState
+					title="No bookings yet"
+					description="When you book a trip, it will show up here."
+					actionLabel="Browse packages"
+					onAction={() => (window.location.href = '/packages')}
+					icon="🧳"
+				/>
 			) : (
 				<div className="space-y-3">
 					{bookings.map((b) => {
@@ -101,16 +113,16 @@ export default function MyBookings() {
 						const title = getPackageTitle(b);
 						const price = getPackagePrice(b);
 						return (
-							<div key={id} className="bg-white border rounded-lg p-4 flex items-center justify-between gap-4">
+							<Card key={id} className="p-4 flex items-center justify-between gap-4">
 								<div>
-									<div className="font-semibold text-gray-900">{title}</div>
-									<div className="text-sm text-gray-600 mt-1">
+									<div className="font-semibold text-charcoal dark:text-sand">{title}</div>
+									<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
 										Price: {price != null ? `$${price}` : '—'}
 									</div>
-									<div className="text-sm text-gray-600 mt-1">
+									<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
 										Status:{' '}
 										<span
-											className={`font-semibold ${status === 'cancelled' ? 'text-gray-500' : 'text-green-700'}`}
+											className={`font-semibold ${status === 'cancelled' ? 'text-charcoal/50 dark:text-sand/50' : 'text-green-700'}`}
 										>
 											{status}
 										</span>
@@ -118,15 +130,17 @@ export default function MyBookings() {
 								</div>
 
 								{status !== 'cancelled' && (
-									<button
+									<Button
+										variant="danger"
+										size="sm"
 										onClick={() => cancelBooking(id)}
 										disabled={cancellingId === id}
-										className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 disabled:opacity-60"
+										aria-label="Cancel booking"
 									>
 										{cancellingId === id ? 'Cancelling…' : 'Cancel'}
-									</button>
+									</Button>
 								)}
-							</div>
+							</Card>
 						);
 					})}
 				</div>

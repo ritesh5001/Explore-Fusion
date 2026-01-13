@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
 import BuddyCard from '../../components/buddy/BuddyCard';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Button from '../../components/ui/Button';
+import PageLoader from '../../components/ui/PageLoader';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -53,23 +58,23 @@ export default function BuddySuggestions() {
 	};
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-10">
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<h1 className="text-2xl font-bold">Buddy Suggestions</h1>
-				<button onClick={load} className="text-sm font-semibold text-blue-600 hover:underline">
-					Refresh
-				</button>
-			</div>
+		<div className="container-app page-section max-w-5xl">
+			<SectionHeader
+				title="Buddy Suggestions"
+				subtitle="People you might enjoy traveling with."
+				right={
+					<Button variant="outline" size="sm" onClick={load} aria-label="Refresh buddy suggestions">
+						Refresh
+					</Button>
+				}
+			/>
 
 			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading…</div>
+				<PageLoader label="Loading suggestions…" />
 			) : error ? (
-				<div className="bg-white border rounded-lg p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
+				<ErrorState title="Couldn’t load suggestions" description={error} onRetry={load} />
 			) : items.length === 0 ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">No suggestions right now.</div>
+				<EmptyState title="No suggestions right now" description="Check back soon — we’ll keep matching." icon="🧭" />
 			) : (
 				<div className="space-y-3">
 					{items.map((u) => {
@@ -79,13 +84,14 @@ export default function BuddySuggestions() {
 								key={id}
 								user={u}
 								actions={
-									<button
+									<Button
 										onClick={() => sendRequest(id)}
 										disabled={sendingTo === id}
-										className="bg-blue-600 text-white font-semibold px-3 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
+										size="sm"
+										aria-label="Send buddy request"
 									>
 										{sendingTo === id ? 'Sending…' : 'Request'}
-									</button>
+									</Button>
 								}
 							/>
 						);

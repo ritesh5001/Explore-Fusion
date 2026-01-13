@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import API from '../api';
 import { useToast } from '../components/ToastProvider';
+import SectionHeader from '../components/ui/SectionHeader';
+import Button from '../components/ui/Button';
+import Card from '../components/ui/Card';
+import PageLoader from '../components/ui/PageLoader';
+import ErrorState from '../components/ui/ErrorState';
+import EmptyState from '../components/ui/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -57,23 +63,23 @@ export default function Notifications() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-10">
-      <div className="flex items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold">Notifications</h1>
-        <button onClick={load} className="text-sm font-semibold text-blue-600 hover:underline">
-          Refresh
-        </button>
-      </div>
+    <div className="container-app page-section max-w-5xl">
+      <SectionHeader
+        title="Notifications"
+        subtitle="Updates about bookings, buddies, and system messages."
+        right={
+          <Button variant="outline" size="sm" onClick={load} aria-label="Refresh notifications">
+            Refresh
+          </Button>
+        }
+      />
 
       {loading ? (
-        <div className="bg-white border rounded-lg p-6 text-gray-600">Loading…</div>
+        <PageLoader label="Loading notifications…" />
       ) : error ? (
-        <div className="bg-white border rounded-lg p-6">
-          <div className="text-red-600 font-semibold">Error</div>
-          <div className="text-gray-700 text-sm mt-1">{error}</div>
-        </div>
+        <ErrorState title="Couldn’t load notifications" description={error} onRetry={load} />
       ) : items.length === 0 ? (
-        <div className="bg-white border rounded-lg p-6 text-gray-600">No notifications.</div>
+        <EmptyState title="No notifications" description="You’re all caught up." icon="🔔" />
       ) : (
         <div className="space-y-3">
           {items.map((n) => {
@@ -82,28 +88,27 @@ export default function Notifications() {
             const title = n?.title || n?.type || 'Notification';
             const message = n?.message || n?.text || '';
             return (
-              <div
+              <Card
                 key={id}
-                className={`bg-white border rounded-lg p-4 flex items-start justify-between gap-4 ${
-                  read ? 'opacity-80' : 'border-blue-200'
-                }`}
+                className={`p-4 flex items-start justify-between gap-4 ${read ? 'opacity-90' : 'border-trail/30'}`}
               >
                 <div>
-                  <div className="font-semibold text-gray-900">{title}</div>
-                  {!!message && <div className="text-sm text-gray-700 mt-1">{message}</div>}
-                  <div className="text-xs text-gray-500 mt-2">{read ? 'Read' : 'Unread'}</div>
+                  <div className="font-semibold text-charcoal dark:text-sand">{title}</div>
+                  {!!message && <div className="text-sm text-charcoal/80 dark:text-sand/80 mt-1">{message}</div>}
+                  <div className="text-xs text-charcoal/60 dark:text-sand/60 mt-2">{read ? 'Read' : 'Unread'}</div>
                 </div>
 
                 {!read && (
-                  <button
+                  <Button
                     onClick={() => markRead(id)}
                     disabled={markingId === id}
-                    className="bg-blue-600 text-white font-semibold px-3 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
+                    size="sm"
+                    aria-label="Mark notification as read"
                   >
                     {markingId === id ? 'Marking…' : 'Mark Read'}
-                  </button>
+                  </Button>
                 )}
-              </div>
+              </Card>
             );
           })}
         </div>

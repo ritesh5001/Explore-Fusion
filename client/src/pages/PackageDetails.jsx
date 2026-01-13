@@ -16,7 +16,13 @@ const PackageDetails = () => {
 	const imageUrl = useMemo(() => {
 		const first = pkg?.images?.[0];
 		if (!first) return null;
-		if (String(first).startsWith('http')) return first;
+		const raw = String(first);
+		if (raw.startsWith('http')) {
+			if ((raw.includes('imagekit.io') || raw.includes('ik.imagekit.io')) && !raw.includes('tr=')) {
+				return raw + (raw.includes('?') ? '&' : '?') + 'tr=w-1200,h-800';
+			}
+			return raw;
+		}
 		return `http://localhost:5050${first}`;
 	}, [pkg]);
 

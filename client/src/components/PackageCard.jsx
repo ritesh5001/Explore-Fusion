@@ -21,7 +21,14 @@ const FALLBACK_IMAGE =
 
 const normalizeImageUrl = (img) => {
 	if (!img) return FALLBACK_IMAGE;
-	if (String(img).startsWith('http')) return img;
+	const raw = String(img);
+	if (raw.startsWith('http')) {
+		// Apply ImageKit transformations when possible
+		if ((raw.includes('imagekit.io') || raw.includes('ik.imagekit.io')) && !raw.includes('tr=')) {
+			return raw + (raw.includes('?') ? '&' : '?') + 'tr=w-400,h-300';
+		}
+		return raw;
+	}
 	return `http://localhost:5050${img}`;
 };
 

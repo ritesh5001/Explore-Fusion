@@ -125,12 +125,14 @@ const Home = () => {
             <input
               type="text"
               placeholder="Trip Title (e.g., Weekend in Manali)"
+              aria-label="Trip title"
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.title}
               onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
             />
             <textarea
               placeholder="Share your experience..."
+              aria-label="Trip story"
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl h-24 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.content}
               onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
@@ -138,6 +140,7 @@ const Home = () => {
             <input
               type="text"
               placeholder="Location"
+              aria-label="Trip location"
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.location}
               onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}

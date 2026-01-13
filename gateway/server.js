@@ -10,6 +10,20 @@ const app = express();
 
 app.use(securityMiddleware());
 
+const proxyJsonBody = (proxyReq, req) => {
+  const method = String(req.method || '').toUpperCase();
+  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
+
+  const contentType = String(req.headers['content-type'] || '').toLowerCase();
+  if (!contentType.includes('application/json')) return;
+  if (!req.body || typeof req.body !== 'object') return;
+
+  const bodyData = JSON.stringify(req.body);
+  proxyReq.setHeader('Content-Type', 'application/json');
+  proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+  proxyReq.write(bodyData);
+};
+
 const defaultCorsOrigins = ['http://localhost:5173', 'https://explore-fusion.vercel.app'];
 const corsOrigins = String(process.env.CORS_ORIGINS || '')
   .split(',')
@@ -50,6 +64,7 @@ app.use(
   createProxyMiddleware({
     target: ADMIN_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/admin${path}`,
   })
 );
@@ -58,6 +73,7 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: {
       '^/api/v1/auth': '',
     },
@@ -69,6 +85,7 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
   })
 );
@@ -78,6 +95,7 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
   })
 );
 
@@ -86,6 +104,7 @@ app.use(
   createProxyMiddleware({
     target: AUTH_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
   })
 );
 app.use(
@@ -93,6 +112,7 @@ app.use(
   createProxyMiddleware({
     target: POST_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: {
       '^/api/v1/posts': '',
     },
@@ -104,6 +124,7 @@ app.use(
   createProxyMiddleware({
     target: AI_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: {
       '^/api/v1/ai': '',
     },
@@ -115,6 +136,7 @@ app.use(
   createProxyMiddleware({
     target: BOOKING_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/itineraries${path}`,
   })
 );
@@ -124,6 +146,7 @@ app.use(
   createProxyMiddleware({
     target: BOOKING_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/packages${path}`,
   })
 );
@@ -133,6 +156,7 @@ app.use(
   createProxyMiddleware({
     target: BOOKING_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/bookings${path}`,
   })
 );
@@ -142,6 +166,7 @@ app.use(
   createProxyMiddleware({
     target: BOOKING_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/reviews${path}`,
   })
 );
@@ -151,6 +176,7 @@ app.use(
   createProxyMiddleware({
     target: MATCHES_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/matches${path}`,
   })
 );
@@ -160,6 +186,7 @@ app.use(
   createProxyMiddleware({
     target: NOTIFICATION_SERVICE_URL,
     changeOrigin: true,
+    onProxyReq: proxyJsonBody,
     pathRewrite: (path) => `/api/v1/notifications${path}`,
   })
 );

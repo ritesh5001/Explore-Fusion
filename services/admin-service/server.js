@@ -11,8 +11,10 @@ const { makeAdminRoutes } = require('./routes/adminRoutes');
 
 dotenv.config();
 
-dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
-dotenv.config({ path: path.join(__dirname, '../booking-service/.env') });
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
+  dotenv.config({ path: path.join(__dirname, '../booking-service/.env') });
+}
 
 const app = express();
 app.use(cors());
@@ -40,7 +42,7 @@ const start = async () => {
     res.status(404).json({ success: false, message: 'Not found' });
   });
 
-  const PORT = Number(process.env.ADMIN_PORT) || 5007;
+  const PORT = Number(process.env.PORT) || Number(process.env.ADMIN_PORT) || 5007;
   app.listen(PORT, () => {
     console.log(`Admin Service running on port ${PORT}`);
   });

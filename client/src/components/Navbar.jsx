@@ -24,6 +24,7 @@ const Navbar = () => {
         <Link to="/bookings" className="hover:text-blue-500">My Trips</Link>
         <Link to="/buddy" className="hover:text-blue-500">Buddy Finder</Link>
         <Link to="/packages" className="hover:text-blue-500">Packages</Link>
+        <Link to="/chat" className="hover:text-blue-500">Community Chat</Link>
       </div>
 
       {/* User Actions */}

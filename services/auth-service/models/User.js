@@ -8,11 +8,14 @@ const userSchema = new mongoose.Schema({
   email: {
     type: String,
     required: true,
-    unique: true,    
+    unique: true,
+    lowercase: true,
+    trim: true,
   },
   password: {
     type: String,
     required: true,
+    select: false,
   },
   role: { 
   type: String, 
@@ -22,6 +25,18 @@ const userSchema = new mongoose.Schema({
 isBlocked: { 
   type: Boolean, 
   default: false 
+},
+isVerifiedCreator: {
+  type: Boolean,
+  default: false,
+},
+passwordResetTokenHash: {
+  type: String,
+  select: false,
+},
+passwordResetTokenExpiresAt: {
+  type: Date,
+  select: false,
 }
 }, {
   timestamps: true 

@@ -12,6 +12,14 @@ app.get('/', (req, res) => {
   res.send('Explore Fusion Gateway is running');
 });
 app.use(
+  '/api/v1/admin',
+  createProxyMiddleware({
+    target: 'http://localhost:5007',
+    changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/admin${path}`,
+  })
+);
+app.use(
   '/api/v1/auth',
   createProxyMiddleware({
     target: 'http://localhost:5001',
@@ -21,15 +29,9 @@ app.use(
     },
   })
 );
+
 app.use(
   '/auth',
-  createProxyMiddleware({
-    target: 'http://localhost:5001',
-    changeOrigin: true,
-  })
-);
-app.use(
-  '/api/v1/admin',
   createProxyMiddleware({
     target: 'http://localhost:5001',
     changeOrigin: true,
@@ -98,7 +100,7 @@ app.use('/socket.io', createProxyMiddleware({
   pathRewrite: (path) => `/socket.io${path}`,
 }));
 
-const PORT = process.env.PORT || 5050;
+const PORT = Number(process.env.GATEWAY_PORT) || 5050;
 app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);
 });

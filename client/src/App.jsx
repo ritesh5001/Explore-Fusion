@@ -1,32 +1,29 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AppLayout from './components/AppLayout';
+import AppRoutes from './routes/AppRoutes';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
-import Home from './pages/Home';
-import PlanTrip from './pages/PlanTrip'; 
-import MyTrips from './pages/MyTrips';
-import BuddyMatcher from './pages/BuddyMatcher';
-import CreatePackage from './pages/CreatePackage';
-import Packages from './pages/Packages';
-import CreatorDashboard from './pages/CreatorDashboard';
-import Profile from './pages/Profile';
-import Chat from './pages/Chat';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
     <Router>
-      <div className="min-h-screen bg-gray-50">
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/plan-trip" element={<PlanTrip />} />
-          <Route path="/bookings" element={<MyTrips />} /> {}
-          <Route path="/buddy" element={<BuddyMatcher />} />
-          <Route path="/packages" element={<Packages />} />
-          <Route path="/create-package" element={<CreatePackage />} />
-          <Route path="/creator" element={<CreatorDashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/chat" element={<Chat />} />
-        </Routes>
-      </div>
+		<AppLayout>
+			<Routes>
+				<Route path="/login" element={<Login />} />
+				<Route path="/register" element={<Register />} />
+				<Route
+					path="/dashboard"
+					element={
+						<ProtectedRoute>
+							<Dashboard />
+						</ProtectedRoute>
+					}
+				/>
+				<Route path="/*" element={<AppRoutes />} />
+			</Routes>
+		</AppLayout>
     </Router>
   );
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import API from '../api';
-import Navbar from '../components/Navbar';
+import { useToast } from '../components/ToastProvider';
 
 const BuddyMatcher = () => {
   const [formData, setFormData] = useState({ destination: '', interests: '', travelStyle: '' });
   const [buddy, setBuddy] = useState(null);
   const [loading, setLoading] = useState(false);
+	const { showToast } = useToast();
 
   const handleMatch = async (e) => {
     e.preventDefault();
@@ -14,21 +15,18 @@ const BuddyMatcher = () => {
       const { data } = await API.post('/ai/match', formData);
       setBuddy(data.buddy);
     } catch (error) {
-      alert('Failed to find a match');
+		showToast('Failed to find a match', 'error');
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-pink-50">
-      <Navbar />
-      
       <div className="max-w-4xl mx-auto py-10 px-4">
         <h1 className="text-3xl font-bold text-center text-pink-600 mb-8">❤️ AI Travel Buddy Finder</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {}
+
           <div className="bg-white p-6 rounded-lg shadow-md">
             <h2 className="text-xl font-bold mb-4">Who are you?</h2>
             <form onSubmit={handleMatch} className="space-y-4">
@@ -58,7 +56,6 @@ const BuddyMatcher = () => {
             </form>
           </div>
 
-          {}
           <div className="flex items-center justify-center">
             {buddy ? (
               <div className="bg-white p-6 rounded-xl shadow-xl border-2 border-pink-200 w-full transform hover:scale-105 transition-transform">

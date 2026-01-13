@@ -1,13 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import useAuth from '../auth/useAuth';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user, logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    logout();
     navigate('/login');
   };
 
@@ -29,10 +28,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      
       <div className="max-w-4xl mx-auto py-10 px-4">
-        {}
         <div className="bg-white rounded-lg shadow-md p-8 mb-8 flex items-center gap-6">
           <div className="w-24 h-24 bg-blue-100 rounded-full flex items-center justify-center text-4xl">
             👤
@@ -46,10 +42,8 @@ const Profile = () => {
           </div>
         </div>
 
-        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {}
+
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer" onClick={() => navigate('/bookings')}>
             <div className="text-4xl mb-4">✈️</div>
             <h2 className="text-xl font-bold mb-2">My Travels</h2>
@@ -57,7 +51,6 @@ const Profile = () => {
             <span className="text-blue-600 font-bold hover:underline">Go to My Trips &rarr;</span>
           </div>
 
-          {}
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer border-l-4 border-purple-500" onClick={() => navigate('/creator')}>
             <div className="text-4xl mb-4">📈</div>
             <h2 className="text-xl font-bold mb-2">Creator Dashboard</h2>
@@ -65,7 +58,6 @@ const Profile = () => {
             <span className="text-purple-600 font-bold hover:underline">View Sales &rarr;</span>
           </div>
 
-           {}
            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer" onClick={() => navigate('/create-package')}>
             <div className="text-4xl mb-4">💎</div>
             <h2 className="text-xl font-bold mb-2">Sell a Trip</h2>
@@ -73,7 +65,6 @@ const Profile = () => {
             <span className="text-green-600 font-bold hover:underline">Create Package &rarr;</span>
           </div>
 
-          {}
           <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition cursor-pointer bg-red-50" onClick={handleLogout}>
             <div className="text-4xl mb-4">🚪</div>
             <h2 className="text-xl font-bold mb-2 text-red-700">Logout</h2>

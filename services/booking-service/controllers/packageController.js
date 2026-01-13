@@ -27,6 +27,22 @@ const isCreatorOrAdmin = (user) => {
   return role === 'creator' || role === 'admin' || role === 'superadmin';
 };
 
+const getPackageCreatorId = (pkg) => {
+  if (!pkg) return null;
+
+  // Support some legacy fields that may exist in older documents.
+  const candidate =
+    pkg.creatorId ??
+    pkg.creator_id ??
+    pkg.creator ??
+    pkg.createdBy ??
+    (pkg.creator && pkg.creator._id);
+
+  if (!candidate) return null;
+  if (typeof candidate === 'object') return candidate._id ?? candidate.id ?? null;
+  return candidate;
+};
+
 exports.createPackage = async (req, res) => {
   try {
     if (!isCreatorOrAdmin(req.user)) {
@@ -123,7 +139,8 @@ exports.updatePackage = async (req, res) => {
       return jsonError(res, 404, 'Package not found');
     }
 
-    const isOwner = String(pkg.creatorId) === String(req.user._id);
+    const creatorId = getPackageCreatorId(pkg);
+    const isOwner = creatorId ? String(creatorId) === String(req.user._id) : false;
     if (!isOwner && !canManageAny(req.user)) {
       return jsonError(res, 403, 'Forbidden');
     }
@@ -176,7 +193,8 @@ exports.deletePackage = async (req, res) => {
       return jsonError(res, 404, 'Package not found');
     }
 
-    const isOwner = String(pkg.creatorId) === String(req.user._id);
+    const creatorId = getPackageCreatorId(pkg);
+    const isOwner = creatorId ? String(creatorId) === String(req.user._id) : false;
     if (!isOwner && !canManageAny(req.user)) {
       return jsonError(res, 403, 'Forbidden');
     }

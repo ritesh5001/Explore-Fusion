@@ -1,16 +1,17 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import API from '../api';
-import Navbar from '../components/Navbar';
-import { uploadImage } from "../utils/uploadImage";
+import { uploadImage } from '../utils/imagekit';
+import { createPackage } from '../api/packages';
+import { useToast } from '../components/ToastProvider';
 
 const CreatePackage = () => {
   const navigate = useNavigate();
+	const { showToast } = useToast();
   const [formData, setFormData] = useState({
     title: '',
     price: '',
     description: '',
-    location: '',
+    destination: '',
     duration: '',
     image: ''
   });
@@ -40,53 +41,44 @@ const CreatePackage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const user = JSON.parse(localStorage.getItem('user'));
-
-    if (!user) {
-      alert("Please login to create a package");
-      return;
-    }
 
     try {
       const payload = {
         title: formData.title,
         price: Number(formData.price),
         description: formData.description,
-        
-        destination: formData.location,
+
+        destination: formData.destination,
         duration: formData.duration,
-        
-        creatorId: user._id,
       };
 
       
       if (formData.image) payload.images = [formData.image];
 
-      await API.post('/packages', payload);
-      alert('Package Created Successfully! 🎉');
+      await createPackage(payload);
+		showToast('Package created successfully', 'success');
       navigate('/packages');
     } catch (error) {
       console.error('Create package failed:', error);
       const status = error?.response?.status;
       const serverMessage = error?.response?.data?.message || error?.response?.data?.error;
       const message = serverMessage || error?.message || 'Unknown error';
-      alert(`Failed to create package${status ? ` (HTTP ${status})` : ''}: ${message}`);
+		showToast(`Failed to create package${status ? ` (HTTP ${status})` : ''}: ${message}`, 'error');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="max-w-2xl mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">💎 Create Influencer Trip</h1>
+    <div className="min-h-screen">
+      <div className="container-app page-section max-w-2xl">
+        <h1 className="text-3xl font-heading font-extrabold tracking-tight text-center text-mountain mb-8">Create Influencer Trip</h1>
 
-        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4">
+        <form onSubmit={handleSubmit} className="glass-card p-6 rounded-2xl shadow-sm space-y-4">
 
           <div>
             <label className="block text-gray-700 font-bold mb-1">Trip Title</label>
             <input
               required
-              className="w-full border p-2 rounded"
+              className="w-full border border-soft p-3 rounded-xl bg-white/70"
               placeholder="e.g. Bali Yoga Retreat"
               value={formData.title}
               onChange={e => setFormData({ ...formData, title: e.target.value })}
@@ -98,7 +90,7 @@ const CreatePackage = () => {
               <label className="block text-gray-700 font-bold mb-1">Price ($)</label>
               <input
                 required type="number"
-                className="w-full border p-2 rounded"
+                className="w-full border border-soft p-3 rounded-xl bg-white/70"
                 placeholder="500"
                 value={formData.price}
                 onChange={e => setFormData({ ...formData, price: e.target.value })}
@@ -108,7 +100,7 @@ const CreatePackage = () => {
               <label className="block text-gray-700 font-bold mb-1">Duration</label>
               <input
                 required
-                className="w-full border p-2 rounded"
+                className="w-full border border-soft p-3 rounded-xl bg-white/70"
                 placeholder="e.g. 5 Days"
                 value={formData.duration}
                 onChange={e => setFormData({ ...formData, duration: e.target.value })}
@@ -120,21 +112,18 @@ const CreatePackage = () => {
             <label className="block text-gray-700 font-bold mb-1">Location</label>
             <input
               required
-              className="w-full border p-2 rounded"
+              className="w-full border border-soft p-3 rounded-xl bg-white/70"
               placeholder="e.g. Ubud, Bali"
-              value={formData.location}
-              onChange={e => setFormData({ ...formData, location: e.target.value })}
+              value={formData.destination}
+              onChange={e => setFormData({ ...formData, destination: e.target.value })}
             />
           </div>
 
-          { }
-          <div className="border-2 border-dashed border-gray-300 p-4 rounded text-center">
+          <div className="border-2 border-dashed border-soft p-4 rounded-2xl text-center bg-white/40">
             <label className="block text-gray-700 font-bold mb-2">Trip Image</label>
 
             {formData.image ? (
               <div className="relative">
-                { }
-                { }
                 <img
                   src={getPreviewSrc(formData.image)}
                   alt="Preview"
@@ -154,10 +143,10 @@ const CreatePackage = () => {
                 accept="image/*"
                 onChange={handleFileChange}
                 disabled={uploading}
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+				className="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-sand file:text-mountain hover:file:bg-soft"
               />
             )}
-            {uploading && <p className="text-blue-500 text-sm mt-2">Uploading...</p>}
+            {uploading && <p className="text-forest text-sm mt-2">Uploading...</p>}
             {!!uploadError && (
               <p className="text-red-600 text-sm mt-2">{uploadError}</p>
             )}
@@ -167,7 +156,7 @@ const CreatePackage = () => {
             <label className="block text-gray-700 font-bold mb-1">Description</label>
             <textarea
               required
-              className="w-full border p-2 rounded h-32"
+              className="w-full border border-soft p-3 rounded-xl h-32 bg-white/70"
               placeholder="Describe the experience..."
               value={formData.description}
               onChange={e => setFormData({ ...formData, description: e.target.value })}
@@ -176,7 +165,7 @@ const CreatePackage = () => {
 
           <button
             disabled={uploading}
-            className="w-full bg-purple-600 text-white font-bold py-3 rounded hover:bg-purple-700 transition disabled:bg-gray-400"
+			className="w-full btn-primary py-3"
           >
             🚀 Launch Trip
           </button>

@@ -48,14 +48,12 @@ const createBooking = async (req, res) => {
       return jsonError(res, 404, 'Package not found');
     }
 
-    const creatorId = pkg.creatorId;
-    if (!creatorId) {
-      return jsonError(res, 500, 'Package creator not set');
-    }
+    const creatorIdRaw = pkg.creatorId ?? pkg.creator_id ?? pkg.creator;
+    const creatorId = creatorIdRaw && isValidId(creatorIdRaw) ? creatorIdRaw : undefined;
 
     const price = Number(pkg.price);
     if (!Number.isFinite(price) || price < 0) {
-      return jsonError(res, 500, 'Invalid package price');
+      return jsonError(res, 400, 'Invalid package price');
     }
 
     const totalPrice = price * guestsNum;
@@ -63,7 +61,7 @@ const createBooking = async (req, res) => {
     const booking = await Booking.create({
       userId: req.user._id,
       packageId: pkg._id,
-      creatorId,
+      ...(creatorId ? { creatorId } : {}),
       status: 'confirmed',
       guests: guestsNum,
       totalPrice,

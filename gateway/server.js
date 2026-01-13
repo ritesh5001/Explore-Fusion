@@ -81,6 +81,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/itineraries${path}`,
   })
 );
 
@@ -89,6 +90,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/packages${path}`,
   })
 );
 
@@ -97,6 +99,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/bookings${path}`,
   })
 );
 
@@ -105,6 +108,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/reviews${path}`,
   })
 );
 
@@ -113,6 +117,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/matches${path}`,
   })
 );
 
@@ -121,6 +126,7 @@ app.use(
   createProxyMiddleware({
     target: 'http://localhost:5003',
     changeOrigin: true,
+    pathRewrite: (path) => `/api/v1/notifications${path}`,
   })
 );
 
@@ -141,7 +147,16 @@ app.use('/socket.io', createProxyMiddleware({
   target: 'http://localhost:5006',
   changeOrigin: true,
   ws: true, 
-  pathRewrite: (path) => `/socket.io${path}`,
+  proxyTimeout: 30_000,
+  timeout: 30_000,
+  onError: (err, req, res) => {
+    console.error('Socket.IO proxy error:', err?.message || err);
+    if (res && !res.headersSent) {
+      res.writeHead(504);
+    }
+    res?.end?.('Gateway Timeout');
+  },
+  pathRewrite: (path) => (path.startsWith('/socket.io') ? path : `/socket.io${path}`),
 }));
 
 const PORT = Number(process.env.GATEWAY_PORT) || 5050;

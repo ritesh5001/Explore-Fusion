@@ -11,7 +11,6 @@ const { makeAdminRoutes } = require('./routes/adminRoutes');
 
 dotenv.config();
 
-// Dev-friendly fallback: allow running without copying secrets into admin-service/.env.
 dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
 dotenv.config({ path: path.join(__dirname, '../booking-service/.env') });
 

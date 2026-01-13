@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../api';
-import Navbar from '../components/Navbar';
+import useAuth from '../auth/useAuth';
+import { useToast } from '../components/ToastProvider';
 
 const PlanTrip = () => {
   const [formData, setFormData] = useState({ destination: '', days: 3, budget: 1000 });
@@ -9,18 +10,25 @@ const PlanTrip = () => {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user'));
+  const { user } = useAuth();
+	const { showToast } = useToast();
 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await API.post('/ai/plan', formData);
-      setPlan(data);
+      const res = await API.post('/ai/plan', {
+        destination: formData.destination,
+        days: Number(formData.days),
+        budget: Number(formData.budget),
+      });
+      const body = res?.data;
+      const planData = body?.data ?? body;
+      setPlan(planData);
     } catch (error) {
       console.error(error);
-      alert('AI Service Error: Check console for details');
+		showToast('AI Service Error: check console for details', 'error');
     }
     setLoading(false);
   };
@@ -28,49 +36,63 @@ const PlanTrip = () => {
 
   const handleSaveTrip = async () => {
     if (!user) {
-      alert("Please login to save trips!");
+		showToast('Please login to save trips', 'error');
+      return;
+    }
+
+    if (!plan) {
+		showToast('Please generate an itinerary first', 'error');
       return;
     }
 
     try {
-      await API.post('/itineraries', {
-        userId: user._id,
-        plan: {
-          destination: formData.destination,
-          duration: formData.days,
-          budget: formData.budget,
-          total_cost: plan.estimated_cost,
-          currency: plan.currency,
-          activities: plan.itinerary,
-          note: plan.note
-        }
-      });
-      alert("Trip Saved Successfully! 🎉");
+      const activities = Array.isArray(plan?.itinerary) ? plan.itinerary : [];
+      const estimatedRaw = plan?.estimated_cost ?? plan?.total_cost;
+      const estimatedNum = Number(estimatedRaw);
+
+      const payload = {
+        destination: formData.destination,
+        duration: Number(formData.days),
+        budget: Number(formData.budget),
+        currency: (typeof plan?.currency === 'string' && plan.currency.trim()) ? plan.currency.trim() : 'USD',
+        activities: activities.map((item) => ({
+          day: Number(item?.day),
+          activity: item?.activity,
+          cost: Number(item?.cost),
+        })),
+        note: plan?.note,
+      };
+
+      if (Number.isFinite(estimatedNum)) {
+        payload.total_cost = estimatedNum;
+      }
+
+      await API.post('/itineraries', payload);
+		showToast('Trip saved successfully', 'success');
       navigate('/bookings');
     } catch (error) {
       console.error(error);
-      alert("Failed to save trip.");
+      const status = error?.response?.status;
+      const message = error?.response?.data?.message || error?.message || 'Failed to save trip.';
+		showToast(`${message}${status ? ` (HTTP ${status})` : ''}`, 'error');
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navbar />
-
-      <div className="max-w-4xl mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">🤖 AI Trip Planner</h1>
+    <div className="min-h-screen">
+      <div className="container-app page-section max-w-4xl">
+        <h1 className="text-3xl font-heading font-extrabold tracking-tight text-center text-mountain mb-8">AI Trip Planner</h1>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-          { }
-          <div className="bg-white p-6 rounded-lg shadow-md h-fit">
-            <h2 className="text-xl font-semibold mb-4">Tell me your plans</h2>
+          <div className="glass-card p-6 rounded-2xl shadow-sm h-fit">
+            <h2 className="text-xl font-heading font-bold tracking-tight text-mountain mb-4">Tell me your plans</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-gray-700 mb-1">Destination</label>
                 <input
                   type="text" required
-                  className="w-full border p-2 rounded"
+					className="w-full border border-soft p-3 rounded-xl bg-white/70"
                   placeholder="e.g. Paris, Goa, Tokyo"
                   value={formData.destination}
                   onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
@@ -82,7 +104,7 @@ const PlanTrip = () => {
                   <label className="block text-gray-700 mb-1">Days</label>
                   <input
                     type="number" required min="1"
-                    className="w-full border p-2 rounded"
+						className="w-full border border-soft p-3 rounded-xl bg-white/70"
                     value={formData.days}
                     onChange={(e) => setFormData({ ...formData, days: e.target.value })}
                   />
@@ -91,7 +113,7 @@ const PlanTrip = () => {
                   <label className="block text-gray-700 mb-1">Budget ($)</label>
                   <input
                     type="number" required
-                    className="w-full border p-2 rounded"
+						className="w-full border border-soft p-3 rounded-xl bg-white/70"
                     value={formData.budget}
                     onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
                   />
@@ -100,19 +122,18 @@ const PlanTrip = () => {
 
               <button
                 disabled={loading}
-                className="w-full bg-indigo-600 text-white py-3 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+				className="w-full btn-primary py-3"
               >
                 {loading ? 'Generating Itinerary...' : '✨ Plan My Trip'}
               </button>
             </form>
           </div>
 
-          { }
-          <div className="bg-white p-6 rounded-lg shadow-md min-h-[300px]">
+          <div className="glass-card p-6 rounded-2xl shadow-sm min-h-[300px]">
             {plan ? (
               <div>
                 <div className="border-b pb-4 mb-4">
-                  <h2 className="text-2xl font-bold text-indigo-700">Trip to {formData.destination}</h2>
+                  <h2 className="text-2xl font-heading font-extrabold tracking-tight text-mountain">Trip to {formData.destination}</h2>
                   <p className="text-gray-500">Estimated Cost: {plan.currency} {plan.estimated_cost}</p>
                 </div>
 
@@ -134,7 +155,6 @@ const PlanTrip = () => {
                   ⚠️ Note: {plan.note}
                 </div>
 
-                { }
                 <button
                   onClick={handleSaveTrip}
                   className="mt-4 w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 font-bold shadow-sm transition-colors"

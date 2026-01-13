@@ -1,6 +1,12 @@
 import { useEffect, useState } from 'react';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import SectionHeader from '../../components/ui/SectionHeader';
+import PageLoader from '../../components/states/PageLoader';
+import ErrorState from '../../components/states/ErrorState';
+import EmptyState from '../../components/states/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -58,55 +64,61 @@ export default function BuddyRequests() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-10">
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<h1 className="text-2xl font-bold">Buddy Requests</h1>
-				<button onClick={load} className="text-sm font-semibold text-blue-600 hover:underline">
-					Refresh
-				</button>
-			</div>
+			<SectionHeader
+				title="Buddy Requests"
+				right={
+					<Button variant="link" onClick={load} aria-label="Refresh buddy requests">
+						Refresh
+					</Button>
+				}
+			/>
 
-			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading…</div>
-			) : error ? (
-				<div className="bg-white border rounded-lg p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
-			) : items.length === 0 ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">No pending requests.</div>
-			) : (
-				<div className="space-y-3">
-					{items.map((r) => {
-						const id = getReqId(r);
-						const from = getFromUser(r);
-						const name = from?.name || from?.fullName || from?.email || 'Traveler';
-						return (
-							<div key={id} className="bg-white border rounded-lg p-4 flex items-center justify-between gap-4">
-								<div>
-									<div className="font-semibold text-gray-900">{name}</div>
-									<div className="text-sm text-gray-600 mt-1">Incoming buddy request</div>
-								</div>
-								<div className="flex items-center gap-2">
-									<button
-										onClick={() => act(id, 'accept')}
-										disabled={actingOn === id}
-										className="bg-green-600 text-white font-semibold px-3 py-2 rounded hover:bg-green-700 disabled:opacity-60"
-									>
-										Accept
-									</button>
-									<button
-										onClick={() => act(id, 'reject')}
-										disabled={actingOn === id}
-										className="bg-gray-800 text-white font-semibold px-3 py-2 rounded hover:bg-black disabled:opacity-60"
-									>
-										Reject
-									</button>
-								</div>
-							</div>
-						);
-					})}
-				</div>
-			)}
+			<div className="mt-6">
+				{loading ? (
+					<PageLoader label="Loading requests…" />
+				) : error ? (
+					<ErrorState title="Couldn’t load requests" description={error} onRetry={load} />
+				) : items.length === 0 ? (
+					<EmptyState title="No data yet" description="No pending requests." />
+				) : (
+					<div className="space-y-3">
+						{items.map((r) => {
+							const id = getReqId(r);
+							const from = getFromUser(r);
+							const name = from?.name || from?.fullName || from?.email || 'Traveler';
+							const busy = actingOn === id;
+							return (
+								<Card key={id} className="p-4 flex items-center justify-between gap-4">
+									<div className="min-w-0">
+										<div className="font-semibold text-mountain dark:text-sand truncate">{name}</div>
+										<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">Incoming buddy request</div>
+									</div>
+									<div className="flex items-center gap-2 shrink-0">
+										<Button
+											onClick={() => act(id, 'accept')}
+											disabled={busy}
+											size="sm"
+											variant="primary"
+											aria-label="Accept request"
+										>
+											{busy ? 'Working…' : 'Accept'}
+										</Button>
+										<Button
+											onClick={() => act(id, 'reject')}
+											disabled={busy}
+											size="sm"
+											variant="danger"
+											aria-label="Reject request"
+										>
+											{busy ? 'Working…' : 'Reject'}
+										</Button>
+									</div>
+								</Card>
+							);
+						})}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

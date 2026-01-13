@@ -3,6 +3,8 @@ import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import AdminTable from '../../components/admin/AdminTable';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -88,17 +90,59 @@ export default function CreatorsAdmin() {
 				loading={loading}
 				error={error}
 				emptyText="No creators found."
+				onRetry={load}
+				mobileCards={
+					<div className="space-y-3">
+						{filtered.map((c) => {
+							const id = getId(c);
+							const verified = isVerified(c);
+							const canAct = busyId !== id;
+							return (
+								<Card key={id} className="p-4">
+									<div className="flex items-start justify-between gap-3">
+										<div className="min-w-0">
+											<div className="font-semibold text-mountain dark:text-sand truncate">{c?.name || '—'}</div>
+											<div className="text-sm text-charcoal/70 dark:text-sand/70 truncate">{c?.email || '—'}</div>
+											<div className="mt-2">
+												<span
+													className={
+														`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ` +
+														(verified ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white/70')
+													}
+												>
+													{verified ? 'Verified' : 'Not verified'}
+												</span>
+											</div>
+										</div>
+										{verified ? (
+											<span className="text-sm text-charcoal/60 dark:text-sand/60">—</span>
+										) : (
+											<Button
+												onClick={() => verify(c)}
+												disabled={!canAct}
+												size="sm"
+												aria-label="Verify creator"
+											>
+												{busyId === id ? 'Verifying…' : 'Verify'}
+											</Button>
+										)}
+									</div>
+							</Card>
+							);
+						})}
+					</div>
+				}
 				right={
 					<div className="flex items-center gap-2">
 						<input
 							value={q}
 							onChange={(e) => setQ(e.target.value)}
 							placeholder="Search…"
-							className="border rounded px-3 py-2 text-sm"
+							className="rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2 text-sm"
 						/>
-						<button onClick={load} className="text-sm font-semibold btn-link">
+						<Button variant="link" size="sm" onClick={load} aria-label="Refresh creators">
 							Refresh
-						</button>
+						</Button>
 					</div>
 				}
 			>
@@ -125,23 +169,15 @@ export default function CreatorsAdmin() {
 									{verified ? (
 										<span className="text-sm text-gray-500">—</span>
 									) : (
-										<button
-											onClick={() => verify(c)}
-											disabled={!canAct}
-											className="btn-primary px-3 py-1.5"
-										>
+										<Button onClick={() => verify(c)} disabled={!canAct} size="sm" aria-label="Verify creator">
 											{busyId === id ? 'Verifying…' : 'Verify'}
-										</button>
+										</Button>
 									)}
 								</td>
 							</tr>
 						);
 					})}
 			</AdminTable>
-
-			{!loading && !error && filtered.length === 0 && (
-				<div className="bg-white border rounded-xl p-6 text-gray-600">No creators found.</div>
-			)}
 		</div>
 	);
 }

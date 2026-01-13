@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import SectionHeader from '../../components/ui/SectionHeader';
+import PageLoader from '../../components/states/PageLoader';
+import ErrorState from '../../components/states/ErrorState';
+import EmptyState from '../../components/states/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -58,65 +64,69 @@ export default function MyItineraries() {
 
 	return (
 		<div className="max-w-6xl mx-auto px-4 py-10">
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<h1 className="text-2xl font-bold">My Itineraries</h1>
-				<button onClick={load} className="text-sm font-semibold text-blue-600 hover:underline">
-					Refresh
-				</button>
-			</div>
+			<SectionHeader
+				title="My Itineraries"
+				right={
+					<Button variant="link" onClick={load} aria-label="Refresh itineraries">
+						Refresh
+					</Button>
+				}
+			/>
 
-			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading…</div>
-			) : error ? (
-				<div className="bg-white border rounded-lg p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
-			) : items.length === 0 ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">No itineraries yet.</div>
-			) : (
-				<div className="grid md:grid-cols-2 gap-4">
-					{items.map((it) => {
-						const id = getId(it);
-						const title = it?.destination || it?.title || 'Itinerary';
-						const days = it?.days;
-						const style = it?.style;
-						const budget = it?.budget;
-						return (
-							<div key={id} className="bg-white border rounded-lg p-5">
-								<div className="flex items-start justify-between gap-3">
-									<div className="min-w-0">
-										<div className="font-semibold text-gray-900 truncate">{title}</div>
-										<div className="text-sm text-gray-600 mt-1">
-											{days ? `${days} days` : '—'}
-											{style ? ` • ${style}` : ''}
-											{budget != null ? ` • Budget ${budget}` : ''}
-									</div>
-								</div>
-								<button
-									onClick={() => remove(id)}
-									disabled={deletingId === id}
-									className="bg-red-600 text-white font-semibold px-3 py-2 rounded hover:bg-red-700 disabled:opacity-60"
-								>
-									{deletingId === id ? 'Deleting…' : 'Delete'}
-								</button>
-							</div>
-
-							{!!Array.isArray(it?.itinerary) && it.itinerary.length > 0 && (
-								<div className="mt-4 space-y-2">
-									{it.itinerary.slice(0, 3).map((d, idx) => (
-										<div key={idx} className="text-sm text-gray-700">
-											Day {d?.day ?? idx + 1}: {d?.plan ?? String(d)}
+			<div className="mt-6">
+				{loading ? (
+					<PageLoader label="Loading itineraries…" />
+				) : error ? (
+					<ErrorState title="Couldn’t load itineraries" description={error} onRetry={load} />
+				) : items.length === 0 ? (
+					<EmptyState title="No data yet" description="No itineraries yet." />
+				) : (
+					<div className="grid md:grid-cols-2 gap-4">
+						{items.map((it) => {
+							const id = getId(it);
+							const title = it?.destination || it?.title || 'Itinerary';
+							const days = it?.days;
+							const style = it?.style;
+							const budget = it?.budget;
+							const preview = Array.isArray(it?.itinerary) ? it.itinerary : [];
+							return (
+								<Card key={id} className="p-5">
+									<div className="flex items-start justify-between gap-3">
+										<div className="min-w-0">
+											<div className="font-semibold text-mountain dark:text-sand truncate">{title}</div>
+											<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
+												{days ? `${days} days` : '—'}
+												{style ? ` • ${style}` : ''}
+												{budget != null ? ` • Budget ${budget}` : ''}
+											</div>
 										</div>
-									))}
-									{it.itinerary.length > 3 && <div className="text-xs text-gray-500">+ more days…</div>}
-								</div>
-							)}
-						</div>
-						);
-					})}
-				</div>
-			)}
+										<Button
+											onClick={() => remove(id)}
+											disabled={deletingId === id}
+											variant="danger"
+											size="sm"
+											aria-label="Delete itinerary"
+										>
+											{deletingId === id ? 'Deleting…' : 'Delete'}
+										</Button>
+									</div>
+
+									{preview.length > 0 && (
+										<div className="mt-4 space-y-2">
+											{preview.slice(0, 3).map((d, idx) => (
+												<div key={idx} className="text-sm text-charcoal/80 dark:text-sand/80">
+													Day {d?.day ?? idx + 1}: {d?.plan ?? String(d)}
+												</div>
+											))}
+											{preview.length > 3 && <div className="text-xs text-charcoal/60 dark:text-sand/60">+ more days…</div>}
+										</div>
+									)}
+								</Card>
+							);
+						})}
+					</div>
+				)}
+			</div>
 		</div>
 	);
 }

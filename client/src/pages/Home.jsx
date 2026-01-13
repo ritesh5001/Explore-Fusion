@@ -16,40 +16,34 @@ const Home = () => {
   const { user } = useAuth();
 	const { showToast } = useToast();
   
-  if (!user) {
-  return (
-    <div className="min-h-screen gradient-header">
-      <div className="container-app page-section">
-			<div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
-				<h1 className="text-4xl md:text-5xl font-heading font-extrabold tracking-tight text-white mb-6">Explore the World with AI</h1>
-        <p className="text-xl mb-8 max-w-2xl">
-          Plan trips in seconds, find travel buddies, and book exclusive influencer packages.
-        </p>
-				<div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button
-            as={Link}
-            to="/login"
-            variant="outline"
-            size="lg"
-            className="bg-white text-mountain border-white"
-          >
-            Get Started
-          </Button>
-          <Button
-            as={Link}
-            to="/packages"
-            variant="outline"
-            size="lg"
-            className="border-white text-white hover:bg-white hover:text-mountain"
-          >
-            Browse Trips
-          </Button>
+  const hero = (
+    <div className="gradient-header">
+      <div className="container-app py-12">
+        <div className="flex flex-col items-start justify-center gap-6">
+          <h1 className="text-4xl md:text-5xl font-heading font-extrabold tracking-tight text-white">
+            Explore Fusion
+          </h1>
+          <p className="text-white/90 text-lg max-w-2xl">
+            Plan trips in seconds, find travel buddies, and book exclusive creator packages.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <Button as={Link} to="/packages" size="lg" className="w-full sm:w-auto">
+              Explore Trips
+            </Button>
+            {user ? (
+              <Button as={Link} to="/dashboard" variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-mountain">
+                Go to Dashboard
+              </Button>
+            ) : (
+              <Button as={Link} to="/login" variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-mountain">
+                Sign In
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-		</div>
     </div>
   );
-}
 
 
   useEffect(() => {
@@ -82,57 +76,97 @@ const Home = () => {
     }
   };
 
+  const featureCards = (
+    <div className="container-app py-10">
+      <SectionHeader title="What you can do" subtitle="A travel stack built for speed, community, and control." />
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Card className="p-6">
+          <div className="text-2xl">🧠</div>
+          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">AI Itineraries</div>
+          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Generate day-by-day plans in seconds.</div>
+          <div className="mt-4">
+            <Button as={Link} to="/ai/itinerary" variant="outline" size="sm">Try It</Button>
+          </div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-2xl">🤝</div>
+          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">Buddy Matching</div>
+          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Find travel partners for your vibe.</div>
+          <div className="mt-4">
+            <Button as={Link} to="/buddy" variant="outline" size="sm">Find Buddies</Button>
+          </div>
+        </Card>
+        <Card className="p-6">
+          <div className="text-2xl">💬</div>
+          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">Real-time Chat</div>
+          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Coordinate plans and meetups live.</div>
+          <div className="mt-4">
+            <Button as={Link} to="/chat" variant="outline" size="sm">Open Chat</Button>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen">
-      <div className="container-app page-section max-w-2xl">
+    {hero}
+    {featureCards}
 
-			<SectionHeader
-				title="Share your journey"
-				subtitle="Post a quick story from your latest trip."
-			/>
+    {user ? (
+      <div className="container-app pb-12 max-w-2xl">
+        <SectionHeader
+          title="Share your journey"
+          subtitle="Post a quick story from your latest trip."
+        />
 
-			<Card className="mt-4 p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
+        <Card className="mt-4 p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
           <form onSubmit={handleCreatePost} className="space-y-4">
-            <input 
-              type="text" placeholder="Trip Title (e.g., Weekend in Manali)" 
+            <input
+              type="text"
+              placeholder="Trip Title (e.g., Weekend in Manali)"
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
-              value={newPost.title} onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+              value={newPost.title}
+              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
             />
-            <textarea 
-              placeholder="Share your experience..." 
+            <textarea
+              placeholder="Share your experience..."
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl h-24 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
-              value={newPost.content} onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+              value={newPost.content}
+              onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
             />
-            <input 
-              type="text" placeholder="Location" 
+            <input
+              type="text"
+              placeholder="Location"
               className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
-              value={newPost.location} onChange={(e) => setNewPost({...newPost, location: e.target.value})}
+              value={newPost.location}
+              onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
             />
-					<Button type="submit" className="w-full">Post Trip</Button>
+            <Button type="submit" className="w-full">Post Trip</Button>
           </form>
-			</Card>
+        </Card>
 
-			<div className="mt-10">
-				<SectionHeader title="Recent Stories" subtitle="What the community is sharing right now." />
-			</div>
+        <div className="mt-10">
+          <SectionHeader title="Recent Stories" subtitle="What the community is sharing right now." />
+        </div>
 
         <div className="space-y-6">
           {loadingPosts && (
-					<Card className="p-6">
-						<div className="space-y-3">
-							<Skeleton className="h-6 w-2/3" />
-							<Skeleton className="h-4 w-full" />
-							<Skeleton className="h-4 w-5/6" />
-						</div>
-						<Loader label="Loading stories…" />
-					</Card>
-				)}
+            <Card className="p-6">
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-2/3" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+              <Loader label="Loading stories…" />
+            </Card>
+          )}
 
           {(Array.isArray(posts) ? posts : []).map((post) => (
             <Card key={post._id} className="p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
-              <div className="flex justify-between items-start mb-2">
-                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain">{post.title}</h2>
-                <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full">
+              <div className="flex justify-between items-start mb-2 gap-3">
+                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand">{post.title}</h2>
+                <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full shrink-0">
                   📍 {post.location}
                 </span>
               </div>
@@ -141,13 +175,25 @@ const Home = () => {
           ))}
 
           {!loadingPosts && posts.length === 0 && (
-					<Card className="p-8 text-center">
-						<div className="text-charcoal/70 dark:text-sand/70">No posts yet. Start the trend!</div>
-					</Card>
+            <Card className="p-8 text-center">
+              <div className="text-charcoal/70 dark:text-sand/70">No posts yet. Start the trend!</div>
+            </Card>
           )}
         </div>
-
       </div>
+    ) : (
+      <div className="container-app pb-12">
+        <Card className="p-8 text-center">
+          <div className="text-charcoal/70 dark:text-sand/70">
+            Sign in to share stories and save your trips.
+          </div>
+          <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
+            <Button as={Link} to="/register" size="sm">Create account</Button>
+            <Button as={Link} to="/login" variant="outline" size="sm">Sign in</Button>
+          </div>
+        </Card>
+      </div>
+    )}
     </div>
   );
 };

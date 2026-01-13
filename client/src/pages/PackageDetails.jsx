@@ -72,7 +72,7 @@ const PackageDetails = () => {
 	})();
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-10">
+		<div className="max-w-5xl mx-auto px-4 py-10 pb-28 md:pb-10">
 			<div className="mb-6 flex items-center justify-between gap-4">
 				<Button as={Link} to="/packages" variant="ghost" size="sm">
 					← Back
@@ -134,6 +134,15 @@ const PackageDetails = () => {
 						</div>
 						<div>
 							<span className="font-semibold">Price:</span> ${pkg.price}
+						</div>
+					</div>
+
+					<div className="mt-6 md:mt-6 md:static md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0 fixed bottom-4 left-0 right-0 z-40 px-4">
+						<div className="md:max-w-none max-w-5xl mx-auto">
+							<div className="md:p-0 md:border-0 md:bg-transparent md:shadow-none rounded-2xl shadow-xl border border-soft dark:border-white/10 bg-white/90 dark:bg-[#0F1F1A]/90 backdrop-blur-md p-4">
+								<div className="md:hidden text-xs font-semibold text-charcoal/70 dark:text-sand/70 mb-2">Ready to book?</div>
+								<BookPackageButton packageId={id} />
+							</div>
 						</div>
 					</div>
 				</Card>

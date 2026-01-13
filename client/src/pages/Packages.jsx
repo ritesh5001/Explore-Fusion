@@ -83,6 +83,7 @@ const Packages = () => {
 								title={pkg?.title}
 								price={pkg?.price}
 								destination={pkg?.destination}
+								duration={pkg?.duration}
 								image={pkg?.images?.[0]}
 							/>
 						))}

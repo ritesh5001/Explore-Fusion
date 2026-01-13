@@ -3,7 +3,7 @@ const base =
 
 const variants = {
 	primary:
-		'bg-forest hover:bg-trail text-white shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99]',
+		'bg-[#2F5D50] hover:bg-[#C46A2D] text-white shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.99]',
 	outline:
 		'border border-soft bg-white/70 dark:bg-white/5 dark:border-white/10 text-charcoal dark:text-sand hover:border-trail hover:shadow-md hover:scale-[1.02] active:scale-[0.99] backdrop-blur-md',
 	ghost:

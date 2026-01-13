@@ -28,6 +28,10 @@ jspm_packages/
 .env
 .env.*
 
+# allow example env templates
+!.env.example
+!**/.env.example
+
 # Mac system files
 .DS_Store
 

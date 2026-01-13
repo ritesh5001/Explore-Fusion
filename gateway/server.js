@@ -92,7 +92,6 @@ if (ADMIN_SERVICE_URL) {
       target: ADMIN_SERVICE_URL,
       changeOrigin: true,
       onProxyReq: proxyJsonBody,
-      pathRewrite: (path) => `/api/v1/admin${path}`,
     })
   );
 } else {

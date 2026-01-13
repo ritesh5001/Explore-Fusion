@@ -3,6 +3,8 @@ import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import AdminTable from '../../components/admin/AdminTable';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -95,17 +97,58 @@ export default function BookingsAdmin() {
 				loading={loading}
 				error={error}
 				emptyText="No bookings found."
+				onRetry={load}
+				mobileCards={
+					<div className="space-y-3">
+						{filtered.map((b) => {
+							const id = getId(b);
+							const status = getStatus(b);
+							const canAct = busyId !== id;
+							const isCancelled = status.toLowerCase() === 'cancelled';
+							return (
+								<Card key={id} className="p-4">
+									<div className="space-y-1">
+										<div className="font-semibold text-mountain dark:text-sand">{getUserName(b)}</div>
+										<div className="text-sm text-charcoal/70 dark:text-sand/70">{getPackageTitle(b)}</div>
+										<div className="text-sm text-charcoal/70 dark:text-sand/70">Price: {getPrice(b)}</div>
+										<div className="mt-2">
+											<span className="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white/70">
+												{status}
+											</span>
+										</div>
+									</div>
+
+									<div className="mt-4">
+										{isCancelled ? (
+											<span className="text-sm text-charcoal/60 dark:text-sand/60">—</span>
+										) : (
+											<Button
+												variant="danger"
+												size="sm"
+												onClick={() => cancel(b)}
+												disabled={!canAct}
+												aria-label="Cancel booking"
+											>
+												{busyId === id ? 'Cancelling…' : 'Cancel'}
+											</Button>
+										)}
+									</div>
+							</Card>
+							);
+						})}
+					</div>
+				}
 				right={
 					<div className="flex items-center gap-2">
 						<input
 							value={q}
 							onChange={(e) => setQ(e.target.value)}
 							placeholder="Search…"
-							className="border rounded px-3 py-2 text-sm"
+							className="rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2 text-sm"
 						/>
-						<button onClick={load} className="text-sm font-semibold btn-link">
+						<Button variant="link" size="sm" onClick={load} aria-label="Refresh bookings">
 							Refresh
-						</button>
+						</Button>
 					</div>
 				}
 			>
@@ -129,23 +172,15 @@ export default function BookingsAdmin() {
 									{isCancelled ? (
 										<span className="text-sm text-gray-500">—</span>
 									) : (
-										<button
-											onClick={() => cancel(b)}
-											disabled={!canAct}
-											className="bg-red-600 text-white font-semibold px-3 py-1.5 rounded hover:bg-red-700 disabled:opacity-60"
-										>
+										<Button onClick={() => cancel(b)} disabled={!canAct} variant="danger" size="sm" aria-label="Cancel booking">
 											{busyId === id ? 'Cancelling…' : 'Cancel'}
-										</button>
+										</Button>
 									)}
 								</td>
 							</tr>
 						);
 					})}
 			</AdminTable>
-
-			{!loading && !error && filtered.length === 0 && (
-				<div className="bg-white border rounded-xl p-6 text-gray-600">No bookings found.</div>
-			)}
 		</div>
 	);
 }

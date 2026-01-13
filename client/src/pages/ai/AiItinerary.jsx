@@ -3,6 +3,12 @@ import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import ItineraryDayCard from '../../components/ai/ItineraryDayCard';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import SectionHeader from '../../components/ui/SectionHeader';
+import PageLoader from '../../components/states/PageLoader';
+import ErrorState from '../../components/states/ErrorState';
+import EmptyState from '../../components/states/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -26,8 +32,7 @@ export default function AiItinerary() {
 
 	const canGenerate = useMemo(() => destination.trim() && Number(days) > 0 && Number(budget) > 0 && !loading, [destination, days, budget, loading]);
 
-	const generate = async (e) => {
-		e.preventDefault();
+	const generate = async () => {
 		if (!canGenerate) return;
 		setError('');
 		setLoading(true);
@@ -51,6 +56,11 @@ export default function AiItinerary() {
 		} finally {
 			setLoading(false);
 		}
+	};
+
+	const onSubmit = async (e) => {
+		e.preventDefault();
+		await generate();
 	};
 
 	const canSave = useMemo(() => result.length > 0 && !saving, [result.length, saving]);
@@ -80,76 +90,75 @@ export default function AiItinerary() {
 
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-8">
-			<h1 className="text-2xl font-bold mb-2">AI Itinerary Generator</h1>
-			<p className="text-gray-600 mb-6">Generate a day-by-day plan and save it to your account.</p>
+			<SectionHeader
+				title="AI Itinerary Generator"
+				subtitle="Generate a day-by-day plan and save it to your account."
+			/>
 
-			<form onSubmit={generate} className="bg-white border rounded-lg p-5 grid md:grid-cols-4 gap-4">
-				<div className="md:col-span-2">
-					<label className="block text-sm font-semibold text-gray-700">Destination</label>
-					<input
-						value={destination}
-						onChange={(e) => setDestination(e.target.value)}
-						className="mt-1 w-full border rounded px-3 py-2"
-						placeholder="Goa"
-					/>
-				</div>
-				<div>
-					<label className="block text-sm font-semibold text-gray-700">Days</label>
-					<input
-						type="number"
-						min={1}
-						value={days}
-						onChange={(e) => setDays(e.target.value)}
-						className="mt-1 w-full border rounded px-3 py-2"
-					/>
-				</div>
-				<div>
-					<label className="block text-sm font-semibold text-gray-700">Budget</label>
-					<input
-						type="number"
-						min={1}
-						value={budget}
-						onChange={(e) => setBudget(e.target.value)}
-						className="mt-1 w-full border rounded px-3 py-2"
-					/>
-				</div>
-				<div className="md:col-span-2">
-					<label className="block text-sm font-semibold text-gray-700">Travel style</label>
-					<select value={style} onChange={(e) => setStyle(e.target.value)} className="mt-1 w-full border rounded px-3 py-2">
-						<option value="budget">budget</option>
-						<option value="luxury">luxury</option>
-						<option value="adventure">adventure</option>
-					</select>
-				</div>
-				<div className="md:col-span-2 flex items-end gap-2">
-					<button
-						type="submit"
-						disabled={!canGenerate}
-						className="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-					>
-						{loading ? 'Generating…' : 'Generate'}
-					</button>
-					<button
-						type="button"
-						onClick={save}
-						disabled={!canSave}
-						className="bg-gray-900 text-white font-bold px-4 py-2 rounded hover:bg-black disabled:opacity-60"
-					>
-						{saving ? 'Saving…' : 'Save itinerary'}
-					</button>
-				</div>
-			</form>
-
-			{!!error && <div className="mt-4 text-sm text-red-600">{error}</div>}
+			<Card className="mt-6 p-5">
+				<form onSubmit={onSubmit} className="grid md:grid-cols-4 gap-4">
+					<div className="md:col-span-2">
+						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Destination</label>
+						<input
+							value={destination}
+							onChange={(e) => setDestination(e.target.value)}
+							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
+							placeholder="Goa"
+						/>
+					</div>
+					<div>
+						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Days</label>
+						<input
+							type="number"
+							min={1}
+							value={days}
+							onChange={(e) => setDays(e.target.value)}
+							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
+						/>
+					</div>
+					<div>
+						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Budget</label>
+						<input
+							type="number"
+							min={1}
+							value={budget}
+							onChange={(e) => setBudget(e.target.value)}
+							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
+						/>
+					</div>
+					<div className="md:col-span-2">
+						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Travel style</label>
+						<select
+							value={style}
+							onChange={(e) => setStyle(e.target.value)}
+							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
+						>
+							<option value="budget">budget</option>
+							<option value="luxury">luxury</option>
+							<option value="adventure">adventure</option>
+						</select>
+					</div>
+					<div className="md:col-span-2 flex items-end gap-2">
+						<Button type="submit" disabled={!canGenerate} aria-label="Generate itinerary">
+							{loading ? 'Generating…' : 'Generate'}
+						</Button>
+						<Button type="button" onClick={save} disabled={!canSave} variant="outline" aria-label="Save itinerary">
+							{saving ? 'Saving…' : 'Save itinerary'}
+						</Button>
+					</div>
+				</form>
+			</Card>
 
 			<div className="mt-6">
 				{loading ? (
-					<div className="bg-white border rounded-lg p-6 text-gray-600">AI is building your itinerary…</div>
+					<PageLoader label="Generating itinerary…" />
+				) : error ? (
+					<ErrorState title="Couldn’t generate itinerary" description={error} onRetry={generate} />
 				) : result.length === 0 ? (
-					<div className="bg-white border rounded-lg p-6 text-gray-600">No itinerary yet. Fill the form and generate.</div>
+					<EmptyState title="No data yet" description="Fill the form and generate an itinerary." />
 				) : (
 					<div className="relative">
-						<div className="absolute left-4 top-0 bottom-0 w-px bg-gray-200" />
+						<div className="absolute left-4 top-0 bottom-0 w-px bg-soft dark:bg-white/10" />
 						<div className="space-y-4">
 							{result.map((d, idx) => (
 								<ItineraryDayCard key={d?.day || idx} day={d?.day ?? idx + 1} plan={d?.plan ?? String(d)} />

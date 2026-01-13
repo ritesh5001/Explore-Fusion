@@ -1,39 +1,43 @@
-export default function AdminTable({ title, subtitle, columns, loading, error, emptyText, children, right }) {
+import Card from '../ui/Card';
+import SectionHeader from '../ui/SectionHeader';
+import PageLoader from '../states/PageLoader';
+import ErrorState from '../states/ErrorState';
+import EmptyState from '../states/EmptyState';
+
+export default function AdminTable({ title, subtitle, columns, loading, error, emptyText, children, right, onRetry, mobileCards }) {
 	return (
-		<div className="glass-card overflow-hidden shadow-sm">
-			<div className="px-5 py-4 flex items-start justify-between gap-4 border-b border-soft">
-				<div>
-					<div className="text-lg font-heading font-extrabold tracking-tight text-mountain">{title}</div>
-					{!!subtitle && <div className="text-sm text-gray-600 mt-1">{subtitle}</div>}
-				</div>
-				{right}
+		<Card className="overflow-hidden">
+			<div className="px-5 py-4 border-b border-soft">
+				<SectionHeader title={title} subtitle={subtitle} right={right} />
 			</div>
 
 			{loading ? (
-				<div className="p-6 text-gray-700">Loading…</div>
+				<PageLoader className="min-h-[220px]" label="Loading…" />
 			) : error ? (
-				<div className="p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
+				<ErrorState className="m-5" title="Something went wrong" description={error} onRetry={onRetry} />
 			) : children ? (
-				<div className="overflow-x-auto">
-					<table className="min-w-full text-sm">
-						<thead className="bg-sand">
-							<tr>
-								{(columns || []).map((c) => (
-									<th key={c} className="text-left font-semibold text-gray-700 px-5 py-3 whitespace-nowrap">
-										{c}
-									</th>
-								))}
-							</tr>
-						</thead>
-						<tbody className="divide-y">{children}</tbody>
-					</table>
+				<div>
+					{!!mobileCards && <div className="p-4 md:hidden">{mobileCards}</div>}
+					<div className={`${mobileCards ? 'hidden md:block' : ''} overflow-x-auto`}>
+						<table className="min-w-full text-sm">
+							<thead className="bg-sand dark:bg-white/5">
+								<tr>
+									{(columns || []).map((c) => (
+										<th key={c} className="text-left font-semibold text-gray-700 dark:text-white/70 px-5 py-3 whitespace-nowrap">
+											{c}
+										</th>
+									))}
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-soft">{children}</tbody>
+						</table>
+					</div>
 				</div>
 			) : (
-				<div className="p-6 text-gray-600">{emptyText || 'No records.'}</div>
+				<div className="p-5">
+					<EmptyState title="No records found" description={emptyText || 'No records found.'} />
+				</div>
 			)}
-		</div>
+		</Card>
 	);
 }

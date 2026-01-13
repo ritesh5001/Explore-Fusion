@@ -2,6 +2,11 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Card from '../../components/ui/Card';
+import PageLoader from '../../components/ui/PageLoader';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -61,27 +66,23 @@ export default function ChatRooms() {
 	const safeRooms = useMemo(() => (rooms.length ? rooms : fallbackRooms), [rooms]);
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-10">
-			<h1 className="text-2xl font-bold mb-2">Chat</h1>
-			<p className="text-gray-600 mb-6">Choose a room to start chatting.</p>
+		<div className="container-app page-section max-w-5xl">
+			<SectionHeader title="Chat" subtitle="Choose a room to start chatting." />
 
 			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading rooms…</div>
+				<PageLoader label="Loading rooms…" />
 			) : error ? (
-				<div className="bg-white border rounded-lg p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
+				<ErrorState title="Couldn’t load chat rooms" description={error} />
+			) : safeRooms.length === 0 ? (
+				<EmptyState title="No rooms available" description="Try again later." icon="💬" />
 			) : (
-				<div className="grid sm:grid-cols-2 gap-4">
+				<div className="mt-6 grid sm:grid-cols-2 gap-4">
 					{safeRooms.map((r) => (
-						<Link
-							key={r.roomId}
-							to={`/chat/${encodeURIComponent(r.roomId)}`}
-							className="bg-white border rounded-lg p-5 hover:border-blue-300 hover:shadow-sm transition"
-						>
-							<div className="font-semibold text-gray-900">{r.name}</div>
-							<div className="text-sm text-gray-600 mt-1">Room ID: {r.roomId}</div>
+						<Link key={r.roomId} to={`/chat/${encodeURIComponent(r.roomId)}`} aria-label={`Open chat room ${r.name}`}>
+							<Card className="p-5 hover:border-trail/40">
+								<div className="font-semibold text-charcoal dark:text-sand">{r.name}</div>
+								<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">Room ID: {r.roomId}</div>
+							</Card>
 						</Link>
 					))}
 				</div>

@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -9,24 +10,27 @@ import PackageDetails from '../pages/PackageDetails';
 import CreatePackage from '../pages/CreatePackage';
 import MyBookings from '../pages/MyBookings';
 import Itinerary from '../pages/Itinerary';
-import ChatRooms from '../pages/chat/ChatRooms';
-import ChatRoom from '../pages/chat/ChatRoom';
 import CreatorDashboard from '../pages/AdminDashboard';
 import Reviews from '../pages/Reviews';
 import Notifications from '../pages/Notifications';
 
-import AiChat from '../pages/ai/AiChat';
-import AiItinerary from '../pages/ai/AiItinerary';
-import MyItineraries from '../pages/ai/MyItineraries';
+import PageLoader from '../components/ui/PageLoader';
 
-import AdminLayout from '../components/admin/AdminLayout';
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import UsersAdmin from '../pages/admin/UsersAdmin';
-import CreatorsAdmin from '../pages/admin/CreatorsAdmin';
-import BookingsAdmin from '../pages/admin/BookingsAdmin';
-import AdminReports from '../pages/admin/AdminReports';
-import AdminAnalytics from '../pages/admin/AdminAnalytics';
-import AdminSystem from '../pages/admin/AdminSystem';
+const ChatRooms = lazy(() => import('../pages/chat/ChatRooms'));
+const ChatRoom = lazy(() => import('../pages/chat/ChatRoom'));
+
+const AiChat = lazy(() => import('../pages/ai/AiChat'));
+const AiItinerary = lazy(() => import('../pages/ai/AiItinerary'));
+const MyItineraries = lazy(() => import('../pages/ai/MyItineraries'));
+
+const AdminLayout = lazy(() => import('../components/admin/AdminLayout'));
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
+const UsersAdmin = lazy(() => import('../pages/admin/UsersAdmin'));
+const CreatorsAdmin = lazy(() => import('../pages/admin/CreatorsAdmin'));
+const BookingsAdmin = lazy(() => import('../pages/admin/BookingsAdmin'));
+const AdminReports = lazy(() => import('../pages/admin/AdminReports'));
+const AdminAnalytics = lazy(() => import('../pages/admin/AdminAnalytics'));
+const AdminSystem = lazy(() => import('../pages/admin/AdminSystem'));
 
 import BuddyProfile from '../pages/buddy/BuddyProfile';
 import BuddySuggestions from '../pages/buddy/BuddySuggestions';
@@ -34,6 +38,12 @@ import BuddyRequests from '../pages/buddy/BuddyRequests';
 import MyBuddies from '../pages/buddy/MyBuddies';
 
 import ProtectedRoute from '../components/ProtectedRoute';
+
+const S = ({ children, label }) => (
+  <Suspense fallback={<PageLoader label={label || 'Loading…'} />}>
+    {children}
+  </Suspense>
+);
 
 const AppRoutes = () => {
   return (
@@ -132,7 +142,9 @@ const AppRoutes = () => {
         path="/chat"
         element={
           <ProtectedRoute>
-            <ChatRooms />
+            <S label="Loading chat…">
+              <ChatRooms />
+            </S>
           </ProtectedRoute>
         }
       />
@@ -141,7 +153,9 @@ const AppRoutes = () => {
         path="/chat/:roomId"
         element={
           <ProtectedRoute>
-            <ChatRoom />
+            <S label="Loading room…">
+              <ChatRoom />
+            </S>
           </ProtectedRoute>
         }
       />
@@ -168,9 +182,11 @@ const AppRoutes = () => {
         path="/admin/dashboard"
         element={
           <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
+            <S label="Loading admin…">
+              <AdminLayout>
+                <AdminDashboard />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -179,9 +195,11 @@ const AppRoutes = () => {
         path="/admin/users"
         element={
           <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <AdminLayout>
-              <UsersAdmin />
-            </AdminLayout>
+            <S label="Loading users…">
+              <AdminLayout>
+                <UsersAdmin />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -190,9 +208,11 @@ const AppRoutes = () => {
         path="/admin/creators"
         element={
           <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <AdminLayout>
-              <CreatorsAdmin />
-            </AdminLayout>
+            <S label="Loading creators…">
+              <AdminLayout>
+                <CreatorsAdmin />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -201,9 +221,11 @@ const AppRoutes = () => {
         path="/admin/bookings"
         element={
           <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <AdminLayout>
-              <BookingsAdmin />
-            </AdminLayout>
+            <S label="Loading bookings…">
+              <AdminLayout>
+                <BookingsAdmin />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -212,9 +234,11 @@ const AppRoutes = () => {
         path="/admin/analytics"
         element={
           <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <AdminLayout>
-              <AdminAnalytics />
-            </AdminLayout>
+            <S label="Loading analytics…">
+              <AdminLayout>
+                <AdminAnalytics />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -223,9 +247,11 @@ const AppRoutes = () => {
         path="/admin/reports"
         element={
           <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
-            <AdminLayout>
-              <AdminReports />
-            </AdminLayout>
+            <S label="Loading reports…">
+              <AdminLayout>
+                <AdminReports />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -234,9 +260,11 @@ const AppRoutes = () => {
         path="/admin/system"
         element={
           <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
-            <AdminLayout>
-              <AdminSystem />
-            </AdminLayout>
+            <S label="Loading system…">
+              <AdminLayout>
+                <AdminSystem />
+              </AdminLayout>
+            </S>
           </ProtectedRoute>
         }
       />
@@ -263,7 +291,9 @@ const AppRoutes = () => {
         path="/ai/chat"
         element={
           <ProtectedRoute>
-            <AiChat />
+            <S label="Loading AI chat…">
+              <AiChat />
+            </S>
           </ProtectedRoute>
         }
       />
@@ -272,7 +302,9 @@ const AppRoutes = () => {
         path="/ai/itinerary"
         element={
           <ProtectedRoute>
-            <AiItinerary />
+            <S label="Loading itinerary…">
+              <AiItinerary />
+            </S>
           </ProtectedRoute>
         }
       />
@@ -281,7 +313,9 @@ const AppRoutes = () => {
         path="/my-itineraries"
         element={
           <ProtectedRoute>
-            <MyItineraries />
+            <S label="Loading itineraries…">
+              <MyItineraries />
+            </S>
           </ProtectedRoute>
         }
       />

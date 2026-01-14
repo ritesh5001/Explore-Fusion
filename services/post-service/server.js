@@ -12,6 +12,16 @@ connectDB();
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'post',
+    env: process.env.NODE_ENV,
+  });
+});
+
 // Support both direct service calls (/) and versioned calls (/api/v1/posts).
 // Gateway currently rewrites /api/v1/posts -> /, so we keep both.
 app.use('/api/v1/posts', postRoutes);

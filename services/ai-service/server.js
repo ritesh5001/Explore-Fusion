@@ -9,6 +9,15 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'ai',
+    env: process.env.NODE_ENV,
+  });
+});
+
 app.use('/', aiRoutes);
 
 const PORT = process.env.PORT || 5004;

@@ -14,6 +14,14 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const app = express();
 app.use(cors());
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'upload',
+    env: process.env.NODE_ENV,
+  });
+});
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {

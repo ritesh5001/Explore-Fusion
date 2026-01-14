@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
+import SafeImage from '../components/common/SafeImage';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -10,21 +11,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, token, user } = useAuth();
   const { showToast } = useToast();
-	const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
-  const logoSrc = import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo;
-  const logoFallbackTriedRef = useRef(false);
-
-  const handleLogoError = (e) => {
-    const img = e.currentTarget;
-    if (!logoFallbackTriedRef.current) {
-      logoFallbackTriedRef.current = true;
-      img.onerror = null;
-      img.src = '/branding/logo.png';
-      return;
-    }
-    img.onerror = null;
-    img.style.display = 'none';
-  };
+  const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
 
 	if (token && user) {
 		return <Navigate to="/" replace />;
@@ -47,11 +34,12 @@ const Login = () => {
     <div className="min-h-[70vh] flex items-center justify-center px-4 page-section">
       <form onSubmit={handleLogin} className="glass-card p-8 w-full max-w-md shadow-md rounded-2xl">
       <div className="flex justify-center mb-4">
-        <img
-          src={logoSrc}
+        <SafeImage
+          src={LOGO_URL}
+          fallback="/images/placeholder.svg"
           alt="Explore Fusion"
           className="h-14 w-14 rounded-2xl object-contain bg-white/60"
-			  onError={handleLogoError}
+          loading="eager"
         />
 			</div>
         <h1 className="mb-4 text-2xl font-heading font-extrabold tracking-tight text-center text-mountain">Login</h1>

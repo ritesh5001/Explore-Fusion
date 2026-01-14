@@ -72,6 +72,17 @@ const Home = () => {
     fetchPosts();
   }, [fetchPosts]);
 
+  useEffect(() => {
+    if (!previewUrl) return;
+    return () => {
+      try {
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        // noop
+      }
+    };
+  }, [previewUrl]);
+
   const handleCreatePost = async (e) => {
     e.preventDefault();
     if (uploading) return;

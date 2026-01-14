@@ -1,9 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
 import { AnimatePresence, motion } from 'framer-motion';
+import SafeImage from './common/SafeImage';
 
 const MotionDiv = motion.div;
 const MotionButton = motion.button;
@@ -14,22 +15,7 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
-  const logoSrc = import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo;
-  const logoFallbackTriedRef = useRef(false);
-
-  const handleLogoError = (e) => {
-    const img = e.currentTarget;
-    // Avoid setState loops: mutate DOM src once, then hide if even fallback fails.
-    if (!logoFallbackTriedRef.current) {
-      logoFallbackTriedRef.current = true;
-      img.onerror = null;
-      img.src = '/branding/logo.png';
-      return;
-    }
-    img.onerror = null;
-    img.style.display = 'none';
-  };
+  const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
 
   const handleLogout = () => {
     setIsMobileOpen(false);
@@ -69,14 +55,14 @@ const Navbar = () => {
           to="/"
           className="flex items-center gap-2 text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-trail transition"
         >
-			<img
-				src={logoSrc}
-				alt="Explore Fusion"
-				className="h-8 w-8 rounded-xl object-contain bg-white/60 dark:bg-white/10"
-				loading="eager"
-				decoding="async"
-        onError={handleLogoError}
-			/>
+      <SafeImage
+        src={LOGO_URL}
+        fallback="/images/placeholder.svg"
+        alt="Explore Fusion"
+        className="h-8 w-8 rounded-xl object-contain bg-white/60 dark:bg-white/10"
+        loading="eager"
+        decoding="async"
+      />
           Explore <span className="text-trail">Fusion</span>
         </Link>
 

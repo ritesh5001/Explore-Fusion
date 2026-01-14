@@ -10,6 +10,8 @@ const Login = () => {
   const navigate = useNavigate();
   const { login, token, user } = useAuth();
   const { showToast } = useToast();
+	const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
+	const [logoSrc, setLogoSrc] = useState(() => import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo);
 
 	if (token && user) {
 		return <Navigate to="/" replace />;
@@ -31,6 +33,14 @@ const Login = () => {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 page-section">
       <form onSubmit={handleLogin} className="glass-card p-8 w-full max-w-md shadow-md rounded-2xl">
+      <div className="flex justify-center mb-4">
+        <img
+          src={logoSrc}
+          alt="Explore Fusion"
+          className="h-14 w-14 rounded-2xl object-contain bg-white/60"
+          onError={() => setLogoSrc('/branding/logo.png')}
+        />
+			</div>
         <h1 className="mb-4 text-2xl font-heading font-extrabold tracking-tight text-center text-mountain">Login</h1>
         
         <input 

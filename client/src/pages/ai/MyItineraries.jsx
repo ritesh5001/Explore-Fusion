@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import SectionHeader from '../../components/ui/SectionHeader';
-import PageLoader from '../../components/states/PageLoader';
-import ErrorState from '../../components/states/ErrorState';
-import EmptyState from '../../components/states/EmptyState';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
+import Badge from '../../components/ui/Badge';
+import { Skeleton } from '../../components/ui/Loader';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -26,7 +27,7 @@ export default function MyItineraries() {
 	const [items, setItems] = useState([]);
 	const [deletingId, setDeletingId] = useState(null);
 
-	const load = async () => {
+	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
 		try {
@@ -40,11 +41,13 @@ export default function MyItineraries() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		load();
-	}, []);
+	}, [load]);
+
+	const list = useMemo(() => asArray(items), [items]);
 
 	const remove = async (id) => {
 		if (!id) return;
@@ -62,11 +65,11 @@ export default function MyItineraries() {
 	};
 
 	return (
-		<div className="max-w-6xl mx-auto px-4 py-10">
+		<div className="container-app page-section max-w-6xl">
 			<SectionHeader
 				title="My Itineraries"
 				right={
-					<Button variant="link" onClick={load} aria-label="Refresh itineraries">
+					<Button variant="outline" size="sm" onClick={load} aria-label="Refresh itineraries">
 						Refresh
 					</Button>
 				}
@@ -74,14 +77,30 @@ export default function MyItineraries() {
 
 			<div className="mt-6">
 				{loading ? (
-					<PageLoader label="Loading itineraries…" />
+					<div className="grid md:grid-cols-2 gap-4">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<Card key={i} className="p-5">
+								<div className="flex items-start justify-between gap-3">
+									<div className="min-w-0 flex-1 space-y-2">
+										<Skeleton className="h-4 w-40" />
+										<Skeleton className="h-4 w-64" />
+									</div>
+									<Skeleton className="h-9 w-24 rounded-2xl" />
+								</div>
+								<div className="mt-4 space-y-2">
+									<Skeleton className="h-4 w-full" />
+									<Skeleton className="h-4 w-5/6" />
+								</div>
+							</Card>
+						))}
+					</div>
 				) : error ? (
 					<ErrorState title="Couldn’t load itineraries" description={error} onRetry={load} />
-				) : items.length === 0 ? (
+				) : list.length === 0 ? (
 					<EmptyState title="No data yet" description="No itineraries yet." />
 				) : (
 					<div className="grid md:grid-cols-2 gap-4">
-						{items.map((it) => {
+						{list.map((it) => {
 							const id = getId(it);
 							const title = it?.destination || it?.title || 'Itinerary';
 							const days = it?.days;
@@ -93,10 +112,10 @@ export default function MyItineraries() {
 									<div className="flex items-start justify-between gap-3">
 										<div className="min-w-0">
 											<div className="font-semibold text-mountain dark:text-sand truncate">{title}</div>
-											<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
-												{days ? `${days} days` : '—'}
-												{style ? ` • ${style}` : ''}
-												{budget != null ? ` • Budget ${budget}` : ''}
+											<div className="mt-2 flex flex-wrap items-center gap-2">
+												{days ? <Badge>{days} days</Badge> : null}
+												{style ? <Badge tone="accent">{style}</Badge> : null}
+												{budget != null ? <Badge tone="gold">Budget {budget}</Badge> : null}
 											</div>
 										</div>
 										<Button

@@ -63,7 +63,28 @@ const imagekit = new ImageKit({
   urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
 });
 
+export const IMAGEKIT_FOLDERS = {
+  post: 'explore-fusion/posts',
+  itinerary: 'explore-fusion/itineraries',
+  profile: 'explore-fusion/profiles',
+  package: 'explore-fusion/packages',
+  creator: 'explore-fusion/creators',
+  default: 'explore-fusion/misc',
+};
+
 const MAX_BYTES = 5 * 1024 * 1024;
+
+const resolveFolder = (type) => {
+  const key = type ? String(type) : 'default';
+  const folder = IMAGEKIT_FOLDERS[key] || IMAGEKIT_FOLDERS.default;
+  return folder || 'explore-fusion/misc';
+};
+
+const logUploadFolder = (folder) => {
+  if (!isDev) return;
+  // eslint-disable-next-line no-console
+  console.info('[ImageKit] Upload folder:', folder);
+};
 
 const validateFile = (file) => {
   if (!file) throw new Error("No file selected");
@@ -120,10 +141,11 @@ const fetchAuth = async () => {
   return auth;
 };
 
-const debugUploadIntent = ({ file, fileName, auth }) => {
+const debugUploadIntent = ({ file, fileName, auth, folder }) => {
   if (!isDev) return;
   debug('[ImageKit] upload intent', {
     fileName,
+    folder,
     size: file?.size,
     type: file?.type,
     expire: auth?.expire,
@@ -132,28 +154,38 @@ const debugUploadIntent = ({ file, fileName, auth }) => {
   });
 };
 
-export const uploadImage = async (file) => {
-  validateFile(file);
-  const auth = await fetchAuth();
-
-  const fileName = `${Date.now()}-${file?.name || 'image'}`;
-  debugUploadIntent({ file, fileName, auth });
-
+const uploadToImageKit = ({ file, fileName, folder, auth }) => {
   return new Promise((resolve, reject) => {
     imagekit.upload(
       {
         file,
         fileName,
+        folder,
+        publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
         token: auth.token,
         signature: auth.signature,
         expire: auth.expire,
       },
       (err, result) => {
         if (err) reject(new Error(extractImagekitErrorMessage(err)));
-        else resolve(result.url);
+        else resolve(result);
       }
     );
   });
+};
+
+export const uploadImage = async (file, { type = 'default' } = {}) => {
+  validateFile(file);
+  const auth = await fetchAuth();
+
+  const folder = resolveFolder(type);
+  logUploadFolder(folder);
+
+  const fileName = `${Date.now()}-${file?.name || 'image'}`;
+  debugUploadIntent({ file, fileName, auth, folder });
+
+  const result = await uploadToImageKit({ file, fileName, folder, auth });
+  return result.url;
 };
 
 const sanitizeSegment = (v) => String(v || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
@@ -163,6 +195,8 @@ export const uploadPostImage = async ({ file, postId, postedBy, location }) => {
   if (!postId) throw new Error('Missing post id');
 
   const auth = await fetchAuth();
+  const folder = resolveFolder('post');
+  logUploadFolder(folder);
   // Keep uploads compatible/reliable: send ONLY required fields to ImageKit.
   // Use fileName to encode post/user info for traceability without tags/customMetadata.
   const safePostId = sanitizeSegment(postId);
@@ -170,27 +204,13 @@ export const uploadPostImage = async ({ file, postId, postedBy, location }) => {
   const safeLoc = sanitizeSegment(location || '');
   const baseName = `${safePostId}-${safeUserId}${safeLoc ? `-${safeLoc}` : ''}`;
   const fileName = `${Date.now()}-${baseName}-${file?.name || 'post-image'}`;
-  debugUploadIntent({ file, fileName, auth });
+  debugUploadIntent({ file, fileName, auth, folder });
 
-  return new Promise((resolve, reject) => {
-    imagekit.upload(
-      {
-        file,
-        fileName,
-        token: auth.token,
-        signature: auth.signature,
-        expire: auth.expire,
-      },
-      (err, result) => {
-        if (err) reject(new Error(extractImagekitErrorMessage(err)));
-        else
-          resolve({
-            url: result.url,
-            fileId: result.fileId,
-          });
-      }
-    );
-  });
+  const result = await uploadToImageKit({ file, fileName, folder, auth });
+  return {
+    url: result.url,
+    fileId: result.fileId,
+  };
 };
 
 export { imagekit };

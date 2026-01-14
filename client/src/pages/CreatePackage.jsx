@@ -33,7 +33,7 @@ const CreatePackage = () => {
     setUploadError('');
     setUploading(true);
     try {
-      const uploadedUrl = await uploadImage(file);
+      const uploadedUrl = await uploadImage(file, { type: 'package' });
 
       setFormData({ ...formData, image: uploadedUrl });
     } catch (error) {

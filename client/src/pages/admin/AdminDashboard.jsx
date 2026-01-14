@@ -1,7 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
 import StatCard from '../../components/admin/StatCard';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Card from '../../components/ui/Card';
+import ErrorState from '../../components/ui/ErrorState';
+import Button from '../../components/ui/Button';
+import { Skeleton } from '../../components/ui/Loader';
 
 const pick = (obj, keys) => {
 	for (const k of keys) {
@@ -17,27 +22,26 @@ export default function AdminDashboard() {
 	const [error, setError] = useState('');
 	const [data, setData] = useState(null);
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const res = await API.get('/admin/dashboard');
-				setData(res?.data?.data ?? res?.data ?? null);
-			} catch (e) {
-				const status = e?.response?.status;
-				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load dashboard';
-				setError(msg + (status ? ` (HTTP ${status})` : ''));
-				showToast('Failed to load admin dashboard', 'error');
-				setData(null);
-			} finally {
-				setLoading(false);
-			}
-		};
+	const load = useCallback(async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const res = await API.get('/admin/dashboard');
+			setData(res?.data?.data ?? res?.data ?? null);
+		} catch (e) {
+			const status = e?.response?.status;
+			const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load dashboard';
+			setError(msg + (status ? ` (HTTP ${status})` : ''));
+			showToast('Failed to load admin dashboard', 'error');
+			setData(null);
+		} finally {
+			setLoading(false);
+		}
+	}, [showToast]);
 
+	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const stats = useMemo(() => {
 		const totalUsers = pick(data, ['totalUsers', 'users', 'userCount']);
@@ -49,32 +53,46 @@ export default function AdminDashboard() {
 
 	return (
 		<div>
-			<div className="flex items-center justify-between gap-4 mb-6">
-				<h1 className="text-2xl font-bold">Dashboard</h1>
+			<SectionHeader
+				title="Dashboard"
+				subtitle="Operational overview from the existing /admin/dashboard endpoint."
+				action={
+					<Button variant="outline" size="sm" onClick={load} aria-label="Refresh dashboard">
+						Refresh
+					</Button>
+				}
+			/>
+
+			<div className="mt-5">
+				{loading ? (
+					<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<Card key={i} className="p-6">
+								<Skeleton className="h-3 w-28" />
+								<div className="mt-3">
+									<Skeleton className="h-8 w-24" />
+								</div>
+							</Card>
+						))}
+					</div>
+				) : error ? (
+					<ErrorState title="Couldn’t load dashboard" description={error} onRetry={load} />
+				) : (
+					<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+						<StatCard title="Total Users" value={stats.totalUsers ?? '—'} />
+						<StatCard title="Total Creators" value={stats.totalCreators ?? '—'} />
+						<StatCard title="Total Bookings" value={stats.totalBookings ?? '—'} />
+						<StatCard title="Revenue / Stats" value={stats.revenue ?? '—'} />
+					</div>
+				)}
 			</div>
 
-			{loading ? (
-				<div className="bg-white border rounded-xl p-6 text-gray-600">Loading stats…</div>
-			) : error ? (
-				<div className="bg-white border rounded-xl p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
-				</div>
-			) : (
-				<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-					<StatCard title="Total Users" value={stats.totalUsers ?? '—'} />
-					<StatCard title="Total Creators" value={stats.totalCreators ?? '—'} />
-					<StatCard title="Total Bookings" value={stats.totalBookings ?? '—'} />
-					<StatCard title="Revenue / Stats" value={stats.revenue ?? '—'} />
-				</div>
-			)}
-
-			<div className="mt-6 bg-white border rounded-xl p-6">
-				<div className="font-semibold text-gray-900">Next steps</div>
-				<div className="text-sm text-gray-600 mt-1">
+			<Card className="mt-6 p-6">
+				<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Next steps</div>
+				<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
 					User/Creator/Booking management pages ship in Sprint 2.
 				</div>
-			</div>
+			</Card>
 		</div>
 	);
 }

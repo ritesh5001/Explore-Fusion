@@ -1,10 +1,12 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import AdminTable from '../../components/admin/AdminTable';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Input from '../../components/ui/Input';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -27,7 +29,7 @@ export default function CreatorsAdmin() {
 	const [busyId, setBusyId] = useState(null);
 	const [q, setQ] = useState('');
 
-	const load = async () => {
+	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
 		try {
@@ -42,12 +44,11 @@ export default function CreatorsAdmin() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [showToast]);
 
 	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const filtered = useMemo(() => {
 		const term = q.trim().toLowerCase();
@@ -104,14 +105,7 @@ export default function CreatorsAdmin() {
 											<div className="font-semibold text-mountain dark:text-sand truncate">{c?.name || '—'}</div>
 											<div className="text-sm text-charcoal/70 dark:text-sand/70 truncate">{c?.email || '—'}</div>
 											<div className="mt-2">
-												<span
-													className={
-														`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ` +
-														(verified ? 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-200' : 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white/70')
-													}
-												>
-													{verified ? 'Verified' : 'Not verified'}
-												</span>
+												<Badge tone={verified ? 'success' : 'default'}>{verified ? 'Verified' : 'Not verified'}</Badge>
 											</div>
 										</div>
 										{verified ? (
@@ -134,13 +128,10 @@ export default function CreatorsAdmin() {
 				}
 				right={
 					<div className="flex items-center gap-2">
-						<input
-							value={q}
-							onChange={(e) => setQ(e.target.value)}
-							placeholder="Search…"
-							className="rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2 text-sm"
-						/>
-						<Button variant="link" size="sm" onClick={load} aria-label="Refresh creators">
+						<div className="w-64">
+							<Input label="Search" value={q} onChange={(e) => setQ(e.target.value)} />
+						</div>
+						<Button variant="outline" size="sm" onClick={load} aria-label="Refresh creators">
 							Refresh
 						</Button>
 					</div>
@@ -153,21 +144,14 @@ export default function CreatorsAdmin() {
 						const canAct = busyId !== id;
 						return (
 							<tr key={id}>
-								<td className="px-5 py-3 whitespace-nowrap font-semibold text-gray-900">{c?.name || '—'}</td>
-								<td className="px-5 py-3 whitespace-nowrap text-gray-700">{c?.email || '—'}</td>
+								<td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">{c?.name || '—'}</td>
+								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{c?.email || '—'}</td>
 								<td className="px-5 py-3 whitespace-nowrap">
-									<span
-										className={
-											`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ` +
-											(verified ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700')
-										}
-									>
-										{verified ? 'Verified' : 'Not verified'}
-									</span>
+									<Badge tone={verified ? 'success' : 'default'}>{verified ? 'Verified' : 'Not verified'}</Badge>
 								</td>
 								<td className="px-5 py-3 whitespace-nowrap">
 									{verified ? (
-										<span className="text-sm text-gray-500">—</span>
+										<span className="text-sm text-charcoal/60 dark:text-sand/60">—</span>
 									) : (
 										<Button onClick={() => verify(c)} disabled={!canAct} size="sm" aria-label="Verify creator">
 											{busyId === id ? 'Verifying…' : 'Verify'}

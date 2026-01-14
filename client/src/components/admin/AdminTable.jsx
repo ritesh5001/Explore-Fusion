@@ -1,13 +1,13 @@
 import Card from '../ui/Card';
 import SectionHeader from '../ui/SectionHeader';
-import PageLoader from '../states/PageLoader';
-import ErrorState from '../states/ErrorState';
-import EmptyState from '../states/EmptyState';
+import PageLoader from '../ui/PageLoader';
+import ErrorState from '../ui/ErrorState';
+import EmptyState from '../ui/EmptyState';
 
 export default function AdminTable({ title, subtitle, columns, loading, error, emptyText, children, right, onRetry, mobileCards }) {
 	return (
 		<Card className="overflow-hidden">
-			<div className="px-5 py-4 border-b border-soft">
+			<div className="px-5 py-4 border-b border-soft/80 dark:border-white/10">
 				<SectionHeader title={title} subtitle={subtitle} right={right} />
 			</div>
 
@@ -20,16 +20,16 @@ export default function AdminTable({ title, subtitle, columns, loading, error, e
 					{!!mobileCards && <div className="p-4 md:hidden">{mobileCards}</div>}
 					<div className={`${mobileCards ? 'hidden md:block' : ''} overflow-x-auto`}>
 						<table className="min-w-full text-sm">
-							<thead className="bg-sand dark:bg-white/5">
+							<thead className="bg-sand/80 dark:bg-white/5">
 								<tr>
 									{(columns || []).map((c) => (
-										<th key={c} className="text-left font-semibold text-gray-700 dark:text-white/70 px-5 py-3 whitespace-nowrap">
+										<th key={c} className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
 											{c}
 										</th>
 									))}
 								</tr>
 							</thead>
-							<tbody className="divide-y divide-soft">{children}</tbody>
+							<tbody className="divide-y divide-soft/80 dark:divide-white/10">{children}</tbody>
 						</table>
 					</div>
 				</div>

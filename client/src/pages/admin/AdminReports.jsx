@@ -1,8 +1,13 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
 import ReportCard from '../../components/admin/ReportCard';
 import AdminTable from '../../components/admin/AdminTable';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Button from '../../components/ui/Button';
+import Card from '../../components/ui/Card';
+import ErrorState from '../../components/ui/ErrorState';
+import { Skeleton } from '../../components/ui/Loader';
 
 const pick = (obj, keys) => {
 	for (const k of keys) {
@@ -61,29 +66,29 @@ export default function AdminReports() {
 	const [data, setData] = useState(null);
 	const [actions, setActions] = useState([]);
 
+	const load = useCallback(async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const res = await API.get('/admin/reports/system');
+			const payload = res?.data?.data ?? res?.data ?? null;
+			setData(payload);
+			setActions(normalizeActions(res?.data));
+		} catch (e) {
+			const status = e?.response?.status;
+			const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load system reports';
+			setError(msg + (status ? ` (HTTP ${status})` : ''));
+			setData(null);
+			setActions([]);
+			showToast('Failed to load system reports', 'error');
+		} finally {
+			setLoading(false);
+		}
+	}, [showToast]);
+
 	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const res = await API.get('/admin/reports/system');
-				const payload = res?.data?.data ?? res?.data ?? null;
-				setData(payload);
-				setActions(normalizeActions(res?.data));
-			} catch (e) {
-				const status = e?.response?.status;
-				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load system reports';
-				setError(msg + (status ? ` (HTTP ${status})` : ''));
-				setData(null);
-				setActions([]);
-				showToast('Failed to load system reports', 'error');
-			} finally {
-				setLoading(false);
-			}
-		};
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const stats = useMemo(() => {
 		const totalUsers = pick(data, ['totalUsers', 'users', 'userCount']);
@@ -96,26 +101,29 @@ export default function AdminReports() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold">System Reports</h1>
-					<div className="text-sm text-gray-600 mt-1">Superadmin-only overview and audit-style actions.</div>
-				</div>
-				<button
-					onClick={() => window.location.reload()}
-					className="text-sm font-semibold btn-link"
-				>
-					Refresh
-				</button>
-			</div>
+			<SectionHeader
+				title="System Reports"
+				subtitle="Superadmin-only overview and audit-style actions."
+				action={
+					<Button variant="outline" size="sm" onClick={load} aria-label="Refresh reports">
+						Refresh
+					</Button>
+				}
+			/>
 
 			{loading ? (
-				<div className="bg-white border rounded-xl p-6 text-gray-600">Loading reports…</div>
-			) : error ? (
-				<div className="bg-white border rounded-xl p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
+				<div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+					{Array.from({ length: 5 }).map((_, i) => (
+						<Card key={i} className="p-6">
+							<Skeleton className="h-3 w-28" />
+							<div className="mt-3">
+								<Skeleton className="h-7 w-24" />
+							</div>
+						</Card>
+					))}
 				</div>
+			) : error ? (
+				<ErrorState title="Couldn’t load reports" description={error} onRetry={load} />
 			) : (
 				<div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
 					<ReportCard title="Total Users" value={fmtNumber(stats.totalUsers)} />
@@ -143,13 +151,13 @@ export default function AdminReports() {
 						const details = row?.details || row?.reason || row?.message || row?.meta;
 						return (
 							<tr key={row?._id || row?.id || `${idx}`} className="align-middle">
-								<td className="px-5 py-3 whitespace-nowrap font-semibold text-gray-900">{actionLabel(row)}</td>
-								<td className="px-5 py-3 whitespace-nowrap text-gray-700">{String(actor)}</td>
-								<td className="px-5 py-3 whitespace-nowrap text-gray-700">{String(target)}</td>
-								<td className="px-5 py-3 whitespace-nowrap text-gray-700">{time}</td>
-								<td className="px-5 py-3 text-gray-700">
+								<td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">{actionLabel(row)}</td>
+								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{String(actor)}</td>
+								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{String(target)}</td>
+								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{time}</td>
+								<td className="px-5 py-3 text-charcoal/80 dark:text-sand/80">
 									{details && typeof details === 'object' ? (
-										<pre className="text-xs bg-gray-50 border rounded p-2 overflow-x-auto">{JSON.stringify(details, null, 2)}</pre>
+										<pre className="text-xs bg-sand/70 dark:bg-white/5 border border-soft/80 dark:border-white/10 rounded-2xl p-3 overflow-x-auto">{JSON.stringify(details, null, 2)}</pre>
 									) : (
 										<span className="text-sm">{details ? String(details) : '—'}</span>
 									)}

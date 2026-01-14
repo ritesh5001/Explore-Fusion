@@ -1,83 +1,166 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../api';
 import useAuth from '../auth/useAuth';
+import { useToast } from '../components/ToastProvider';
+import SectionHeader from '../components/ui/SectionHeader';
+import Card from '../components/ui/Card';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+import PageLoader from '../components/ui/PageLoader';
+import ErrorState from '../components/ui/ErrorState';
+import EmptyState from '../components/ui/EmptyState';
 
-const CreatorDashboard = () => {
-  const [sales, setSales] = useState([]);
-  const { user } = useAuth();
+const asArray = (v) => (Array.isArray(v) ? v : []);
 
-  useEffect(() => {
-    if (!user?._id) return;
-
-    let cancelled = false;
-
-    API.get(`/bookings/creator/${user._id}`)
-      .then(({ data }) => {
-        if (!cancelled) setSales(data);
-      })
-      .catch((error) => {
-        if (!cancelled) setSales([]);
-        console.error('Error fetching sales:', error);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto py-10 px-4">
-        <h1 className="text-3xl font-bold mb-8">📈 Creator Dashboard</h1>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded shadow-md border-l-4 border-green-500">
-            <h3 className="text-gray-500">Total Bookings</h3>
-            <p className="text-3xl font-bold">{sales.length}</p>
-          </div>
-          <div className="bg-white p-6 rounded shadow-md border-l-4 border-blue-500">
-            <h3 className="text-gray-500">Total Revenue (Est.)</h3>
-            <p className="text-3xl font-bold">
-              ${sales.reduce((acc, curr) => acc + (curr.packageId?.price || 0), 0)}
-            </p>
-          </div>
-        </div>
-
-        <h2 className="text-xl font-bold mb-4">Recent Bookings</h2>
-        <div className="bg-white rounded shadow overflow-hidden">
-          <table className="w-full text-left">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="p-4">Package Name</th>
-                <th className="p-4">Price</th>
-                <th className="p-4">Customer ID</th>
-                <th className="p-4">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {sales.map((sale) => (
-                <tr key={sale._id} className="border-b">
-                  <td className="p-4 font-medium">{sale.packageId?.title || 'Unknown Package'}</td>
-                  <td className="p-4">${sale.packageId?.price}</td>
-                  <td className="p-4 text-gray-500 text-sm">{sale.userId}</td>
-                  <td className="p-4">
-                    <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                      {sale.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-              {sales.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="p-8 text-center text-gray-500">No bookings yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
+const normalizeSales = (body) => {
+  const data = body?.data ?? body;
+  return asArray(data?.sales ?? data?.bookings ?? data?.items ?? data);
 };
 
-export default CreatorDashboard;
+const getId = (row) => row?._id || row?.id;
+const getPackage = (row) => row?.package || row?.packageId || row?.pkg || null;
+const getTitle = (row) => getPackage(row)?.title || row?.packageTitle || row?.title || 'Package';
+const getPrice = (row) => getPackage(row)?.price ?? row?.price;
+const getCustomer = (row) => row?.user?.email || row?.userId || row?.user?.id || '—';
+const getStatus = (row) => String(row?.status || row?.bookingStatus || 'confirmed').toLowerCase();
+
+const money = (v) => {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return '—';
+  return new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+};
+
+export default function CreatorDashboard() {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+
+  const [sales, setSales] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const load = useCallback(async () => {
+    if (!user?._id) return;
+    setLoading(true);
+    setError('');
+    try {
+      const res = await API.get(`/bookings/creator/${user._id}`);
+      setSales(normalizeSales(res?.data));
+    } catch (e) {
+      const status = e?.response?.status;
+      const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load creator dashboard';
+      setSales([]);
+      setError(msg + (status ? ` (HTTP ${status})` : ''));
+      showToast('Failed to load creator dashboard', 'error');
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast, user?._id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const stats = useMemo(() => {
+    const bookings = asArray(sales);
+    const totalBookings = bookings.length;
+    const totalRevenue = bookings.reduce((acc, row) => acc + (Number(getPrice(row)) || 0), 0);
+    return { totalBookings, totalRevenue };
+  }, [sales]);
+
+  return (
+    <div className="container-app page-section max-w-6xl space-y-4">
+      <SectionHeader
+        title="Creator Dashboard"
+        subtitle="Track your bookings and revenue."
+        right={
+          <Button variant="outline" size="sm" onClick={load} disabled={!user?._id || loading}>
+            Refresh
+          </Button>
+        }
+      />
+
+      {loading ? (
+        <PageLoader label="Loading creator stats…" />
+      ) : error ? (
+        <ErrorState title="Couldn’t load creator dashboard" description={error} onRetry={load} />
+      ) : sales.length === 0 ? (
+        <EmptyState
+          title="No bookings yet"
+          description="Once travelers book your packages, they’ll show up here."
+          icon="📈"
+        />
+      ) : (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="p-6">
+              <div className="text-sm font-semibold text-charcoal/70 dark:text-sand/70">Total bookings</div>
+              <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand">
+                {stats.totalBookings}
+              </div>
+              <div className="mt-3">
+                <Badge tone="accent">Creator</Badge>
+              </div>
+            </Card>
+            <Card className="p-6">
+              <div className="text-sm font-semibold text-charcoal/70 dark:text-sand/70">Revenue (est.)</div>
+              <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand">
+                {money(stats.totalRevenue)}
+              </div>
+              <div className="mt-3 text-sm text-charcoal/60 dark:text-sand/60">Sum of booked package prices.</div>
+            </Card>
+          </div>
+
+          <Card className="overflow-hidden">
+            <div className="px-5 py-4 border-b border-soft/80 dark:border-white/10">
+              <div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Recent bookings</div>
+              <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Your latest sales activity.</div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead className="bg-sand/80 dark:bg-white/5">
+                  <tr>
+                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                      Package
+                    </th>
+                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                      Price
+                    </th>
+                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                      Customer
+                    </th>
+                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                      Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-soft/80 dark:divide-white/10">
+                  {sales.map((row) => {
+                    const id = getId(row);
+                    const status = getStatus(row);
+                    const tone = status === 'cancelled' ? 'default' : status === 'pending' ? 'gold' : 'success';
+                    return (
+                      <tr key={id}>
+                        <td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">
+                          {getTitle(row)}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">
+                          {money(getPrice(row))}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">
+                          {String(getCustomer(row))}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <Badge tone={tone}>{status}</Badge>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
+      )}
+    </div>
+  );
+}

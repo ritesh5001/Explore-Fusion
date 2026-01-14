@@ -70,4 +70,48 @@ export const uploadImage = async (file) => {
   });
 };
 
+const sanitizeFolderSegment = (v) => String(v || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+
+export const uploadPostImage = async ({ file, postId, postedBy, location }) => {
+  validateFile(file);
+  if (!postId) throw new Error('Missing post id');
+
+  const auth = await fetchAuth();
+  const safePostId = sanitizeFolderSegment(postId);
+  const safeUserId = sanitizeFolderSegment(postedBy?._id || postedBy?.id || 'unknown');
+  const folder = `explore-fusion/posts/${safePostId}/${safeUserId}`;
+
+  const tags = [`post:${safePostId}`, `user:${safeUserId}`];
+  const customMetadata = {
+    postId: safePostId,
+    postedById: safeUserId,
+    postedByName: postedBy?.name ? String(postedBy.name).slice(0, 80) : undefined,
+    location: location ? String(location).slice(0, 120) : undefined,
+  };
+
+  return new Promise((resolve, reject) => {
+    imagekit.upload(
+      {
+        file,
+        fileName: `${Date.now()}-${file.name}`,
+        folder,
+        tags,
+        customMetadata,
+        token: auth.token,
+        signature: auth.signature,
+        expire: auth.expire,
+      },
+      (err, result) => {
+        if (err) reject(err);
+        else
+          resolve({
+            url: result.url,
+            fileId: result.fileId,
+            folder,
+          });
+      }
+    );
+  });
+};
+
 export { imagekit };

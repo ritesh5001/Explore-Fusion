@@ -10,7 +10,7 @@ import Loader, { Skeleton } from '../components/ui/Loader';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import LuxImage from '../components/ui/LuxImage';
-import { uploadImage } from '../utils/imagekit';
+import { uploadPostImage } from '../utils/imagekit';
 
 
 const Home = () => {
@@ -18,6 +18,8 @@ const Home = () => {
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [newPost, setNewPost] = useState({ content: '', location: '', imageUrl: '' });
   const [uploading, setUploading] = useState(false);
+	const [selectedFile, setSelectedFile] = useState(null);
+	const [previewUrl, setPreviewUrl] = useState('');
   const { user } = useAuth();
 	const { showToast } = useToast();
   
@@ -74,9 +76,38 @@ const Home = () => {
     e.preventDefault();
     if (uploading) return;
     try {
-      await API.post('/posts', newPost);
+    // 1) Create post (content + location required)
+    const createRes = await API.post('/posts', {
+      content: newPost.content,
+      location: newPost.location,
+    });
+    const created = createRes?.data?.data ?? createRes?.data;
+    const postId = created?._id;
+
+    // 2) If image selected, upload it to ImageKit under a post-specific folder, then attach it to the post
+    if (selectedFile && postId) {
+      setUploading(true);
+      try {
+        const uploaded = await uploadPostImage({
+          file: selectedFile,
+          postId,
+          postedBy: user,
+          location: newPost.location,
+        });
+        await API.put(`/posts/${postId}`, {
+          imageUrl: uploaded.url,
+          imageFileId: uploaded.fileId,
+          imageFolder: uploaded.folder,
+        });
+      } finally {
+        setUploading(false);
+      }
+    }
+
     setNewPost({ content: '', location: '', imageUrl: '' });
-      fetchPosts(); 
+    setSelectedFile(null);
+    setPreviewUrl('');
+    fetchPosts();
 	} catch {
 		showToast('Failed to create post', 'error');
     }
@@ -85,17 +116,25 @@ const Home = () => {
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
+    setSelectedFile(file);
     try {
-      const url = await uploadImage(file);
-      setNewPost((prev) => ({ ...prev, imageUrl: url }));
-      showToast('Image uploaded', 'success');
-    } catch (error) {
-      const message = error?.message || 'Upload failed';
-      showToast(message, 'error');
-    } finally {
-      setUploading(false);
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+    } catch {
+      setPreviewUrl('');
     }
+  };
+
+  const clearSelectedImage = () => {
+    setSelectedFile(null);
+    if (previewUrl) {
+      try {
+        URL.revokeObjectURL(previewUrl);
+      } catch {
+        // noop
+      }
+    }
+    setPreviewUrl('');
   };
 
   const featureCards = (
@@ -167,11 +206,15 @@ const Home = () => {
                 disabled={uploading}
                 className="block w-full text-sm text-charcoal/80 file:mr-3 file:rounded-xl file:border-0 file:bg-trail/15 file:px-4 file:py-2 file:text-mountain file:font-semibold hover:file:bg-trail/25 dark:text-sand/80"
               />
-              {newPost.imageUrl ? (
+              {previewUrl ? (
                 <div className="mt-2">
-                  <LuxImage src={newPost.imageUrl} alt="Post image" className="w-full h-56 rounded-2xl" transform="w-900,h-650" />
+                  <img
+                    src={previewUrl}
+                    alt="Post image preview"
+                    className="w-full h-56 rounded-2xl object-cover"
+                  />
                   <div className="mt-2 flex justify-end">
-                    <Button type="button" size="sm" variant="outline" onClick={() => setNewPost((p) => ({ ...p, imageUrl: '' }))}>
+                    <Button type="button" size="sm" variant="outline" onClick={clearSelectedImage}>
                       Remove image
                     </Button>
                   </div>
@@ -180,7 +223,7 @@ const Home = () => {
             </div>
 
             <Button type="submit" className="w-full" disabled={uploading || !newPost.content.trim() || !newPost.location.trim()}>
-              {uploading ? 'Uploading…' : 'Post'}
+              {uploading ? 'Uploading…' : selectedFile ? 'Post with image' : 'Post'}
             </Button>
           </form>
         </Card>

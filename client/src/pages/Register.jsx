@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
@@ -8,7 +8,20 @@ const Register = () => {
   const { register, token, user } = useAuth();
   const { showToast } = useToast();
 	const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
-	const [logoSrc, setLogoSrc] = useState(() => import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo);
+  const logoSrc = import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo;
+  const logoFallbackTriedRef = useRef(false);
+
+  const handleLogoError = (e) => {
+    const img = e.currentTarget;
+    if (!logoFallbackTriedRef.current) {
+      logoFallbackTriedRef.current = true;
+      img.onerror = null;
+      img.src = '/branding/logo.png';
+      return;
+    }
+    img.onerror = null;
+    img.style.display = 'none';
+  };
 
 	if (token && user) {
 		return <Navigate to="/" replace />;
@@ -40,7 +53,7 @@ const Register = () => {
           src={logoSrc}
           alt="Explore Fusion"
           className="h-14 w-14 rounded-2xl object-contain bg-white/60"
-          onError={() => setLogoSrc('/branding/logo.png')}
+			  onError={handleLogoError}
         />
 			</div>
         <h1 className="text-2xl font-heading font-extrabold tracking-tight text-mountain mb-6">Create account</h1>

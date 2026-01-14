@@ -2,6 +2,20 @@
 const fs = require('fs');
 const path = require('path');
 
+// Load env for ImageKit keys (prefer upload-service/.env, fall back to auth-service/.env)
+try {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
+} catch {
+  // noop
+}
+try {
+  // eslint-disable-next-line global-require
+  require('dotenv').config({ path: path.join(__dirname, '..', '..', 'auth-service', '.env') });
+} catch {
+  // noop
+}
+
 const { getImagekit } = require('../config/imagekit');
 
 const ROOT = path.join(__dirname, '..', '..', '..');
@@ -65,7 +79,17 @@ async function main() {
     process.exit(0);
   }
 
-  const imagekit = getImagekit();
+  let imagekit;
+  try {
+    imagekit = getImagekit();
+  } catch (err) {
+    console.error(err?.message || err);
+    console.log('\nCreate services/upload-service/.env with:');
+    console.log('  IMAGEKIT_PUBLIC_KEY=...');
+    console.log('  IMAGEKIT_PRIVATE_KEY=...');
+    console.log('  IMAGEKIT_URL_ENDPOINT=...');
+    process.exit(1);
+  }
 
   console.log(`Uploading ${files.length} file(s) from:`);
   console.log(`- source: ${sourceDir}`);

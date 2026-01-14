@@ -14,6 +14,9 @@ const Navbar = () => {
   const { theme, toggleTheme } = useTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
+  const [logoSrc, setLogoSrc] = useState(() => import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo);
+
   const handleLogout = () => {
     setIsMobileOpen(false);
     logout();
@@ -50,8 +53,16 @@ const Navbar = () => {
       <div className="container-app py-3 flex items-center justify-between gap-3">
         <Link
           to="/"
-          className="text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-trail transition"
+          className="flex items-center gap-2 text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-trail transition"
         >
+			<img
+				src={logoSrc}
+				alt="Explore Fusion"
+				className="h-8 w-8 rounded-xl object-contain bg-white/60 dark:bg-white/10"
+				loading="eager"
+				decoding="async"
+        onError={() => setLogoSrc('/branding/logo.png')}
+			/>
           Explore <span className="text-trail">Fusion</span>
         </Link>
 

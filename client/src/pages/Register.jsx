@@ -10,14 +10,14 @@ const Register = () => {
   const { showToast } = useToast();
   const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
 
-	if (token && user) {
-		return <Navigate to="/" replace />;
-	}
-
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+
+  if (token && user) {
+    return <Navigate to="/" replace />;
+  }
 
   const onSubmit = async (e) => {
     e.preventDefault();

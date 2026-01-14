@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Post = require('../models/Post');
+require('../models/User');
 
 const jsonSuccess = (res, status, data) => {
   return res.status(status).json({
@@ -17,10 +18,42 @@ const jsonError = (res, status, message) => {
 
 const isValidId = (id) => mongoose.isValidObjectId(id);
 
-const toAuthorResponse = (postDoc) => {
+const toUserResponse = (postDoc) => {
+  const author = postDoc?.author;
+  if (author && typeof author === 'object' && author._id) {
+    return {
+      _id: author._id,
+      name: author.name,
+      username: author.username,
+      role: author.role,
+      avatar: author.avatar,
+    };
+  }
+
   return {
     _id: postDoc.author,
     name: postDoc.authorName || undefined,
+  };
+};
+
+const toPostResponse = (p) => {
+  const user = toUserResponse(p);
+  return {
+    _id: p._id,
+    title: p.title,
+    content: p.content,
+    location: p.location,
+    imageUrl: p.imageUrl,
+    imageFileId: p.imageFileId,
+    imageFolder: p.imageFolder,
+    // New payload expected by clients
+    user,
+    // Backward compatibility
+    author: { _id: user._id, name: user.name },
+    likesCount: p.likes?.length || 0,
+    commentsCount: p.comments?.length || 0,
+    createdAt: p.createdAt,
+    updatedAt: p.updatedAt,
   };
 };
 
@@ -63,18 +96,9 @@ const createPost = async (req, res) => {
     });
 
     return jsonSuccess(res, 201, {
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      location: post.location,
-      imageUrl: post.imageUrl,
-      imageFileId: post.imageFileId,
-      imageFolder: post.imageFolder,
-      author: toAuthorResponse(post),
-      likesCount: post.likes.length,
+      ...toPostResponse(post),
+      // Create endpoint previously returned full comments array
       comments: post.comments,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
     });
   } catch (error) {
     return jsonError(res, 500, 'Server error');
@@ -90,25 +114,16 @@ const getPosts = async (req, res) => {
 
     const [total, posts] = await Promise.all([
       Post.countDocuments({}),
-      Post.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Post.find({})
+        .populate('author', '_id name username role avatar')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
     ]);
 
     const totalPages = Math.ceil(total / limit) || 1;
 
-    const items = posts.map((p) => ({
-      _id: p._id,
-      title: p.title,
-      content: p.content,
-      location: p.location,
-      imageUrl: p.imageUrl,
-      imageFileId: p.imageFileId,
-      imageFolder: p.imageFolder,
-      author: toAuthorResponse(p),
-      likesCount: p.likes?.length || 0,
-      commentsCount: p.comments?.length || 0,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-    }));
+    const items = posts.map(toPostResponse);
 
     return jsonSuccess(res, 200, {
       page,
@@ -129,24 +144,14 @@ const getPostById = async (req, res) => {
       return jsonError(res, 400, 'Invalid post id');
     }
 
-    const post = await Post.findById(id);
+    const post = await Post.findById(id).populate('author', '_id name username role avatar');
     if (!post) {
       return jsonError(res, 404, 'Post not found');
     }
 
     return jsonSuccess(res, 200, {
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      location: post.location,
-      imageUrl: post.imageUrl,
-      imageFileId: post.imageFileId,
-      imageFolder: post.imageFolder,
-      author: toAuthorResponse(post),
-      likesCount: post.likes.length,
+      ...toPostResponse(post),
       comments: post.comments,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
     });
   } catch (error) {
     return jsonError(res, 500, 'Server error');
@@ -180,18 +185,8 @@ const updatePost = async (req, res) => {
     await post.save();
 
     return jsonSuccess(res, 200, {
-      _id: post._id,
-      title: post.title,
-      content: post.content,
-      location: post.location,
-      imageUrl: post.imageUrl,
-      imageFileId: post.imageFileId,
-      imageFolder: post.imageFolder,
-      author: toAuthorResponse(post),
-      likesCount: post.likes.length,
+      ...toPostResponse(post),
       comments: post.comments,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
     });
   } catch (error) {
     return jsonError(res, 500, 'Server error');
@@ -293,24 +288,28 @@ const getPostsByUser = async (req, res) => {
       return jsonError(res, 400, 'Invalid user id');
     }
 
-    const posts = await Post.find({ author: userId }).sort({ createdAt: -1 });
+    const posts = await Post.find({ author: userId })
+      .populate('author', '_id name username role avatar')
+      .sort({ createdAt: -1 });
 
-    const items = posts.map((p) => ({
-      _id: p._id,
-      title: p.title,
-      content: p.content,
-      location: p.location,
-      imageUrl: p.imageUrl,
-      imageFileId: p.imageFileId,
-      imageFolder: p.imageFolder,
-      author: toAuthorResponse(p),
-      likesCount: p.likes?.length || 0,
-      commentsCount: p.comments?.length || 0,
-      createdAt: p.createdAt,
-      updatedAt: p.updatedAt,
-    }));
+    const items = posts.map(toPostResponse);
 
     return jsonSuccess(res, 200, { posts: items });
+  } catch (error) {
+    return jsonError(res, 500, 'Server error');
+  }
+};
+
+// GET /api/v1/posts/user/:userId/count
+const getPostsCountByUser = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    if (!isValidId(userId)) {
+      return jsonError(res, 400, 'Invalid user id');
+    }
+
+    const postsCount = await Post.countDocuments({ author: userId });
+    return jsonSuccess(res, 200, { userId, postsCount });
   } catch (error) {
     return jsonError(res, 500, 'Server error');
   }
@@ -325,4 +324,5 @@ module.exports = {
   toggleLike,
   addComment,
   getPostsByUser,
+  getPostsCountByUser,
 };

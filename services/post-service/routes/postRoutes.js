@@ -10,11 +10,13 @@ const {
 	toggleLike,
 	addComment,
 	getPostsByUser,
+	getPostsCountByUser,
 } = require('../controllers/postController');
 
 const { protect } = require('../middleware/authMiddleware');
 
 router.get('/', getPosts);
+router.get('/user/:userId/count', getPostsCountByUser);
 router.get('/user/:userId', getPostsByUser);
 router.get('/:id', getPostById);
 

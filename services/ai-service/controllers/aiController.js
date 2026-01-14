@@ -372,7 +372,8 @@ const chatSupport = async (req, res) => {
       data: {},
     });
   } catch (error) {
-    const status = Number(error?.status) || 503;
+    const rawStatus = Number(error?.status) || 503;
+    const status = rawStatus === 401 || rawStatus === 403 ? 503 : rawStatus;
     return res.status(status).json({
       success: false,
       message: 'AI is temporarily unavailable. Try again.',

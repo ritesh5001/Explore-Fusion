@@ -4,9 +4,10 @@
 
 ## 🚀 Key Features
 
-### 🤖 AI-Powered Tools (Google Gemini Integration)
+### 🤖 AI-Powered Tools (Groq Integration)
 * **AI Trip Planner:** Generates detailed, day-by-day itineraries with cost estimates based on destination, budget, and duration.
 * **Travel Buddy Matcher:** Creates a persona of an ideal travel companion based on your travel style and interests.
+* **AI Chat:** A gateway-proxied chat endpoint for trip planning, budgeting, recommendations, and summaries.
 
 ### 💼 Marketplace & Influencer Platform
 * **Creator Dashboard:** Influencers can upload visuals and list travel packages.
@@ -37,7 +38,7 @@
 * **Auth Service:** JWT, Bcrypt
 * **Post Service:** Social feed management
 * **Booking Service:** Marketplace logic & Order management
-* **AI Service:** Google Gemini API (`@google/generative-ai`)
+* **AI Service:** Groq API (`groq-sdk`)
 * **Upload Service:** Legacy Multer uploads + optional ImageKit auth
 * **Chat Service:** Socket.IO (Real-time WebSocket)
 * **Notification Service:** Notifications APIs
@@ -57,7 +58,7 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | **Auth** | `5001` | Handles User Registration & Login |
 | **Post** | `5002` | Manages User Posts & Feeds |
 | **Booking** | `5003` | Handles Packages, Itineraries & Orders |
-| **AI** | `5004` | Connects to Google Gemini for AI features |
+| **AI** | `5004` | AI chat + travel tools (Groq) |
 | **Upload** | `5005` | Handles File/Image Storage |
 | **Chat** | `5006` | WebSocket Server for Real-Time Chat |
 | **Notification** | `5008` | Notification APIs |
@@ -76,7 +77,7 @@ Notes:
 ### 1. Prerequisites
 * Node.js installed
 * MongoDB running locally (or MongoDB Atlas URI)
-* Google Gemini API Key
+* Groq API Key
 * (Optional) ImageKit account/keys for image uploads
 
 ### 2. Clone the Repository
@@ -116,8 +117,8 @@ Common ones used by the services:
 
 **AI Service (services/ai-service)**
 * `PORT` (default: `5004`)
-* `GEMINI_API_KEY`
-* `GEMINI_MODEL` (optional)
+* `AI_PROVIDER` (set to `groq`)
+* `GROQ_API_KEY`
 
 **Upload Service (services/upload-service)**
 * `UPLOAD_PORT` (default: `5005`)
@@ -181,8 +182,8 @@ DB/JWT (set per service as needed):
 
 AI:
 
-* `GEMINI_API_KEY`
-* `GEMINI_MODEL` (optional)
+* `AI_PROVIDER=groq`
+* `GROQ_API_KEY`
 
 Upload (ImageKit auth is handled by auth-service; upload-service only needs ImageKit keys if you also use its ImageKit endpoint):
 
@@ -207,6 +208,20 @@ After deploying, these should work:
 * Admin: `GET https://explore-fusion-gateway.onrender.com/api/v1/admin/health`
 * Notifications: `GET https://explore-fusion-gateway.onrender.com/api/v1/notifications/health`
 * Matches: `GET https://explore-fusion-gateway.onrender.com/api/v1/matches/health`
+
+AI Chat:
+
+```bash
+curl -X POST https://explore-fusion-gateway.onrender.com/api/v1/ai/chat \
+  -H "Content-Type: application/json" \
+  -d '{"message":"plan trip to goa for 3 days"}'
+```
+
+Expected (200 OK):
+
+```json
+{ "success": true, "intent": "PLAN_TRIP", "reply": "...", "data": {} }
+```
 
 ### 5. Run Everything (One Command)
 Start client + gateway + all microservices together:

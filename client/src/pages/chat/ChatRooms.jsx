@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
@@ -33,35 +33,34 @@ export default function ChatRooms() {
 	const [error, setError] = useState('');
 	const [rooms, setRooms] = useState([]);
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const res = await API.get('/chats/my');
-				const normalized = normalizeRooms(res?.data).map(toRoomVm).filter(Boolean);
-				if (!normalized.length) {
-					setRooms(fallbackRooms);
-				} else {
-					setRooms(normalized);
-				}
-			} catch (e) {
-				// If REST isn't implemented, fall back to static rooms per spec.
-				const status = e?.response?.status;
-				if (status && status !== 404 && status !== 501) {
-					const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load rooms';
-					setError(msg + ` (HTTP ${status})`);
-					showToast('Failed to load chat rooms', 'error');
-				}
+	const load = useCallback(async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const res = await API.get('/chats/my');
+			const normalized = normalizeRooms(res?.data).map(toRoomVm).filter(Boolean);
+			if (!normalized.length) {
 				setRooms(fallbackRooms);
-			} finally {
-				setLoading(false);
+			} else {
+				setRooms(normalized);
 			}
-		};
+		} catch (e) {
+			// If REST isn't implemented, fall back to static rooms per spec.
+			const status = e?.response?.status;
+			if (status && status !== 404 && status !== 501) {
+				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load rooms';
+				setError(msg + ` (HTTP ${status})`);
+				showToast('Failed to load chat rooms', 'error');
+			}
+			setRooms(fallbackRooms);
+		} finally {
+			setLoading(false);
+		}
+	}, [showToast]);
 
+	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const safeRooms = useMemo(() => (rooms.length ? rooms : fallbackRooms), [rooms]);
 

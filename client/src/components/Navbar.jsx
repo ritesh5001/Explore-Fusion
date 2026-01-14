@@ -1,22 +1,21 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
 import { AnimatePresence, motion } from 'framer-motion';
 
+const MotionDiv = motion.div;
+const MotionButton = motion.button;
+
 const Navbar = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  useEffect(() => {
-    setIsMobileOpen(false);
-  }, [location.pathname]);
-
   const handleLogout = () => {
+    setIsMobileOpen(false);
     logout();
     navigate('/login', { replace: true });
   };
@@ -106,7 +105,7 @@ const Navbar = () => {
       <AnimatePresence>
         {isMobileOpen && (
           <>
-            <motion.button
+            <MotionButton
               type="button"
               aria-label="Close menu"
               className="fixed inset-0 z-40 bg-charcoal/35"
@@ -116,7 +115,7 @@ const Navbar = () => {
               transition={{ duration: 0.18 }}
               onClick={() => setIsMobileOpen(false)}
             />
-            <motion.div
+            <MotionDiv
               className="md:hidden fixed top-0 right-0 z-50 h-dvh w-[86vw] max-w-sm border-l border-soft/80 dark:border-white/10 bg-white/80 dark:bg-charcoal/90 backdrop-blur-xl"
               initial={{ x: 40, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
@@ -142,6 +141,7 @@ const Navbar = () => {
                     <Link
                       key={l.to}
                       to={l.to}
+                      onClick={() => setIsMobileOpen(false)}
                       className="rounded-2xl px-3 py-2 font-semibold text-charcoal/90 dark:text-sand/90 hover:bg-soft/60 dark:hover:bg-white/10 transition"
                     >
                       {l.label}
@@ -153,10 +153,10 @@ const Navbar = () => {
 
                 {!isAuthenticated ? (
                   <div className="grid grid-cols-2 gap-2">
-                    <Button as={Link} to="/login" variant="secondary" size="sm" className="w-full">
+                    <Button as={Link} to="/login" variant="secondary" size="sm" className="w-full" onClick={() => setIsMobileOpen(false)}>
                       Sign in
                     </Button>
-                    <Button as={Link} to="/register" size="sm" className="w-full">
+                    <Button as={Link} to="/register" size="sm" className="w-full" onClick={() => setIsMobileOpen(false)}>
                       Register
                     </Button>
                   </div>
@@ -169,7 +169,7 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-            </motion.div>
+            </MotionDiv>
           </>
         )}
       </AnimatePresence>

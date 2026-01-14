@@ -24,6 +24,8 @@ export default defineConfig([
     },
     rules: {
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+		// This repo exports hooks/contexts from modules; keep fast-refresh rule disabled.
+		'react-refresh/only-export-components': 'off',
     },
   },
 ])

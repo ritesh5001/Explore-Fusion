@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import API from '../api';
 import useAuth from '../auth/useAuth';
@@ -47,11 +47,7 @@ const Home = () => {
     </div>
   );
 
-
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoadingPosts(true);
     try {
       const res = await API.get('/posts');
@@ -65,7 +61,11 @@ const Home = () => {
     } finally {
       setLoadingPosts(false);
     }
-  };
+  }, [showToast]);
+
+  useEffect(() => {
+    fetchPosts();
+  }, [fetchPosts]);
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
@@ -73,7 +73,7 @@ const Home = () => {
       await API.post('/posts', newPost);
       setNewPost({ title: '', content: '', location: '' }); 
       fetchPosts(); 
-    } catch (error) {
+	} catch {
 		showToast('Failed to create post', 'error');
     }
   };

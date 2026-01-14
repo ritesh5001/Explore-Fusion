@@ -6,6 +6,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { pageTransition } from './ui/motion';
 import Button from './ui/Button';
 
+const MotionDiv = motion.div;
+
 export default function AppLayout({ children }) {
 	const location = useLocation();
 
@@ -18,9 +20,9 @@ export default function AppLayout({ children }) {
 			<Navbar />
 			<main className="flex-1">
 				<AnimatePresence mode="wait" initial={false}>
-					<motion.div key={location.pathname} {...pageTransition} className="min-h-[60vh]">
+					<MotionDiv key={location.pathname} {...pageTransition} className="min-h-[60vh]">
 						{children}
-					</motion.div>
+					</MotionDiv>
 				</AnimatePresence>
 			</main>
 

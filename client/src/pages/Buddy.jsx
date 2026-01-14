@@ -135,7 +135,6 @@ const Buddy = () => {
 		if (tab === 'suggestions') loadSuggestions();
 		if (tab === 'requests') loadRequests();
 		if (tab === 'matches') loadMatches();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [tab]);
 
 	const requestBuddy = async (userId) => {

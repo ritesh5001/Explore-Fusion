@@ -23,6 +23,7 @@ const isBlocked = (u) => Boolean(u?.blocked ?? u?.isBlocked ?? u?.status === 'bl
 export default function UsersAdmin() {
 	const { role } = useAuth();
 	const isSuperadmin = role === 'superadmin';
+	const isAdmin = role === 'admin';
 	const { showToast } = useToast();
 
 	const [loading, setLoading] = useState(true);
@@ -107,11 +108,24 @@ export default function UsersAdmin() {
 			updateLocal(getId(u), { role: nextRole });
 		});
 
+	const canEditRole = (u) => {
+		if (isSuperadmin) return true;
+		if (!isAdmin) return false;
+		const targetRole = String(u?.role || 'user');
+		return targetRole === 'user' || targetRole === 'creator';
+	};
+
+	const roleOptionsFor = () => {
+		if (isSuperadmin) return ['user', 'creator', 'admin', 'superadmin'];
+		if (isAdmin) return ['user', 'creator'];
+		return ['user'];
+	};
+
 	return (
 		<div className="space-y-4">
 			<AdminTable
 				title="Users"
-				subtitle="Block/unblock users. Superadmin can change roles and delete users."
+				subtitle="Block/unblock users. Admin can change user/creator roles. Superadmin can change anyone’s role and delete users."
 				columns={['Name', 'Email', 'Role', 'Status', 'Actions']}
 				loading={loading}
 				error={error}
@@ -131,8 +145,13 @@ export default function UsersAdmin() {
 											<div className="text-sm text-charcoal/70 dark:text-sand/70 truncate">{u?.email || '—'}</div>
 											<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70">
 												Role:{' '}
-												{isSuperadmin ? (
-													<RoleSelect value={u?.role || 'user'} disabled={!canEdit} onChange={(r) => changeRole(u, r)} />
+												{canEditRole(u) ? (
+													<RoleSelect
+														value={u?.role || 'user'}
+														roles={roleOptionsFor()}
+														disabled={!canEdit}
+														onChange={(r) => changeRole(u, r)}
+													/>
 												) : (
 													<span className="font-semibold text-charcoal dark:text-sand">{u?.role || 'user'}</span>
 												)}
@@ -192,9 +211,10 @@ export default function UsersAdmin() {
 								<td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">{u?.name || '—'}</td>
 								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{u?.email || '—'}</td>
 								<td className="px-5 py-3 whitespace-nowrap">
-									{isSuperadmin ? (
+									{canEditRole(u) ? (
 										<RoleSelect
 											value={u?.role || 'user'}
+											roles={roleOptionsFor()}
 											disabled={!canEdit}
 											onChange={(r) => changeRole(u, r)}
 										/>

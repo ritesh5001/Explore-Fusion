@@ -8,7 +8,7 @@ const makeAdminRoutes = ({ auth, controller }) => {
   router.get('/users', auth.protect, auth.isAdmin, controller.listUsers);
   router.put('/users/:id/block', auth.protect, auth.isAdmin, controller.blockUser);
   router.put('/users/:id/unblock', auth.protect, auth.isAdmin, controller.unblockUser);
-  router.put('/users/:id/role', auth.protect, auth.isSuperAdmin, controller.updateUserRole);
+  router.put('/users/:id/role', auth.protect, auth.isAdmin, controller.updateUserRole);
   router.delete('/users/:id', auth.protect, auth.isSuperAdmin, controller.deleteUser);
 
   router.get('/creators', auth.protect, auth.isAdmin, controller.listCreators);

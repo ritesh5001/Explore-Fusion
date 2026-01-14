@@ -98,6 +98,30 @@ const makeAdminController = ({ User, Booking, Package, Itinerary }) => {
         return jsonError(res, 400, 'Invalid role');
       }
 
+      // Role-change authorization rules:
+      // - admin: can only change role for users/creators, and can only set user/creator
+      // - superadmin: can change anyone's role
+      const actorRole = req.user?.role;
+      if (actorRole !== 'admin' && actorRole !== 'superadmin') {
+        return jsonError(res, 403, 'Forbidden');
+      }
+
+      if (actorRole === 'admin') {
+        const target = await User.findById(id).select('role');
+        if (!target) return jsonError(res, 404, 'User not found');
+
+        const targetRole = target.role;
+        const allowedTargets = new Set(['user', 'creator']);
+        const allowedNewRoles = new Set(['user', 'creator']);
+
+        if (!allowedTargets.has(targetRole)) {
+          return jsonError(res, 403, 'Admins can only change roles for users and creators');
+        }
+        if (!allowedNewRoles.has(role)) {
+          return jsonError(res, 403, 'Admins can only set roles to user or creator');
+        }
+      }
+
       // Important: prevent accidentally demoting the last superadmin.
       if (role !== 'superadmin') {
         const existing = await User.findById(id).select('role');

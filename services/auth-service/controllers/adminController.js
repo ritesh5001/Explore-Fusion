@@ -54,11 +54,38 @@ exports.updateUserRole = async (req, res) => {
     return res.status(400).json({ message: 'Invalid role' });
   }
 
+  const actorRole = req.user?.role;
+  if (actorRole !== 'admin' && actorRole !== 'superadmin') {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  if (actorRole === 'admin') {
+    const target = await User.findById(req.params.id).select('role');
+    if (!target) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const allowedTargets = new Set(['user', 'creator']);
+    const allowedNewRoles = new Set(['user', 'creator']);
+
+    if (!allowedTargets.has(target.role)) {
+      return res.status(403).json({ message: 'Admins can only change roles for users and creators' });
+    }
+
+    if (!allowedNewRoles.has(role)) {
+      return res.status(403).json({ message: 'Admins can only set roles to user or creator' });
+    }
+  }
+
   const user = await User.findByIdAndUpdate(
     req.params.id,
     { role },
     { new: true }
   ).select('-password');
+
+  if (!user) {
+    return res.status(404).json({ message: 'User not found' });
+  }
 
   res.json(user);
 };

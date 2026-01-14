@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import Card from '../ui/Card';
 
 export default function BuddyCard({ user, actions }) {
@@ -10,7 +11,16 @@ export default function BuddyCard({ user, actions }) {
 	return (
 		<Card className="p-4 flex items-start justify-between gap-4">
 			<div className="min-w-0">
-				<div className="font-semibold text-charcoal dark:text-sand truncate">{name}</div>
+				{ id ? (
+					<Link
+						to={`/users/${id}`}
+						className="font-semibold text-charcoal dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors"
+					>
+						{name}
+					</Link>
+				) : (
+					<div className="font-semibold text-charcoal dark:text-sand truncate">{name}</div>
+				)}
 				{!!location && <div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">{location}</div>}
 				{!!interests?.length && (
 					<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1 truncate">Interests: {interests.join(', ')}</div>

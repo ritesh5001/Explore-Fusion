@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
 import Button from '../../components/ui/Button';
@@ -84,12 +85,22 @@ export default function BuddyRequests() {
 						{items.map((r) => {
 							const id = getReqId(r);
 							const from = getFromUser(r);
+							const fromId = from?._id || from?.id || from?.userId;
 							const name = from?.name || from?.fullName || from?.email || 'Traveler';
 							const busy = actingOn === id;
 							return (
 								<Card key={id} className="p-4 flex items-center justify-between gap-4">
 									<div className="min-w-0">
-										<div className="font-semibold text-mountain dark:text-sand truncate">{name}</div>
+										{fromId ? (
+											<Link
+												to={`/users/${fromId}`}
+												className="font-semibold text-mountain dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors"
+											>
+												{name}
+											</Link>
+										) : (
+											<div className="font-semibold text-mountain dark:text-sand truncate">{name}</div>
+										)}
 										<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">Incoming buddy request</div>
 									</div>
 									<div className="flex items-center gap-2 shrink-0">

@@ -60,6 +60,17 @@ const generateText = async ({ systemPrompt, userMessage }) => {
 			lastError = e;
 			const status = e?.status;
 
+			// Most commonly: invalid key, API not enabled, or key restrictions.
+			// Treat as a server-side configuration issue and avoid returning 401/403 to clients.
+			if (status === 401 || status === 403) {
+				console.warn(
+					'Gemini permission error (401/403). Check GEMINI_API_KEY, Gemini API enablement, and key restrictions.'
+				);
+				const err = new Error('Gemini is not configured');
+				err.status = 503;
+				throw err;
+			}
+
 			if (status === 503 || status === 404) {
 				continue;
 			}

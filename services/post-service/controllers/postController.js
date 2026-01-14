@@ -31,6 +31,13 @@ const normalizeOptionalUrl = (value) => {
   return trimmed;
 };
 
+const normalizeOptionalString = (value) => {
+  if (value == null) return undefined;
+  const trimmed = String(value).trim();
+  if (!trimmed) return undefined;
+  return trimmed;
+};
+
 const createPost = async (req, res) => {
   try {
     const { title, content, location, imageUrl } = req.body;
@@ -61,6 +68,8 @@ const createPost = async (req, res) => {
       content: post.content,
       location: post.location,
       imageUrl: post.imageUrl,
+      imageFileId: post.imageFileId,
+      imageFolder: post.imageFolder,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -92,6 +101,8 @@ const getPosts = async (req, res) => {
       content: p.content,
       location: p.location,
       imageUrl: p.imageUrl,
+      imageFileId: p.imageFileId,
+      imageFolder: p.imageFolder,
       author: toAuthorResponse(p),
       likesCount: p.likes?.length || 0,
       commentsCount: p.comments?.length || 0,
@@ -129,6 +140,8 @@ const getPostById = async (req, res) => {
       content: post.content,
       location: post.location,
       imageUrl: post.imageUrl,
+      imageFileId: post.imageFileId,
+      imageFolder: post.imageFolder,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -156,11 +169,13 @@ const updatePost = async (req, res) => {
       return jsonError(res, 403, 'Forbidden');
     }
 
-    const { title, content, location, imageUrl } = req.body;
+    const { title, content, location, imageUrl, imageFileId, imageFolder } = req.body;
     if (typeof title === 'string') post.title = title.trim();
     if (typeof content === 'string') post.content = content.trim();
     if (typeof location === 'string') post.location = location.trim();
     if (typeof imageUrl === 'string') post.imageUrl = normalizeOptionalUrl(imageUrl);
+    if (typeof imageFileId === 'string') post.imageFileId = normalizeOptionalString(imageFileId);
+    if (typeof imageFolder === 'string') post.imageFolder = normalizeOptionalString(imageFolder);
 
     await post.save();
 
@@ -170,6 +185,8 @@ const updatePost = async (req, res) => {
       content: post.content,
       location: post.location,
       imageUrl: post.imageUrl,
+      imageFileId: post.imageFileId,
+      imageFolder: post.imageFolder,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -284,6 +301,8 @@ const getPostsByUser = async (req, res) => {
       content: p.content,
       location: p.location,
       imageUrl: p.imageUrl,
+      imageFileId: p.imageFileId,
+      imageFolder: p.imageFolder,
       author: toAuthorResponse(p),
       likesCount: p.likes?.length || 0,
       commentsCount: p.comments?.length || 0,

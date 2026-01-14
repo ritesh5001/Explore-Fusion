@@ -6,6 +6,8 @@ const postSchema = new mongoose.Schema(
     content: { type: String, required: true },
     location: { type: String, required: true },
     imageUrl: { type: String, trim: true },
+    imageFileId: { type: String, trim: true },
+    imageFolder: { type: String, trim: true },
     author: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

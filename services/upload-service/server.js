@@ -23,6 +23,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Versioned health (for gateway routing patterns)
+app.get('/api/v1/upload/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'upload',
+    env: process.env.NODE_ENV,
+  });
+});
+
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
@@ -59,5 +68,5 @@ app.post('/api/v1/upload', upload.single('image'), (req, res) => {
   });
 });
 
-const PORT = Number(process.env.UPLOAD_PORT) || 5005;
+const PORT = Number(process.env.PORT) || Number(process.env.UPLOAD_PORT) || 5005;
 app.listen(PORT, () => console.log(`Upload Service running on port ${PORT}`));

@@ -18,6 +18,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Versioned health
+app.get('/api/v1/matches/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'matches',
+    env: process.env.NODE_ENV,
+  });
+});
+
 // Root endpoint
 app.get('/', (req, res) => {
   res.send('Matches Service is running');

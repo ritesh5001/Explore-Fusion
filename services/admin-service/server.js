@@ -33,6 +33,15 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Versioned health (for gateway path /api/v1/admin/health)
+app.get('/api/v1/admin/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'admin',
+    env: process.env.NODE_ENV,
+  });
+});
+
 const start = async () => {
   const { authConn, bookingConn } = await connectDb();
   const models = initModels({ authConn, bookingConn });

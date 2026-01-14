@@ -18,6 +18,11 @@
 * **Community Chat:** Instant, bidirectional messaging using **Socket.IO**.
 * **Global Lounge:** Travelers can discuss plans in a shared live room.
 
+### 👤 Social Profiles (Instagram-style)
+* **Universal profile page:** View any user at `/users/:id` from the feed and other surfaces.
+* **Follow system:** Follow/unfollow users with strict role rules (admins/superadmins cannot be followed; superadmin cannot follow anyone).
+* **Profile stats + posts grid:** Followers/following/posts counts and a responsive posts grid with modal preview.
+
 ### 📱 Core Features
 * **Authentication:** Secure JWT-based login and registration.
 * **Media Uploads:** Dedicated service for handling image storage and retrieval.
@@ -43,6 +48,7 @@
 * **Chat Service:** Socket.IO (Real-time WebSocket)
 * **Notification Service:** Notifications APIs
 * **Matches Service:** Buddy matching APIs
+* **Social Service:** Follow graph APIs
 * **Database:** MongoDB (Mongoose)
 
 ---
@@ -63,6 +69,7 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | **Chat** | `5006` | WebSocket Server for Real-Time Chat |
 | **Notification** | `5008` | Notification APIs |
 | **Matches** | `5009` | Buddy matching APIs |
+| **Social** | `5010` | Follow graph (follow/unfollow, followers/following) |
 | **Client** | `5173` | React Frontend |
 
 Notes:
@@ -136,6 +143,7 @@ Common ones used by the services:
 * `ADMIN_SERVICE_URL` (optional)
 * `NOTIFICATION_SERVICE_URL` (optional)
 * `MATCHES_SERVICE_URL` (optional)
+* `SOCIAL_SERVICE_URL` (optional)
 
 **Client (client)**
 * `VITE_API_BASE_URL` (gateway base; can be either the origin or the full `/api/v1` base)
@@ -143,6 +151,37 @@ Common ones used by the services:
 * `VITE_IMAGEKIT_URL_ENDPOINT`
 * `VITE_IMAGEKIT_AUTH_ENDPOINT` (optional override; recommended to leave unset)
   * By default the client uses `${VITE_API_BASE_URL}/imagekit-auth`
+
+---
+
+## 👤 Profile System (Frontend)
+
+The app includes an Instagram-style profile experience.
+
+### Routes
+* Profile: `GET /users/:id` (frontend route; protected)
+
+### APIs used
+* Aggregated profile: `GET /api/v1/users/:id/profile`
+  * Expected shape:
+    ```json
+    {
+      "user": { "_id": "...", "name": "...", "username": "...", "avatar": "...", "bio": "...", "role": "..." },
+      "counts": { "followers": 0, "following": 0, "posts": 0 },
+      "isFollowing": true,
+      "followsYou": false
+    }
+    ```
+* Follow/unfollow:
+  * `POST /api/v1/follow/:id`
+  * `DELETE /api/v1/unfollow/:id`
+  * `GET /api/v1/follow/followers/:id`
+  * `GET /api/v1/follow/following/:id`
+* User posts: `GET /api/v1/posts/user/:id`
+
+### UI behavior
+* Feed post headers show author avatar + name/username and link to `/users/:id`.
+* Profile shows avatar, name, username, bio, counts, follow state, and a posts grid.
 
 ---
 

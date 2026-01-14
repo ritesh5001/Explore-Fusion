@@ -1,16 +1,38 @@
-# React + Vite
+# Explore Fusion Client (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Explore Fusion frontend built with React, Vite, and Tailwind.
 
-Currently, two official plugins are available:
+## Run locally
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+From the repo root:
 
-## React Compiler
+	npm --prefix client install
+	npm --prefix client run dev
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Run the full stack (client + gateway + services):
 
-## Expanding the ESLint configuration
+	npm run dev
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Environment variables
+
+Create `client/.env` with:
+
+- `VITE_API_BASE_URL` – API gateway base URL
+  - Local: `http://localhost:5050`
+  - Render: `https://explore-fusion-gateway.onrender.com`
+
+Optional (ImageKit uploads):
+
+- `VITE_IMAGEKIT_PUBLIC_KEY`
+- `VITE_IMAGEKIT_URL_ENDPOINT`
+
+## Universal profile system
+
+- Route: `/users/:id` (protected)
+- Feed post header shows author avatar + label and links to profiles
+- Profile page shows avatar/name/username/bio, stats, follow/unfollow (role rules), and a posts grid
+
+## Quality checks
+
+	npm --prefix client run lint
+	npm --prefix client run build

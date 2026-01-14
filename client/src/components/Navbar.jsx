@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import useAuth from '../auth/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
@@ -15,7 +15,21 @@ const Navbar = () => {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const defaultRemoteLogo = 'https://ik.imagekit.io/Ritesh5001/explore-fusion/branding/logo.png';
-  const [logoSrc, setLogoSrc] = useState(() => import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo);
+  const logoSrc = import.meta.env.VITE_BRAND_LOGO_URL || defaultRemoteLogo;
+  const logoFallbackTriedRef = useRef(false);
+
+  const handleLogoError = (e) => {
+    const img = e.currentTarget;
+    // Avoid setState loops: mutate DOM src once, then hide if even fallback fails.
+    if (!logoFallbackTriedRef.current) {
+      logoFallbackTriedRef.current = true;
+      img.onerror = null;
+      img.src = '/branding/logo.png';
+      return;
+    }
+    img.onerror = null;
+    img.style.display = 'none';
+  };
 
   const handleLogout = () => {
     setIsMobileOpen(false);
@@ -61,7 +75,7 @@ const Navbar = () => {
 				className="h-8 w-8 rounded-xl object-contain bg-white/60 dark:bg-white/10"
 				loading="eager"
 				decoding="async"
-        onError={() => setLogoSrc('/branding/logo.png')}
+        onError={handleLogoError}
 			/>
           Explore <span className="text-trail">Fusion</span>
         </Link>

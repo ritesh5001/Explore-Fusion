@@ -12,6 +12,14 @@ app.use(securityMiddleware());
 
 const isProd = process.env.NODE_ENV === 'production';
 
+const getFetch = () => {
+  if (typeof globalThis.fetch === 'function') return globalThis.fetch;
+  return async (...args) => {
+    const mod = await import('node-fetch');
+    return mod.default(...args);
+  };
+};
+
 const serviceUrl = (envKey, devFallback) => {
   const value = process.env[envKey];
   if (value) return value;
@@ -276,6 +284,46 @@ app.use(
 );
 
 const PORT = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 5050;
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);
+
+  // Render free-tier services can spin down when idle. Ping each deployed service periodically to keep them warm.
+  // Production-only: never affects local development.
+  if (process.env.NODE_ENV === 'production') {
+    const keepAliveUrls = [
+      'https://explore-fusion-gateway.onrender.com/health',
+      'https://explore-fusion-auth.onrender.com/health',
+      'https://explore-fusion-booking.onrender.com/health',
+      'https://explore-fusion-post.onrender.com/health',
+      'https://explore-fusion-chat.onrender.com/health',
+      'https://explore-fusion-ai.onrender.com/health',
+      'https://explore-fusion-upload.onrender.com/health',
+      'https://explore-fusion-admin.onrender.com/health',
+      'https://explore-fusion-notification.onrender.com/health',
+      'https://explore-fusion-matches.onrender.com/health',
+    ];
+
+    const fetchFn = getFetch();
+
+    const ping = async () => {
+      for (const url of keepAliveUrls) {
+        try {
+          await fetchFn(url, { method: 'GET' });
+        } catch (_) {
+          // Ignore errors; the goal is only to wake services.
+        }
+      }
+    };
+
+    // Ping every 5 minutes
+    const interval = setInterval(ping, 5 * 60 * 1000);
+    interval.unref?.();
+
+    // Also ping once on startup
+    ping();
+  }
+});
+
+server.on('error', (err) => {
+  console.error('Gateway server error:', err);
 });

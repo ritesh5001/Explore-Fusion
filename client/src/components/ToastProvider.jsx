@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 
+const MotionDiv = motion.div;
+
 const ToastContext = createContext(null);
 
 let nextId = 1;
@@ -41,13 +43,13 @@ export const ToastProvider = ({ children }) => {
 			<div className="fixed top-4 right-4 z-50 space-y-2" aria-live="polite" aria-relevant="additions">
 				<AnimatePresence initial={false}>
 					{toasts.map((t) => (
-						<motion.div
+						<MotionDiv
 							key={t.id}
 							initial={{ opacity: 0, y: -8, filter: 'blur(6px)' }}
 							animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
 							exit={{ opacity: 0, y: -10, filter: 'blur(6px)' }}
 							transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-							className={`min-w-[240px] max-w-sm rounded-2xl shadow border px-4 py-3 bg-white/80 backdrop-blur-md dark:bg-white/8 ${
+							className={`min-w-[240px] max-w-sm rounded-2xl shadow border px-4 py-3 bg-white/80 backdrop-blur-md dark:bg-white/10 ${
 								t.type === 'success'
 									? 'border-emerald-300/50'
 									: t.type === 'error'
@@ -75,7 +77,7 @@ export const ToastProvider = ({ children }) => {
 									×
 								</button>
 							</div>
-						</motion.div>
+						</MotionDiv>
 					))}
 				</AnimatePresence>
 			</div>

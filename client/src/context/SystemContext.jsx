@@ -13,16 +13,14 @@ const safeParse = (raw) => {
 };
 
 export const SystemProvider = ({ children }) => {
-	const [maintenanceMode, setMaintenanceMode] = useState(false);
-	const [readOnlyMode, setReadOnlyMode] = useState(false);
-
-	useEffect(() => {
+	const [maintenanceMode, setMaintenanceMode] = useState(() => {
 		const saved = safeParse(localStorage.getItem(STORAGE_KEY) || '');
-		if (saved && typeof saved === 'object') {
-			setMaintenanceMode(Boolean(saved.maintenanceMode));
-			setReadOnlyMode(Boolean(saved.readOnlyMode));
-		}
-	}, []);
+		return saved && typeof saved === 'object' ? Boolean(saved.maintenanceMode) : false;
+	});
+	const [readOnlyMode, setReadOnlyMode] = useState(() => {
+		const saved = safeParse(localStorage.getItem(STORAGE_KEY) || '');
+		return saved && typeof saved === 'object' ? Boolean(saved.readOnlyMode) : false;
+	});
 
 	useEffect(() => {
 		localStorage.setItem(

@@ -7,17 +7,23 @@ const CreatorDashboard = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (user) fetchSales();
-  }, []);
+    if (!user?._id) return;
 
-  const fetchSales = async () => {
-    try {
-      const { data } = await API.get(`/bookings/creator/${user._id}`);
-      setSales(data);
-    } catch (error) {
-      console.error("Error fetching sales:", error);
-    }
-  };
+    let cancelled = false;
+
+    API.get(`/bookings/creator/${user._id}`)
+      .then(({ data }) => {
+        if (!cancelled) setSales(data);
+      })
+      .catch((error) => {
+        if (!cancelled) setSales([]);
+        console.error('Error fetching sales:', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -11,30 +11,36 @@ const MyTrips = () => {
 	const { showToast } = useToast();
 
   useEffect(() => {
-    if (user) {
-      fetchData();
-    }
+    if (!user?._id) return;
+
+    let cancelled = false;
+
+    const fetchData = async () => {
+      try {
+        const aiRes = await API.get(`/itineraries/my?userId=${user._id}`);
+        const aiBody = aiRes?.data;
+        const aiList = aiBody?.data?.itineraries ?? aiBody?.itineraries ?? aiBody;
+        if (!cancelled) setItineraries(Array.isArray(aiList) ? aiList : []);
+
+        const bookingRes = await API.get(`/bookings/my?userId=${user._id}`);
+        const bookingBody = bookingRes?.data;
+        const bookingList = bookingBody?.data?.bookings ?? bookingBody?.bookings ?? bookingBody;
+        if (!cancelled) setBookings(Array.isArray(bookingList) ? bookingList : []);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        if (!cancelled) {
+          setItineraries([]);
+          setBookings([]);
+        }
+      }
+    };
+
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
-
-  const fetchData = async () => {
-    try {
-      
-      const aiRes = await API.get(`/itineraries/my?userId=${user._id}`);
-      const aiBody = aiRes?.data;
-      const aiList = aiBody?.data?.itineraries ?? aiBody?.itineraries ?? aiBody;
-      setItineraries(Array.isArray(aiList) ? aiList : []);
-
-      
-      const bookingRes = await API.get(`/bookings/my?userId=${user._id}`);
-      const bookingBody = bookingRes?.data;
-      const bookingList = bookingBody?.data?.bookings ?? bookingBody?.bookings ?? bookingBody;
-      setBookings(Array.isArray(bookingList) ? bookingList : []);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      setItineraries([]);
-      setBookings([]);
-    }
-  };
 
   const handleDeleteItinerary = async (itineraryId) => {
     if (!itineraryId || deletingItineraryId) return;

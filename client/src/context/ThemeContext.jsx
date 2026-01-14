@@ -13,14 +13,10 @@ const applyThemeClass = (mode) => {
 
 export const ThemeProvider = ({ children }) => {
 	// Default: dark mode (per requirement)
-	const [theme, setTheme] = useState('dark');
-
-	useEffect(() => {
+	const [theme, setTheme] = useState(() => {
 		const saved = localStorage.getItem(STORAGE_KEY);
-		const next = saved === 'light' || saved === 'dark' ? saved : 'dark';
-		setTheme(next);
-		applyThemeClass(next);
-	}, []);
+		return saved === 'light' || saved === 'dark' ? saved : 'dark';
+	});
 
 	useEffect(() => {
 		applyThemeClass(theme);

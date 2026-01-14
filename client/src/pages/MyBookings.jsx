@@ -57,7 +57,6 @@ export default function MyBookings() {
 
 	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const hasBookings = useMemo(() => bookings.length > 0, [bookings]);

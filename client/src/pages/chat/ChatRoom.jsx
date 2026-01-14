@@ -6,6 +6,11 @@ import ChatWindow from '../../components/chat/ChatWindow';
 import TypingIndicator from '../../components/chat/TypingIndicator';
 import { useToast } from '../../components/ToastProvider';
 import { socket } from '../../utils/socket';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -193,7 +198,7 @@ export default function ChatRoom() {
 		try {
 			socket.emit('sendMessage', { roomId, message });
 			setInput('');
-		} catch (e) {
+		} catch {
 			showToast('Failed to send message', 'error');
 		}
 	};
@@ -212,43 +217,47 @@ export default function ChatRoom() {
 	};
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-8">
-			<div className="flex items-center justify-between gap-4 mb-4">
-				<div>
-					<h1 className="text-xl font-bold">Room: {roomId}</h1>
-					<div className={`text-sm ${connected ? 'text-green-700' : 'text-red-600'}`}>
-						{connected ? 'Connected' : 'Disconnected'}
+		<div className="container-app page-section max-w-5xl">
+			<SectionHeader
+				title="Chat"
+				subtitle={roomId ? `Room: ${roomId}` : 'Room'}
+				right={
+					<div className="flex items-center gap-2">
+						<Badge tone={connected ? 'success' : 'danger'}>{connected ? 'Connected' : 'Disconnected'}</Badge>
+						<Button as={Link} to="/chat" variant="outline" size="sm">
+							Back to rooms
+						</Button>
+					</div>
+				}
+			/>
+
+			<Card className="mt-6 p-0 overflow-hidden">
+				<div className="h-[70vh] flex flex-col">
+					<ChatWindow messages={messages} currentUser={user} loading={loading} />
+					<div className="px-4 pb-2">{typingUser && <TypingIndicator user={typingUser} />}</div>
+					<div className="p-4 border-t border-soft/80 dark:border-white/10 flex flex-col sm:flex-row gap-2">
+						<Input
+							label="Message"
+							type="text"
+							value={input}
+							onChange={(e) => onInputChange(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter') send();
+							}}
+							disabled={!connected}
+							className="flex-1"
+							inputClassName="pr-4"
+						/>
+						<Button
+							onClick={send}
+							disabled={!connected || !canSend}
+							className="sm:self-end"
+						>
+							Send
+						</Button>
 					</div>
 				</div>
-				<Link to="/chat" className="text-sm font-semibold text-blue-600 hover:underline">
-					Back to rooms
-				</Link>
-			</div>
-
-			<div className="bg-white border rounded-lg shadow-sm h-[70vh] flex flex-col">
-				<ChatWindow messages={messages} currentUser={user} loading={loading} />
-				<div className="px-4 pb-2">{typingUser && <TypingIndicator user={typingUser} />}</div>
-				<div className="p-4 border-t flex gap-2">
-					<input
-						type="text"
-						value={input}
-						onChange={(e) => onInputChange(e.target.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') send();
-						}}
-						placeholder="Type a message…"
-						className="flex-1 border rounded px-3 py-2 outline-none focus:border-blue-400"
-						disabled={!connected}
-					/>
-					<button
-						onClick={send}
-						disabled={!connected || !canSend}
-						className="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-					>
-						Send
-					</button>
-				</div>
-			</div>
+			</Card>
 		</div>
 	);
 }

@@ -14,7 +14,7 @@ const BuddyMatcher = () => {
     try {
       const { data } = await API.post('/ai/match', formData);
       setBuddy(data.buddy);
-    } catch (error) {
+    } catch {
 		showToast('Failed to find a match', 'error');
     }
     setLoading(false);

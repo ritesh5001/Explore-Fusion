@@ -10,6 +10,7 @@ dotenv.config();
 dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
 
 const uploadRoutes = require('./routes/uploadRoutes');
+const { getUploadAuth } = require('./controllers/uploadController');
 
 const app = express();
 app.use(cors());
@@ -31,6 +32,11 @@ app.get('/api/v1/upload/health', (req, res) => {
     env: process.env.NODE_ENV,
   });
 });
+
+// ImageKit auth endpoint (used by gateway /api/v1/imagekit-auth)
+// Returns: { token, expire, signature }
+app.get('/imagekit-auth', getUploadAuth);
+app.post('/imagekit-auth', getUploadAuth);
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {

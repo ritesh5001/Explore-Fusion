@@ -138,12 +138,11 @@ Common ones used by the services:
 * `MATCHES_SERVICE_URL` (optional)
 
 **Client (client)**
-* `VITE_API_BASE_URL` (must be the gateway `/api/v1` base)
+* `VITE_API_BASE_URL` (gateway base; can be either the origin or the full `/api/v1` base)
 * `VITE_IMAGEKIT_PUBLIC_KEY`
 * `VITE_IMAGEKIT_URL_ENDPOINT`
-* `VITE_IMAGEKIT_AUTH_ENDPOINT`
-  * Local dev recommended: `http://localhost:5050/api/v1/imagekit-auth`
-  * Production recommended: `https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth`
+* `VITE_IMAGEKIT_AUTH_ENDPOINT` (optional override; recommended to leave unset)
+  * By default the client uses `${VITE_API_BASE_URL}/imagekit-auth`
 
 ---
 
@@ -194,7 +193,7 @@ Upload (ImageKit auth is handled by auth-service; upload-service only needs Imag
 ### Vercel (Frontend)
 Set these on the `explore-fusion` frontend:
 
-* `VITE_API_BASE_URL=https://explore-fusion-gateway.onrender.com/api/v1`
+* `VITE_API_BASE_URL=https://explore-fusion-gateway.onrender.com`
 
 ---
 
@@ -208,6 +207,12 @@ After deploying, these should work:
 * Admin: `GET https://explore-fusion-gateway.onrender.com/api/v1/admin/health`
 * Notifications: `GET https://explore-fusion-gateway.onrender.com/api/v1/notifications/health`
 * Matches: `GET https://explore-fusion-gateway.onrender.com/api/v1/matches/health`
+
+ImageKit auth (returns `{ token, expire, signature }`):
+
+```bash
+curl https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth
+```
 
 AI Chat:
 

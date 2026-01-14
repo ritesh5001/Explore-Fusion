@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import Loader from '../components/ui/Loader';
 import { getPackageById } from '../api/packages';
@@ -6,26 +6,13 @@ import BookPackageButton from '../components/BookPackageButton';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
-import { resolveGatewayUrl } from '../utils/runtimeUrls';
+import LuxImage from '../components/ui/LuxImage';
 
 const PackageDetails = () => {
 	const { id } = useParams();
 	const [pkg, setPkg] = useState(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState('');
-
-	const imageUrl = useMemo(() => {
-		const first = pkg?.images?.[0];
-		if (!first) return null;
-		const raw = String(first);
-		if (raw.startsWith('http')) {
-			if ((raw.includes('imagekit.io') || raw.includes('ik.imagekit.io')) && !raw.includes('tr=')) {
-				return raw + (raw.includes('?') ? '&' : '?') + 'tr=w-1200,h-800';
-			}
-			return raw;
-		}
-		return resolveGatewayUrl(first);
-	}, [pkg]);
 
 	useEffect(() => {
 		if (!id) return;
@@ -88,8 +75,14 @@ const PackageDetails = () => {
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 				<Card className="overflow-hidden">
-					{imageUrl ? (
-						<img src={imageUrl} alt={pkg.title} className="w-full h-80 object-cover" />
+					{pkg?.images?.[0] ? (
+						<LuxImage
+							src={pkg.images[0]}
+							alt={pkg.title}
+							mode="hero"
+							heroTransform="w-1400,h-900"
+							className="w-full h-80"
+						/>
 					) : (
 						<div className="w-full h-80 bg-soft/60 dark:bg-white/10 flex items-center justify-center text-charcoal/60 dark:text-sand/60">
 							No image

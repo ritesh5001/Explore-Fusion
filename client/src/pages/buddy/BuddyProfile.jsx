@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
+import Card from '../../components/ui/Card';
+import Input from '../../components/ui/Input';
+import Textarea from '../../components/ui/Textarea';
+import Button from '../../components/ui/Button';
 
 export default function BuddyProfile() {
 	const { showToast } = useToast();
@@ -65,50 +69,38 @@ export default function BuddyProfile() {
 
 	return (
 		<div className="max-w-3xl mx-auto px-4 py-10">
-			<h1 className="text-2xl font-bold mb-6">Buddy Profile</h1>
+			<h1 className="text-2xl md:text-3xl font-heading font-extrabold tracking-tight mb-6">Buddy Profile</h1>
 
 			{loading ? (
-				<div className="bg-white border rounded-lg p-6 text-gray-600">Loading…</div>
+				<Card className="p-6 text-charcoal/70 dark:text-sand/70">Loading…</Card>
 			) : (
-				<form onSubmit={onSave} className="bg-white border rounded-lg p-6 space-y-4">
+				<form onSubmit={onSave} className="space-y-4">
 					{error && (
-						<div className="bg-red-50 border border-red-200 text-red-700 rounded p-3 text-sm">{error}</div>
+						<Card className="p-4 border-red-200/60 dark:border-red-300/30">
+							<div className="text-sm text-red-700 dark:text-red-300">{error}</div>
+						</Card>
 					)}
-					<div>
-						<label className="block text-sm font-semibold text-gray-700">Location</label>
-						<input
+					<Card className="p-6 space-y-4">
+						<Input
+							label="Location"
 							value={profile.location}
 							onChange={(e) => setProfile((p) => ({ ...p, location: e.target.value }))}
-							className="mt-1 w-full border rounded px-3 py-2"
-							placeholder="e.g., Mumbai"
 						/>
-					</div>
-					<div>
-						<label className="block text-sm font-semibold text-gray-700">Interests (comma-separated)</label>
-						<input
+						<Input
+							label="Interests (comma-separated)"
 							value={profile.interests}
 							onChange={(e) => setProfile((p) => ({ ...p, interests: e.target.value }))}
-							className="mt-1 w-full border rounded px-3 py-2"
-							placeholder="hiking, food, photography"
 						/>
-					</div>
-					<div>
-						<label className="block text-sm font-semibold text-gray-700">Bio</label>
-						<textarea
+						<Textarea
+							label="Bio"
 							value={profile.bio}
 							onChange={(e) => setProfile((p) => ({ ...p, bio: e.target.value }))}
-							className="mt-1 w-full border rounded px-3 py-2 min-h-32"
-							placeholder="Tell others about your travel vibe…"
 						/>
-					</div>
 
-					<button
-						type="submit"
-						disabled={saving}
-						className="bg-blue-600 text-white font-bold px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-60"
-					>
-						{saving ? 'Saving…' : 'Save Profile'}
-					</button>
+						<Button type="submit" loading={saving} className="w-full">
+							Save Profile
+						</Button>
+					</Card>
 				</form>
 			)}
 		</div>

@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
 import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -46,13 +47,13 @@ const Navbar = () => {
   }, [isAuthenticated, user?.role]);
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md border-b border-soft dark:border-white/10">
+    <nav className="sticky top-0 z-50 border-b border-soft/80 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md">
       <div className="container-app py-3 flex items-center justify-between gap-3">
         <Link
           to="/"
-          className="text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-forest transition"
+          className="text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-trail transition"
         >
-          Explore <span className="text-forest">Fusion</span>
+          Explore <span className="text-trail">Fusion</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -69,7 +70,7 @@ const Navbar = () => {
 
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center rounded-xl border border-soft dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-2 text-charcoal dark:text-sand"
+            className="md:hidden inline-flex items-center justify-center rounded-2xl border border-soft/80 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-2 text-charcoal dark:text-sand"
             aria-label="Open menu"
             aria-expanded={isMobileOpen}
             onClick={() => setIsMobileOpen((v) => !v)}
@@ -82,15 +83,15 @@ const Navbar = () => {
       <div className="hidden md:block">
         <div className="container-app pb-3 flex items-center justify-end gap-4">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} className="text-charcoal dark:text-sand hover:text-trail transition font-semibold">
+            <Link key={l.to} to={l.to} className="text-charcoal/80 dark:text-sand/80 hover:text-trail transition font-semibold">
               {l.label}
             </Link>
           ))}
 
           {!isAuthenticated ? (
-            <Link to="/register" className="btn-primary">
+            <Button as={Link} to="/register" size="sm">
               Register
-            </Link>
+            </Button>
           ) : (
             <>
               <span className="text-mountain dark:text-sand font-semibold">{user?.name || 'User'}</span>
@@ -102,42 +103,76 @@ const Navbar = () => {
         </div>
       </div>
 
-      {isMobileOpen && (
-        <div className="md:hidden border-t border-soft dark:border-white/10 bg-white/80 dark:bg-[#0F1F1A]/80 backdrop-blur-md">
-          <div className="container-app py-3 flex flex-col gap-2">
-            <Button variant="outline" size="sm" onClick={toggleTheme} className="justify-center">
-              {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
-            </Button>
+      <AnimatePresence>
+        {isMobileOpen && (
+          <>
+            <motion.button
+              type="button"
+              aria-label="Close menu"
+              className="fixed inset-0 z-40 bg-charcoal/35"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+              onClick={() => setIsMobileOpen(false)}
+            />
+            <motion.div
+              className="md:hidden fixed top-0 right-0 z-50 h-dvh w-[86vw] max-w-sm border-l border-soft/80 dark:border-white/10 bg-white/80 dark:bg-charcoal/90 backdrop-blur-xl"
+              initial={{ x: 40, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 40, opacity: 0 }}
+              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+            >
+              <div className="p-4 flex items-center justify-between">
+                <div className="font-heading font-bold text-mountain dark:text-sand">Menu</div>
+                <Button variant="ghost" size="sm" onClick={() => setIsMobileOpen(false)} aria-label="Close">
+                  ✕
+                </Button>
+              </div>
 
-            <div className="h-px bg-soft dark:bg-white/10 my-1" />
+              <div className="px-4 pb-4">
+                <Button variant="secondary" size="sm" onClick={toggleTheme} className="w-full justify-center">
+                  {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
+                </Button>
 
-            {links.map((l) => (
-              <Link
-                key={l.to}
-                to={l.to}
-                className="rounded-xl px-3 py-2 font-semibold text-charcoal dark:text-sand hover:bg-soft/60 dark:hover:bg-white/5 transition"
-              >
-                {l.label}
-              </Link>
-            ))}
+                <div className="h-px bg-soft/80 dark:bg-white/10 my-4" />
 
-            {!isAuthenticated ? (
-              <Link to="/register" className="btn-primary text-center">
-                Register
-              </Link>
-            ) : (
-              <>
-                <div className="flex items-center justify-between gap-3 pt-1">
-                  <span className="text-mountain dark:text-sand font-semibold truncate">{user?.name || 'User'}</span>
-                  <button onClick={handleLogout} className="text-red-700 dark:text-red-300 hover:text-red-900 font-semibold transition">
-                    Logout
-                  </button>
+                <div className="flex flex-col gap-1">
+                  {links.map((l) => (
+                    <Link
+                      key={l.to}
+                      to={l.to}
+                      className="rounded-2xl px-3 py-2 font-semibold text-charcoal/90 dark:text-sand/90 hover:bg-soft/60 dark:hover:bg-white/10 transition"
+                    >
+                      {l.label}
+                    </Link>
+                  ))}
                 </div>
-              </>
-            )}
-          </div>
-        </div>
-      )}
+
+                <div className="h-px bg-soft/80 dark:bg-white/10 my-4" />
+
+                {!isAuthenticated ? (
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button as={Link} to="/login" variant="secondary" size="sm" className="w-full">
+                      Sign in
+                    </Button>
+                    <Button as={Link} to="/register" size="sm" className="w-full">
+                      Register
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-mountain dark:text-sand font-semibold truncate">{user?.name || 'User'}</span>
+                    <Button variant="danger" size="sm" onClick={handleLogout}>
+                      Logout
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };

@@ -7,8 +7,15 @@
 		font-family: Inter, ui-sans-serif, system-ui, sans-serif;
 	}
 
+	html, body {
+		height: 100%;
+	}
+
 	body {
-		@apply bg-sand text-charcoal dark:bg-[#081410] dark:text-sand;
+		@apply bg-sand text-charcoal dark:bg-charcoal dark:text-sand;
+		background-image:
+			radial-gradient(1200px 600px at 10% 0%, rgba(34, 211, 238, 0.10), transparent 60%),
+			radial-gradient(900px 500px at 90% 10%, rgba(96, 165, 250, 0.10), transparent 55%);
 	}
 
 	h1,
@@ -51,16 +58,24 @@
 	}
 
 	.card {
-		@apply bg-white dark:bg-[#0F1F1A] border border-soft dark:border-white/10 rounded-2xl shadow-sm p-6 transition transform;
-		@apply hover:-translate-y-1;
+		@apply bg-white/70 dark:bg-white/5 border border-soft/80 dark:border-white/10 rounded-2xl shadow-sm p-6 transition;
+		@apply backdrop-blur-md;
 	}
 
 	.glass-card {
-		@apply backdrop-blur-md bg-white/70 dark:bg-[#0F1F1A]/70 border border-soft dark:border-white/10 rounded-2xl shadow-sm;
+		@apply backdrop-blur-md bg-white/70 dark:bg-white/5 border border-soft/80 dark:border-white/10 rounded-2xl shadow-sm;
 	}
 
 	.gradient-header {
 		@apply text-white rounded-2xl shadow-md;
-		background: linear-gradient(135deg, #2F5D50, #6B8E23);
+		background: radial-gradient(900px 480px at 0% 0%, rgba(34,211,238,0.55), transparent 55%),
+			linear-gradient(135deg, #0A1B3F, #0B1220);
+	}
+
+	/* Premium focus ring */
+	:focus-visible {
+		outline: none;
+		box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.35);
+		border-radius: 14px;
 	}
 }

@@ -1,13 +1,6 @@
-export function Skeleton({ className = '' }) {
-	return (
-		<div
-			className={
-				`animate-pulse rounded-xl bg-soft/80 dark:bg-white/10 ` +
-				className
-			}
-		/>
-	);
-}
+import Skeleton from './Skeleton';
+
+export { Skeleton };
 
 export default function Loader({ label = 'Loading…' }) {
 	return (

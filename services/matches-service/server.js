@@ -1,8 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const mongoose = require('mongoose');
 
 dotenv.config();
+
+const buddyRoutes = require('./routes/buddyRoutes');
 
 const app = express();
 
@@ -32,28 +35,9 @@ app.get('/', (req, res) => {
   res.send('Matches Service is running');
 });
 
-// Matches routes
-app.get('/api/v1/matches', (req, res) => {
-  res.json({ success: true, message: 'Get matches', matches: [] });
-});
+// Buddy matcher APIs (used by frontend as /matches/*)
+app.use('/api/v1/matches', buddyRoutes);
 
-app.post('/api/v1/matches', (req, res) => {
-  res.json({ success: true, message: 'Match created' });
-});
-
-app.get('/api/v1/matches/:id', (req, res) => {
-  res.json({ success: true, message: 'Get match', match: {} });
-});
-
-app.put('/api/v1/matches/:id', (req, res) => {
-  res.json({ success: true, message: 'Match updated' });
-});
-
-app.delete('/api/v1/matches/:id', (req, res) => {
-  res.json({ success: true, message: 'Match deleted' });
-});
-
-// 404 handler
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -62,6 +46,16 @@ app.use((req, res) => {
 });
 
 const PORT = Number(process.env.PORT) || 5009;
-app.listen(PORT, () => {
-  console.log(`Matches Service running on port ${PORT}`);
-});
+
+mongoose
+  .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ef_matches_db')
+  .then(() => {
+    console.log('✅ Matches DB Connected');
+    app.listen(PORT, () => {
+      console.log(`Matches Service running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error('Matches DB Error:', err);
+    process.exit(1);
+  });

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
 
@@ -8,15 +8,19 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, token, user } = useAuth();
   const { showToast } = useToast();
+
+	if (token && user) {
+		return <Navigate to="/" replace />;
+	}
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
       setSubmitting(true);
       await login(email, password);
-      navigate('/dashboard', { replace: true });
+		navigate('/', { replace: true });
     } catch (error) {
 		showToast(error?.message || 'Login failed', 'error');
     } finally {

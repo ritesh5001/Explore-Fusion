@@ -21,7 +21,14 @@ function App() {
 						</ProtectedRoute>
 					}
 				/>
-				<Route path="/*" element={<AppRoutes />} />
+				<Route
+					path="/*"
+					element={
+						<ProtectedRoute>
+							<AppRoutes />
+						</ProtectedRoute>
+					}
+				/>
 			</Routes>
 		</AppLayout>
     </Router>

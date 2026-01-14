@@ -24,7 +24,14 @@ mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ef_booking_
   .then(() => console.log('✅ Booking DB Connected'))
   .catch(err => console.error('DB Error:', err));
 
-
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'booking',
+    env: process.env.NODE_ENV,
+  });
+});
 
 app.use('/api/v1/packages', packageRoutes);
 app.use('/api/v1/bookings', bookingRoutes);

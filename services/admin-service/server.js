@@ -24,6 +24,15 @@ app.get('/', (req, res) => {
   res.send('Admin Service is running');
 });
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'admin',
+    env: process.env.NODE_ENV,
+  });
+});
+
 const start = async () => {
   const { authConn, bookingConn } = await connectDb();
   const models = initModels({ authConn, bookingConn });

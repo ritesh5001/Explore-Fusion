@@ -75,15 +75,11 @@ const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:
 
 // Optional services (allow gateway to boot even if not deployed yet)
 const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007', { requiredInProd: false });
-
-// Matches/Notifications can run as separate services in production.
-// If not configured, fall back to booking-service (still safe in production because BOOKING_SERVICE_URL is required).
-const MATCHES_SERVICE_URL = process.env.MATCHES_SERVICE_URL || BOOKING_SERVICE_URL;
-const NOTIFICATION_SERVICE_URL = process.env.NOTIFICATION_SERVICE_URL || BOOKING_SERVICE_URL;
-
 const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004', { requiredInProd: false });
 const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005', { requiredInProd: false });
 const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006', { requiredInProd: false });
+const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008', { requiredInProd: false });
+const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009', { requiredInProd: false });
 
 if (ADMIN_SERVICE_URL) {
   app.use(
@@ -204,22 +200,26 @@ app.use(
 
 app.use(
   '/api/v1/matches',
-  createProxyMiddleware({
-    target: MATCHES_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/matches${path}`,
-  })
+  MATCHES_SERVICE_URL
+    ? createProxyMiddleware({
+        target: MATCHES_SERVICE_URL,
+        changeOrigin: true,
+        onProxyReq: proxyJsonBody,
+        pathRewrite: (path) => `/api/v1/matches${path}`,
+      })
+    : disabledRoute('Matches service is not configured')
 );
 
 app.use(
   '/api/v1/notifications',
-  createProxyMiddleware({
-    target: NOTIFICATION_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/notifications${path}`,
-  })
+  NOTIFICATION_SERVICE_URL
+    ? createProxyMiddleware({
+        target: NOTIFICATION_SERVICE_URL,
+        changeOrigin: true,
+        onProxyReq: proxyJsonBody,
+        pathRewrite: (path) => `/api/v1/notifications${path}`,
+      })
+    : disabledRoute('Notification service is not configured')
 );
 
 app.use(

@@ -6,9 +6,12 @@ import ItineraryDayCard from '../../components/ai/ItineraryDayCard';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import SectionHeader from '../../components/ui/SectionHeader';
-import PageLoader from '../../components/states/PageLoader';
-import ErrorState from '../../components/states/ErrorState';
-import EmptyState from '../../components/states/EmptyState';
+import PageLoader from '../../components/ui/PageLoader';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
+import Input from '../../components/ui/Input';
+import Select from '../../components/ui/Select';
+import { Skeleton } from '../../components/ui/Loader';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -89,7 +92,7 @@ export default function AiItinerary() {
 	};
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-8">
+		<div className="container-app page-section max-w-5xl">
 			<SectionHeader
 				title="AI Itinerary Generator"
 				subtitle="Generate a day-by-day plan and save it to your account."
@@ -98,45 +101,37 @@ export default function AiItinerary() {
 			<Card className="mt-6 p-5">
 				<form onSubmit={onSubmit} className="grid md:grid-cols-4 gap-4">
 					<div className="md:col-span-2">
-						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Destination</label>
-						<input
+						<Input
+							label="Destination"
 							value={destination}
 							onChange={(e) => setDestination(e.target.value)}
-							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
 							placeholder="Goa"
 						/>
 					</div>
 					<div>
-						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Days</label>
-						<input
+						<Input
+							label="Days"
 							type="number"
 							min={1}
 							value={days}
 							onChange={(e) => setDays(e.target.value)}
-							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
 						/>
 					</div>
 					<div>
-						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Budget</label>
-						<input
+						<Input
+							label="Budget"
 							type="number"
 							min={1}
 							value={budget}
 							onChange={(e) => setBudget(e.target.value)}
-							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
 						/>
 					</div>
 					<div className="md:col-span-2">
-						<label className="block text-sm font-semibold text-gray-700 dark:text-white/70">Travel style</label>
-						<select
-							value={style}
-							onChange={(e) => setStyle(e.target.value)}
-							className="mt-1 w-full rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2"
-						>
+						<Select label="Travel style" value={style} onChange={(e) => setStyle(e.target.value)}>
 							<option value="budget">budget</option>
 							<option value="luxury">luxury</option>
 							<option value="adventure">adventure</option>
-						</select>
+						</Select>
 					</div>
 					<div className="md:col-span-2 flex items-end gap-2">
 						<Button type="submit" disabled={!canGenerate} aria-label="Generate itinerary">
@@ -151,7 +146,18 @@ export default function AiItinerary() {
 
 			<div className="mt-6">
 				{loading ? (
-					<PageLoader label="Generating itinerary…" />
+					<div className="space-y-3">
+						{Array.from({ length: 4 }).map((_, i) => (
+							<Card key={i} className="p-5">
+								<Skeleton className="h-4 w-28" />
+								<div className="mt-3 space-y-2">
+									<Skeleton className="h-4 w-full" />
+									<Skeleton className="h-4 w-5/6" />
+									<Skeleton className="h-4 w-2/3" />
+								</div>
+							</Card>
+						))}
+					</div>
 				) : error ? (
 					<ErrorState title="Couldn’t generate itinerary" description={error} onRetry={generate} />
 				) : result.length === 0 ? (

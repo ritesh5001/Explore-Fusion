@@ -6,7 +6,9 @@ import ChatBubble from '../../components/ai/ChatBubble';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
-import ErrorState from '../../components/states/ErrorState';
+import ErrorState from '../../components/ui/ErrorState';
+import Input from '../../components/ui/Input';
+import { Skeleton } from '../../components/ui/Loader';
 
 const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -60,7 +62,7 @@ export default function AiChat() {
 	};
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-8">
+		<div className="container-app page-section max-w-5xl">
 			<SectionHeader
 				title="AI Travel Assistant"
 				subtitle="Chat with AI for trip ideas, budgets, and planning help."
@@ -71,11 +73,16 @@ export default function AiChat() {
 					{messages.map((m, idx) => (
 						<ChatBubble key={idx} role={m.role} text={m.text} time={m.time} />
 					))}
-					{thinking && <div className="text-sm text-charcoal/70 dark:text-sand/70">AI is thinking…</div>}
+					{thinking && (
+						<div className="space-y-2">
+							<Skeleton className="h-4 w-48" />
+							<Skeleton className="h-4 w-72" />
+						</div>
+					)}
 					<div ref={endRef} />
 				</div>
 
-				<div className="border-t border-soft p-4">
+				<div className="border-t border-soft/80 dark:border-white/10 p-4">
 					{!!error && !thinking && (
 						<ErrorState
 							className="mb-3 p-4"
@@ -85,16 +92,17 @@ export default function AiChat() {
 							retryLabel="Retry"
 						/>
 					)}
-					<div className="flex gap-2">
-						<input
+					<div className="flex flex-col sm:flex-row gap-2">
+						<Input
+							label="Ask the assistant"
 							value={input}
 							onChange={(e) => setInput(e.target.value)}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter') send();
 							}}
-							placeholder="Plan a 5 day trip to Goa under budget…"
-							className="flex-1 rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2 outline-none focus:ring-2 focus:ring-forest/40"
 							disabled={thinking}
+							className="flex-1"
+							inputClassName="pr-4"
 						/>
 						<Button onClick={send} disabled={!canSend} aria-label="Send message">
 							Send

@@ -124,16 +124,58 @@ app.use(
     })
 );
 
-app.use(
-  '/api/v1/imagekit-auth',
-  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBody,
-      pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
-    })
-);
+// ImageKit auth: Client -> Gateway -> Upload Service -> ImageKit
+// GET /api/v1/imagekit-auth
+// Proxies to: ${UPLOAD_SERVICE_URL}/imagekit-auth
+const proxyImagekitAuth = async (req, res) => {
+  if (!UPLOAD_SERVICE_URL) {
+    return res.status(503).json({
+      success: false,
+      message: 'Upload service not configured',
+    });
+  }
+
+  try {
+    const fetch = getFetch();
+    const targetUrl = `${String(UPLOAD_SERVICE_URL).replace(/\/$/, '')}/imagekit-auth`;
+
+    const method = String(req.method || 'GET').toUpperCase();
+    if (method !== 'GET' && method !== 'POST') {
+      return res.status(405).json({
+        success: false,
+        message: 'Method not allowed',
+      });
+    }
+
+    const upstream = await fetch(targetUrl, {
+      method,
+      headers: {
+        // Forward auth if present (not required, but supported)
+        ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
+      },
+    });
+
+    const payload = await upstream.json().catch(() => null);
+    if (!upstream.ok) {
+      return res.status(upstream.status).json(
+        payload || {
+          success: false,
+          message: 'Failed to generate ImageKit auth',
+        }
+      );
+    }
+
+    return res.json(payload);
+  } catch (error) {
+    return res.status(503).json({
+      success: false,
+      message: error?.message || 'Upload service unavailable',
+    });
+  }
+};
+
+app.get('/api/v1/imagekit-auth', proxyImagekitAuth);
+app.post('/api/v1/imagekit-auth', proxyImagekitAuth);
 
 app.use(
   '/api/v1/users',

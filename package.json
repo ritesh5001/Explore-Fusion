@@ -9,7 +9,8 @@
     "dev:client": "npm --prefix client run dev",
     "dev:gateway": "npm --prefix gateway run dev",
     "dev:services": "concurrently --kill-others-on-fail -n admin,ai,auth,booking,chat,post,upload -c green,yellow,blue,white,red,gray,cyan \"npm --prefix services/admin-service run dev\" \"npm --prefix services/ai-service run dev\" \"npm --prefix services/auth-service run dev\" \"npm --prefix services/booking-service run dev\" \"npm --prefix services/chat-service run dev\" \"npm --prefix services/post-service run dev\" \"npm --prefix services/upload-service run dev\"",
-    "strip:comments": "node scripts/strip-comments.js"
+    "strip:comments": "node scripts/strip-comments.js",
+    "upload:branding": "node services/upload-service/scripts/uploadBrandingAssets.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

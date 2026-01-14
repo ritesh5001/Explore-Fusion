@@ -10,7 +10,6 @@ const hasImagekitConfig = () => {
 const debug = (...args) => {
   if (!isDev) return;
   try {
-    // eslint-disable-next-line no-console
     console.debug(...args);
   } catch {
     // noop
@@ -46,7 +45,6 @@ const extractImagekitErrorMessage = (err) => {
   if (isDev) {
     // In dev, surface the response once per failure for debugging.
     // Never log secrets; this should not include private keys.
-    // eslint-disable-next-line no-console
     console.error('[ImageKit Upload Failed]', {
       status,
       message: msg,
@@ -82,7 +80,6 @@ const resolveFolder = (type) => {
 
 const logUploadFolder = (folder) => {
   if (!isDev) return;
-  // eslint-disable-next-line no-console
   console.info('[ImageKit] Upload folder:', folder);
 };
 

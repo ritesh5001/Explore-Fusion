@@ -5,6 +5,19 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,  
   },
+  username: {
+    type: String,
+    trim: true,
+  },
+  avatar: {
+    type: String,
+    trim: true,
+  },
+  bio: {
+    type: String,
+    trim: true,
+    maxlength: 240,
+  },
   email: {
     type: String,
     required: true,

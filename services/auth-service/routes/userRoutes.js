@@ -4,6 +4,7 @@ const router = express.Router();
 const {
   getMyProfile,
   getUserById,
+  getUserProfile,
   updateMyProfile,
   deleteMyAccount,
   listUsersLight,
@@ -18,6 +19,7 @@ router.put('/me', updateMyProfile);
 router.delete('/me', deleteMyAccount);
 
 router.get('/', isAdmin, listUsersLight);
+router.get('/:id/profile', getUserProfile);
 router.get('/:id', getUserById);
 
 module.exports = router;

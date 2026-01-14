@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 // Avoid console spam: only log a given failing src once (dev only).
 const loggedFailures = new Set();
@@ -19,13 +19,12 @@ export default function SafeImage({
 }) {
 	const primarySrc = useMemo(() => (src ? String(src) : ''), [src]);
 	const fallbackSrc = useMemo(() => normalizeFallback(fallback), [fallback]);
-
-	const [currentSrc, setCurrentSrc] = useState(primarySrc);
 	const triedFallbackRef = useRef(false);
+	const lastPrimaryRef = useRef(primarySrc);
 
 	useEffect(() => {
+		lastPrimaryRef.current = primarySrc;
 		triedFallbackRef.current = false;
-		setCurrentSrc(primarySrc);
 	}, [primarySrc]);
 
 	const handleError = (e) => {
@@ -35,10 +34,14 @@ export default function SafeImage({
 			console.warn('[SafeImage] failed to load:', primarySrc);
 		}
 
-		if (!triedFallbackRef.current && fallbackSrc && currentSrc !== fallbackSrc) {
-			triedFallbackRef.current = true;
-			setCurrentSrc(fallbackSrc);
-			return;
+		if (!triedFallbackRef.current && fallbackSrc) {
+			try {
+				triedFallbackRef.current = true;
+				e.currentTarget.src = fallbackSrc;
+				return;
+			} catch {
+				// ignore
+			}
 		}
 
 		// If even fallback fails, hide the element.
@@ -57,7 +60,7 @@ export default function SafeImage({
 
 	return (
 		<img
-			src={currentSrc || fallbackSrc || ''}
+			src={primarySrc || fallbackSrc || ''}
 			alt={alt}
 			className={className}
 			loading={props.loading || 'lazy'}

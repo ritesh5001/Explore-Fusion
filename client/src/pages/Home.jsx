@@ -257,9 +257,37 @@ const Home = () => {
           {(Array.isArray(posts) ? posts : []).map((post) => (
             <Card key={post._id} className="p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
               <div className="flex justify-between items-start mb-2 gap-3">
-                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand">
-                  {post.title || String(post.content || '').slice(0, 48) || 'Post'}
-                </h2>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {post?.user?._id ? (
+                      <Link
+                        to={`/users/${post.user._id}`}
+                        className="text-sm font-semibold text-mountain dark:text-sand hover:underline truncate"
+                      >
+                        {post.user.name || post.user.username || 'User'}
+                      </Link>
+                    ) : post?.author?._id ? (
+                      <Link
+                        to={`/users/${post.author._id}`}
+                        className="text-sm font-semibold text-mountain dark:text-sand hover:underline truncate"
+                      >
+                        {post.author.name || 'User'}
+                      </Link>
+                    ) : (
+                      <div className="text-sm font-semibold text-mountain dark:text-sand">User</div>
+                    )}
+
+                    {(post?.user?.role || post?.author?.role) === 'creator' && (
+                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-trail/15 text-mountain dark:text-sand border border-trail/25">
+                        Creator
+                      </span>
+                    )}
+                  </div>
+
+                  <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand mt-1">
+                    {post.title || String(post.content || '').slice(0, 48) || 'Post'}
+                  </h2>
+                </div>
                 <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full shrink-0">
                   📍 {post.location}
                 </span>

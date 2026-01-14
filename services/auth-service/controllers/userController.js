@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('../models/User');
+const Follow = require('../models/Follow');
+const Post = require('../models/Post');
 
 const jsonSuccess = (res, status, data) => {
   return res.status(status).json({
@@ -19,6 +21,9 @@ const buildSafeSelfUser = (userDoc) => {
   return {
     _id: userDoc._id,
     name: userDoc.name,
+    username: userDoc.username,
+    avatar: userDoc.avatar,
+    bio: userDoc.bio,
     email: userDoc.email,
     role: userDoc.role,
     isVerifiedCreator: userDoc.isVerifiedCreator,
@@ -31,9 +36,25 @@ const buildPublicUser = (userDoc) => {
   return {
     _id: userDoc._id,
     name: userDoc.name,
+    username: userDoc.username,
+    avatar: userDoc.avatar,
+    bio: userDoc.bio,
     role: userDoc.role,
     isVerifiedCreator: userDoc.isVerifiedCreator,
     createdAt: userDoc.createdAt,
+  };
+};
+
+const buildProfileUser = (userDoc) => {
+  // Payload for profile pages + post author population
+  return {
+    _id: userDoc._id,
+    name: userDoc.name,
+    username: userDoc.username,
+    role: userDoc.role,
+    avatar: userDoc.avatar,
+    bio: userDoc.bio,
+    isVerifiedCreator: userDoc.isVerifiedCreator,
   };
 };
 
@@ -56,13 +77,50 @@ const getUserById = async (req, res) => {
       return jsonError(res, 400, 'Invalid user id');
     }
 
-    const user = await User.findById(id).select('name role isVerifiedCreator createdAt');
+    const user = await User.findById(id).select('name username avatar bio role isVerifiedCreator createdAt');
 
     if (!user) {
       return jsonError(res, 404, 'User not found');
     }
 
     return jsonSuccess(res, 200, buildPublicUser(user));
+  } catch (error) {
+    return jsonError(res, 500, 'Server error');
+  }
+};
+
+// GET /api/v1/users/:id/profile
+const getUserProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!mongoose.isValidObjectId(id)) {
+      return jsonError(res, 400, 'Invalid user id');
+    }
+
+    const user = await User.findById(id).select('name username avatar bio role isVerifiedCreator createdAt');
+    if (!user) {
+      return jsonError(res, 404, 'User not found');
+    }
+
+    const viewerId = req.user?._id;
+
+    const [followers, following, posts, isFollowing] = await Promise.all([
+      Follow.countDocuments({ followingId: user._id }),
+      Follow.countDocuments({ followerId: user._id }),
+      Post.countDocuments({ author: user._id }),
+      viewerId ? Follow.exists({ followerId: viewerId, followingId: user._id }) : null,
+    ]);
+
+    return jsonSuccess(res, 200, {
+      user: buildProfileUser(user),
+      counts: {
+        followers: Number(followers || 0),
+        following: Number(following || 0),
+        posts: Number(posts || 0),
+      },
+      isFollowing: Boolean(isFollowing),
+    });
   } catch (error) {
     return jsonError(res, 500, 'Server error');
   }
@@ -135,7 +193,7 @@ const deleteMyAccount = async (req, res) => {
 const listUsersLight = async (req, res) => {
   try {
     const users = await User.find({})
-      .select('name email role isVerifiedCreator createdAt')
+      .select('name username avatar role isVerifiedCreator createdAt')
       .sort({ createdAt: -1 })
       .limit(500);
 
@@ -148,6 +206,7 @@ const listUsersLight = async (req, res) => {
 module.exports = {
   getMyProfile,
   getUserById,
+  getUserProfile,
   updateMyProfile,
   deleteMyAccount,
   listUsersLight,

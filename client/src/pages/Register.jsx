@@ -1,12 +1,16 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, token, user } = useAuth();
   const { showToast } = useToast();
+
+	if (token && user) {
+		return <Navigate to="/" replace />;
+	}
 
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -18,7 +22,7 @@ const Register = () => {
     try {
       setLoading(true);
       await register(name, email, password);
-      navigate('/dashboard', { replace: true });
+		navigate('/', { replace: true });
     } catch (error) {
 		showToast(error?.message || 'Registration failed', 'error');
     } finally {

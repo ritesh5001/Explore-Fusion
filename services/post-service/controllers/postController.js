@@ -24,18 +24,31 @@ const toAuthorResponse = (postDoc) => {
   };
 };
 
+const normalizeOptionalUrl = (value) => {
+  if (value == null) return undefined;
+  const trimmed = String(value).trim();
+  if (!trimmed) return undefined;
+  return trimmed;
+};
+
 const createPost = async (req, res) => {
   try {
-    const { title, content, location } = req.body;
+    const { title, content, location, imageUrl } = req.body;
 
-    if (!title || !content || !location) {
-      return jsonError(res, 400, 'Please provide title, content and location');
+    if (!content || !location) {
+      return jsonError(res, 400, 'Please provide content and location');
     }
 
+    const safeContent = String(content).trim();
+    const safeLocation = String(location).trim();
+    const safeTitle = typeof title === 'string' && title.trim() ? title.trim() : `Post from ${safeLocation}`;
+    const safeImageUrl = normalizeOptionalUrl(imageUrl);
+
     const post = await Post.create({
-      title: String(title).trim(),
-      content: String(content).trim(),
-      location: String(location).trim(),
+      title: safeTitle,
+      content: safeContent,
+      location: safeLocation,
+      imageUrl: safeImageUrl,
       author: req.user._id,
       authorName: req.user.name,
       likes: [],
@@ -47,6 +60,7 @@ const createPost = async (req, res) => {
       title: post.title,
       content: post.content,
       location: post.location,
+      imageUrl: post.imageUrl,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -77,6 +91,7 @@ const getPosts = async (req, res) => {
       title: p.title,
       content: p.content,
       location: p.location,
+      imageUrl: p.imageUrl,
       author: toAuthorResponse(p),
       likesCount: p.likes?.length || 0,
       commentsCount: p.comments?.length || 0,
@@ -113,6 +128,7 @@ const getPostById = async (req, res) => {
       title: post.title,
       content: post.content,
       location: post.location,
+      imageUrl: post.imageUrl,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -140,10 +156,11 @@ const updatePost = async (req, res) => {
       return jsonError(res, 403, 'Forbidden');
     }
 
-    const { title, content, location } = req.body;
+    const { title, content, location, imageUrl } = req.body;
     if (typeof title === 'string') post.title = title.trim();
     if (typeof content === 'string') post.content = content.trim();
     if (typeof location === 'string') post.location = location.trim();
+    if (typeof imageUrl === 'string') post.imageUrl = normalizeOptionalUrl(imageUrl);
 
     await post.save();
 
@@ -152,6 +169,7 @@ const updatePost = async (req, res) => {
       title: post.title,
       content: post.content,
       location: post.location,
+      imageUrl: post.imageUrl,
       author: toAuthorResponse(post),
       likesCount: post.likes.length,
       comments: post.comments,
@@ -265,6 +283,7 @@ const getPostsByUser = async (req, res) => {
       title: p.title,
       content: p.content,
       location: p.location,
+      imageUrl: p.imageUrl,
       author: toAuthorResponse(p),
       likesCount: p.likes?.length || 0,
       commentsCount: p.comments?.length || 0,

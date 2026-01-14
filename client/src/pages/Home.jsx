@@ -9,12 +9,15 @@ import SectionHeader from '../components/ui/SectionHeader';
 import Loader, { Skeleton } from '../components/ui/Loader';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
+import LuxImage from '../components/ui/LuxImage';
+import { uploadImage } from '../utils/imagekit';
 
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
-  const [newPost, setNewPost] = useState({ title: '', content: '', location: '' });
+  const [newPost, setNewPost] = useState({ content: '', location: '', imageUrl: '' });
+  const [uploading, setUploading] = useState(false);
   const { user } = useAuth();
 	const { showToast } = useToast();
   
@@ -69,12 +72,29 @@ const Home = () => {
 
   const handleCreatePost = async (e) => {
     e.preventDefault();
+    if (uploading) return;
     try {
       await API.post('/posts', newPost);
-      setNewPost({ title: '', content: '', location: '' }); 
+    setNewPost({ content: '', location: '', imageUrl: '' });
       fetchPosts(); 
 	} catch {
 		showToast('Failed to create post', 'error');
+    }
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadImage(file);
+      setNewPost((prev) => ({ ...prev, imageUrl: url }));
+      showToast('Image uploaded', 'success');
+    } catch (error) {
+      const message = error?.message || 'Upload failed';
+      showToast(message, 'error');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -124,12 +144,6 @@ const Home = () => {
 
         <Card className="mt-4 p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
           <form onSubmit={handleCreatePost} className="space-y-4">
-            <Input
-              label="Trip title"
-              aria-label="Trip title"
-              value={newPost.title}
-              onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-            />
             <Textarea
               label="Your story"
               aria-label="Trip story"
@@ -143,7 +157,31 @@ const Home = () => {
               value={newPost.location}
               onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
             />
-            <Button type="submit" className="w-full">Post Trip</Button>
+
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-mountain dark:text-sand">Image (optional)</label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                disabled={uploading}
+                className="block w-full text-sm text-charcoal/80 file:mr-3 file:rounded-xl file:border-0 file:bg-trail/15 file:px-4 file:py-2 file:text-mountain file:font-semibold hover:file:bg-trail/25 dark:text-sand/80"
+              />
+              {newPost.imageUrl ? (
+                <div className="mt-2">
+                  <LuxImage src={newPost.imageUrl} alt="Post image" className="w-full h-56 rounded-2xl" transform="w-900,h-650" />
+                  <div className="mt-2 flex justify-end">
+                    <Button type="button" size="sm" variant="outline" onClick={() => setNewPost((p) => ({ ...p, imageUrl: '' }))}>
+                      Remove image
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <Button type="submit" className="w-full" disabled={uploading || !newPost.content.trim() || !newPost.location.trim()}>
+              {uploading ? 'Uploading…' : 'Post'}
+            </Button>
           </form>
         </Card>
 
@@ -166,11 +204,18 @@ const Home = () => {
           {(Array.isArray(posts) ? posts : []).map((post) => (
             <Card key={post._id} className="p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
               <div className="flex justify-between items-start mb-2 gap-3">
-                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand">{post.title}</h2>
+                <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand">
+                  {post.title || String(post.content || '').slice(0, 48) || 'Post'}
+                </h2>
                 <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full shrink-0">
                   📍 {post.location}
                 </span>
               </div>
+              {post.imageUrl ? (
+                <div className="mb-3">
+                  <LuxImage src={post.imageUrl} alt={post.title || 'Post image'} className="w-full h-64 rounded-2xl" transform="w-1100,h-850" />
+                </div>
+              ) : null}
               <p className="text-charcoal/80 dark:text-sand/80 leading-relaxed">{post.content}</p>
             </Card>
           ))}

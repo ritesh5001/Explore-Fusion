@@ -1,26 +1,26 @@
 const User = require('../models/User');
 
 const isProd = process.env.NODE_ENV === 'production';
-let warnedMissingBookingServiceUrl = false;
+let warnedMissingGatewayUrl = false;
 
-const getBookingServiceUrl = () => {
-  if (process.env.BOOKING_SERVICE_URL) return process.env.BOOKING_SERVICE_URL;
-  if (!isProd) return 'http://localhost:5003';
+const getGatewayUrl = () => {
+  if (process.env.GATEWAY_URL) return process.env.GATEWAY_URL;
+  if (!isProd) return 'http://localhost:5050';
   return null;
 };
 
 const sendAdminNotification = async ({ token, userId, action }) => {
-	const bookingServiceUrl = getBookingServiceUrl();
-	if (!bookingServiceUrl) {
-		if (!warnedMissingBookingServiceUrl) {
-			warnedMissingBookingServiceUrl = true;
-			console.warn('BOOKING_SERVICE_URL is not set; skipping admin notifications');
+	const gatewayUrl = getGatewayUrl();
+	if (!gatewayUrl) {
+		if (!warnedMissingGatewayUrl) {
+			warnedMissingGatewayUrl = true;
+			console.warn('GATEWAY_URL is not set; skipping admin notifications');
 		}
 		return;
 	}
 
   try {
-    await fetch(`${bookingServiceUrl}/api/v1/notifications`, {
+    await fetch(`${String(gatewayUrl).replace(/\/$/, '')}/api/v1/notifications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

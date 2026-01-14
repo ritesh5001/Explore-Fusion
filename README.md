@@ -40,6 +40,8 @@
 * **AI Service:** Google Gemini API (`@google/generative-ai`)
 * **Upload Service:** Legacy Multer uploads + optional ImageKit auth
 * **Chat Service:** Socket.IO (Real-time WebSocket)
+* **Notification Service:** Notifications APIs
+* **Matches Service:** Buddy matching APIs
 * **Database:** MongoDB (Mongoose)
 
 ---
@@ -58,6 +60,8 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 | **AI** | `5004` | Connects to Google Gemini for AI features |
 | **Upload** | `5005` | Handles File/Image Storage |
 | **Chat** | `5006` | WebSocket Server for Real-Time Chat |
+| **Notification** | `5008` | Notification APIs |
+| **Matches** | `5009` | Buddy matching APIs |
 | **Client** | `5173` | React Frontend |
 
 Notes:
@@ -88,7 +92,7 @@ npm run install:all
 ```
 
 ### 4. Environment Variables
-This repo ignores `.env` files (they are required locally).
+This repo ignores `.env` files (they are required locally). Use the `*.env.example` templates in each service folder.
 
 Common ones used by the services:
 
@@ -121,13 +125,88 @@ Common ones used by the services:
 
 **Gateway (gateway)**
 * `GATEWAY_PORT` (default: `5050`)
+* `CORS_ORIGINS` (comma-separated)
+* `AUTH_SERVICE_URL`
+* `BOOKING_SERVICE_URL`
+* `POST_SERVICE_URL`
+* `CHAT_SERVICE_URL` (optional)
+* `AI_SERVICE_URL` (optional)
+* `UPLOAD_SERVICE_URL` (optional)
+* `ADMIN_SERVICE_URL` (optional)
+* `NOTIFICATION_SERVICE_URL` (optional)
+* `MATCHES_SERVICE_URL` (optional)
 
 **Client (client)**
+* `VITE_API_BASE_URL` (must be the gateway `/api/v1` base)
 * `VITE_IMAGEKIT_PUBLIC_KEY`
 * `VITE_IMAGEKIT_URL_ENDPOINT`
 * `VITE_IMAGEKIT_AUTH_ENDPOINT`
   * Local dev recommended: `http://localhost:5050/api/v1/imagekit-auth`
   * Production recommended: `https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth`
+
+---
+
+## ☁️ Deployment Environment Variables
+
+### Render (Gateway)
+Set these on the `explore-fusion-gateway` service:
+
+* `NODE_ENV=production`
+* `PORT` (Render sets this automatically)
+* `CORS_ORIGINS=https://explore-fusion.vercel.app`
+* `AUTH_SERVICE_URL=https://explore-fusion-auth.onrender.com`
+* `BOOKING_SERVICE_URL=https://explore-fusion-booking.onrender.com`
+* `POST_SERVICE_URL=https://explore-fusion-post.onrender.com`
+* `AI_SERVICE_URL=https://explore-fusion-ai.onrender.com`
+* `UPLOAD_SERVICE_URL=https://explore-fusion-upload.onrender.com`
+* `CHAT_SERVICE_URL=https://explore-fusion-chat.onrender.com`
+* `ADMIN_SERVICE_URL=https://explore-fusion-admin.onrender.com`
+* `NOTIFICATION_SERVICE_URL=https://explore-fusion-notification.onrender.com`
+* `MATCHES_SERVICE_URL=https://explore-fusion-matches.onrender.com`
+
+### Render (Each Service)
+All services should be configured with:
+
+* `NODE_ENV=production`
+* `PORT` (Render sets this automatically)
+
+Services that need to validate auth via the Gateway (do not call auth-service directly):
+
+* `GATEWAY_URL=https://explore-fusion-gateway.onrender.com`
+
+DB/JWT (set per service as needed):
+
+* `MONGO_URI` (auth, booking, post)
+* `JWT_SECRET` (must be the same across auth + downstream services)
+
+AI:
+
+* `GEMINI_API_KEY`
+* `GEMINI_MODEL` (optional)
+
+Upload (ImageKit auth is handled by auth-service; upload-service only needs ImageKit keys if you also use its ImageKit endpoint):
+
+* `IMAGEKIT_PUBLIC_KEY` (optional)
+* `IMAGEKIT_PRIVATE_KEY` (optional)
+* `IMAGEKIT_URL_ENDPOINT` (optional)
+
+### Vercel (Frontend)
+Set these on the `explore-fusion` frontend:
+
+* `VITE_API_BASE_URL=https://explore-fusion-gateway.onrender.com/api/v1`
+
+---
+
+## 🧪 Smoke Tests
+
+After deploying, these should work:
+
+* Gateway: `GET https://explore-fusion-gateway.onrender.com/health`
+* Auth (expected 401): `GET https://explore-fusion-gateway.onrender.com/api/v1/auth/me`
+* Upload: `GET https://explore-fusion-gateway.onrender.com/api/v1/upload/health`
+* Admin: `GET https://explore-fusion-gateway.onrender.com/api/v1/admin/health`
+* Notifications: `GET https://explore-fusion-gateway.onrender.com/api/v1/notifications/health`
+* Matches: `GET https://explore-fusion-gateway.onrender.com/api/v1/matches/health`
 
 ### 5. Run Everything (One Command)
 Start client + gateway + all microservices together:

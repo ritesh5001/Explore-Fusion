@@ -12,20 +12,18 @@ app.use(securityMiddleware());
 
 const isProd = process.env.NODE_ENV === 'production';
 
-const serviceUrl = (envKey, devFallback, { requiredInProd = true } = {}) => {
+const serviceUrl = (envKey, devFallback) => {
   const value = process.env[envKey];
   if (value) return value;
   if (!isProd) return devFallback;
-  if (requiredInProd) {
-    throw new Error(`${envKey} is required in production`);
-  }
   return null;
 };
 
-const disabledRoute = (message) => (req, res) => {
+const disabledRoute = (service) => (req, res) => {
   res.status(503).json({
     success: false,
-    message,
+    message: 'Service not configured',
+    service,
   });
 };
 
@@ -74,12 +72,17 @@ const POST_SERVICE_URL = serviceUrl('POST_SERVICE_URL', 'http://localhost:5002')
 const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:5003');
 
 // Optional services (allow gateway to boot even if not deployed yet)
-const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007', { requiredInProd: false });
-const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004', { requiredInProd: false });
-const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005', { requiredInProd: false });
-const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006', { requiredInProd: false });
-const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008', { requiredInProd: false });
-const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009', { requiredInProd: false });
+const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007');
+const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004');
+const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005');
+const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006');
+const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008');
+const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009');
+
+const coreServiceGuard = (name, url) => {
+  if (url) return null;
+  return disabledRoute(name);
+};
 
 if (ADMIN_SERVICE_URL) {
   app.use(
@@ -91,57 +94,62 @@ if (ADMIN_SERVICE_URL) {
     })
   );
 } else {
-  app.use('/api/v1/admin', disabledRoute('Admin service is not configured'));
+  app.use('/api/v1/admin', disabledRoute('admin'));
 }
 app.use(
   '/api/v1/auth',
-  createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: {
-      '^/api/v1/auth': '',
-    },
-  })
+  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: AUTH_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: {
+        '^/api/v1/auth': '',
+      },
+    })
 );
 
 app.use(
   '/api/v1/imagekit-auth',
-  createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
-  })
+  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: AUTH_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: (path) => `/api/v1/imagekit-auth${path}`,
+    })
 );
 
 app.use(
   '/api/v1/users',
-  createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-  })
+  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: AUTH_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+    })
 );
 
 app.use(
   '/auth',
-  createProxyMiddleware({
-    target: AUTH_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-  })
+  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: AUTH_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+    })
 );
 app.use(
   '/api/v1/posts',
-  createProxyMiddleware({
-    target: POST_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: {
-      '^/api/v1/posts': '',
-    },
-  })
+  coreServiceGuard('post', POST_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: POST_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: {
+        '^/api/v1/posts': '',
+      },
+    })
 );
 
 app.use(
@@ -155,47 +163,51 @@ app.use(
           '^/api/v1/ai': '',
         },
       })
-    : disabledRoute('AI service is not configured')
+    : disabledRoute('ai')
 );
 
 app.use(
   '/api/v1/itineraries',
-  createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/itineraries${path}`,
-  })
+  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: BOOKING_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: (path) => `/api/v1/itineraries${path}`,
+    })
 );
 
 app.use(
   '/api/v1/packages',
-  createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/packages${path}`,
-  })
+  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: BOOKING_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: (path) => `/api/v1/packages${path}`,
+    })
 );
 
 app.use(
   '/api/v1/bookings',
-  createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/bookings${path}`,
-  })
+  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: BOOKING_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: (path) => `/api/v1/bookings${path}`,
+    })
 );
 
 app.use(
   '/api/v1/reviews',
-  createProxyMiddleware({
-    target: BOOKING_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBody,
-    pathRewrite: (path) => `/api/v1/reviews${path}`,
-  })
+  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
+    createProxyMiddleware({
+      target: BOOKING_SERVICE_URL,
+      changeOrigin: true,
+      onProxyReq: proxyJsonBody,
+      pathRewrite: (path) => `/api/v1/reviews${path}`,
+    })
 );
 
 app.use(
@@ -207,7 +219,7 @@ app.use(
         onProxyReq: proxyJsonBody,
         pathRewrite: (path) => `/api/v1/matches${path}`,
       })
-    : disabledRoute('Matches service is not configured')
+    : disabledRoute('matches')
 );
 
 app.use(
@@ -219,7 +231,7 @@ app.use(
         onProxyReq: proxyJsonBody,
         pathRewrite: (path) => `/api/v1/notifications${path}`,
       })
-    : disabledRoute('Notification service is not configured')
+    : disabledRoute('notification')
 );
 
 app.use(
@@ -229,7 +241,7 @@ app.use(
         target: UPLOAD_SERVICE_URL,
         changeOrigin: true,
       })
-    : disabledRoute('Upload service is not configured')
+    : disabledRoute('upload')
 );
 
 app.use(
@@ -239,7 +251,7 @@ app.use(
         target: UPLOAD_SERVICE_URL,
         changeOrigin: true,
       })
-    : disabledRoute('Upload service is not configured')
+    : disabledRoute('upload')
 );
 
 app.use(
@@ -260,7 +272,7 @@ app.use(
         },
         pathRewrite: (path) => (path.startsWith('/socket.io') ? path : `/socket.io${path}`),
       })
-    : disabledRoute('Chat service is not configured')
+    : disabledRoute('chat')
 );
 
 const PORT = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 5050;

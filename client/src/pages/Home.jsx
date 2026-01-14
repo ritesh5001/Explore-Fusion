@@ -259,23 +259,26 @@ const Home = () => {
               <div className="flex justify-between items-start mb-2 gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {post?.user?._id ? (
-                      <Link
-                        to={`/users/${post.user._id}`}
-                        className="text-sm font-semibold text-mountain dark:text-sand hover:underline truncate"
-                      >
-                        {post.user.name || post.user.username || 'User'}
-                      </Link>
-                    ) : post?.author?._id ? (
-                      <Link
-                        to={`/users/${post.author._id}`}
-                        className="text-sm font-semibold text-mountain dark:text-sand hover:underline truncate"
-                      >
-                        {post.author.name || 'User'}
-                      </Link>
-                    ) : (
-                      <div className="text-sm font-semibold text-mountain dark:text-sand">User</div>
-                    )}
+                    {(() => {
+                      const author = post?.user || post?.author;
+                      const id = author?._id;
+                      const username = author?.username ? String(author.username) : '';
+                      const name = author?.name ? String(author.name) : '';
+                      const label = username ? `Post from ${username}` : name || 'Unknown user';
+
+                      if (!id) {
+                        return <div className="text-sm font-semibold text-mountain dark:text-sand">{label}</div>;
+                      }
+
+                      return (
+                        <Link
+                          to={`/users/${id}`}
+                          className="text-sm font-semibold text-mountain dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors"
+                        >
+                          {label}
+                        </Link>
+                      );
+                    })()}
 
                     {(post?.user?.role || post?.author?.role) === 'creator' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-trail/15 text-mountain dark:text-sand border border-trail/25">

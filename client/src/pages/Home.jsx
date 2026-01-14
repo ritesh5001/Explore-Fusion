@@ -7,6 +7,8 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
 import Loader, { Skeleton } from '../components/ui/Loader';
+import Input from '../components/ui/Input';
+import Textarea from '../components/ui/Textarea';
 
 
 const Home = () => {
@@ -122,26 +124,22 @@ const Home = () => {
 
         <Card className="mt-4 p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
           <form onSubmit={handleCreatePost} className="space-y-4">
-            <input
-              type="text"
-              placeholder="Trip Title (e.g., Weekend in Manali)"
+            <Input
+              label="Trip title"
               aria-label="Trip title"
-              className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.title}
               onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
             />
-            <textarea
-              placeholder="Share your experience..."
+            <Textarea
+              label="Your story"
               aria-label="Trip story"
-              className="w-full border border-soft dark:border-white/10 p-3 rounded-xl h-24 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.content}
               onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+              className="min-h-28"
             />
-            <input
-              type="text"
-              placeholder="Location"
+            <Input
+              label="Location"
               aria-label="Trip location"
-              className="w-full border border-soft dark:border-white/10 p-3 rounded-xl bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand placeholder:text-charcoal/50 dark:placeholder:text-sand/40"
               value={newPost.location}
               onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
             />

@@ -1,7 +1,9 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import Card from './ui/Card';
 import Button from './ui/Button';
-import { resolveGatewayUrl } from '../utils/runtimeUrls';
+import LuxImage from './ui/LuxImage';
+import Badge from './ui/Badge';
 
 const FALLBACK_IMAGE =
 	'data:image/svg+xml;utf8,' +
@@ -20,38 +22,25 @@ const FALLBACK_IMAGE =
     </svg>`
 	);
 
-const normalizeImageUrl = (img) => {
-	if (!img) return FALLBACK_IMAGE;
-	const raw = String(img);
-	if (raw.startsWith('http')) {
-		// Apply ImageKit transformations when possible
-		if ((raw.includes('imagekit.io') || raw.includes('ik.imagekit.io')) && !raw.includes('tr=')) {
-			return raw + (raw.includes('?') ? '&' : '?') + 'tr=w-400,h-300';
-		}
-		return raw;
-	}
-	return resolveGatewayUrl(img);
-};
-
-export default function PackageCard({ id, title, price, image, destination, duration }) {
+function PackageCard({ id, title, price, image, destination, duration }) {
 	return (
 		<Card className="overflow-hidden">
-			<img src={normalizeImageUrl(image)} alt={title} className="w-full h-44 object-cover" />
+			{image ? (
+				<LuxImage src={image} alt={title} mode="card" transform="w-400,h-300" className="w-full h-44" />
+			) : (
+				<img src={FALLBACK_IMAGE} alt={title} className="w-full h-44 object-cover" />
+			)}
 			<div className="p-6">
 				<div className="flex items-start justify-between gap-3">
 					<h3 className="text-lg font-heading font-bold tracking-tight text-mountain line-clamp-1">{title}</h3>
-					<span className="text-sm font-bold bg-adventure/10 text-adventure px-2 py-1 rounded-xl">
-						${price}
-					</span>
+					<Badge tone="gold">${price}</Badge>
 				</div>
 				<div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
 					{!!destination && (
 						<span className="text-charcoal/70 dark:text-sand/70 line-clamp-1">📍 {destination}</span>
 					)}
 					{!!duration && (
-						<span className="px-2 py-1 rounded-full bg-soft/70 dark:bg-white/10 text-charcoal/70 dark:text-sand/70 text-xs">
-							⏳ {duration}
-						</span>
+						<Badge>{`⏳ ${duration}`}</Badge>
 					)}
 				</div>
 
@@ -62,3 +51,5 @@ export default function PackageCard({ id, title, price, image, destination, dura
 		</Card>
 	);
 }
+
+export default memo(PackageCard);

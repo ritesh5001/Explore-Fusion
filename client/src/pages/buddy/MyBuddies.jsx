@@ -3,9 +3,9 @@ import API from '../../api';
 import BuddyCard from '../../components/buddy/BuddyCard';
 import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
-import PageLoader from '../../components/states/PageLoader';
-import ErrorState from '../../components/states/ErrorState';
-import EmptyState from '../../components/states/EmptyState';
+import PageLoader from '../../components/ui/PageLoader';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -43,7 +43,7 @@ export default function MyBuddies() {
 	}, []);
 
 	return (
-		<div className="max-w-5xl mx-auto px-4 py-10">
+		<div className="container-app page-section max-w-5xl">
 			<SectionHeader
 				title="My Buddies"
 				right={

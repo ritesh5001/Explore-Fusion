@@ -9,14 +9,15 @@ const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds 
 
   const itinerary = Array.from({ length: safeDays }, (_, index) => {
     const day = index + 1;
+    const plan =
+      day === 1
+        ? 'Arrival + check-in\nEvening local food walk\nSunset viewpoint'
+        : day === safeDays
+          ? 'Relaxed morning\nSouvenir shopping\nDeparture'
+          : 'Breakfast\nCity highlights\nOptional museum or beach time\nDinner recommendation';
     return {
       day,
-      activity:
-        day === 1
-          ? 'Arrival + local food walk'
-          : day === safeDays
-            ? 'Souvenir shopping + departure'
-            : 'City highlights + optional museum',
+      plan,
       cost: Math.max(10, Math.round(safeBudget / (safeDays * 4))),
     };
   });
@@ -31,6 +32,46 @@ const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds 
     ai_used: false,
     retryAfterSeconds: retryAfterSeconds ?? null,
   };
+};
+
+const stringifyPlan = (value) => {
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) {
+    return value
+      .map((v) => stringifyPlan(v))
+      .filter(Boolean)
+      .map((v) => (v.startsWith('-') || v.startsWith('•') ? v : `• ${v}`))
+      .join('\n');
+  }
+  if (value && typeof value === 'object') {
+    const lines = [];
+    for (const [k, v] of Object.entries(value)) {
+      const inner = stringifyPlan(v);
+      if (!inner) continue;
+      lines.push(`${k}: ${inner.replace(/\n/g, ' ')}`);
+    }
+    return lines.length ? lines.map((l) => `• ${l}`).join('\n') : JSON.stringify(value);
+  }
+  return String(value || '').trim();
+};
+
+const normalizeItineraryItems = (raw, daysHint) => {
+  const items = Array.isArray(raw) ? raw : [];
+  const out = items.map((item, idx) => {
+    const day = Number(item?.day) || idx + 1;
+    const planCandidate =
+      item?.plan ??
+      item?.activity ??
+      item?.activities ??
+      item?.schedule ??
+      item?.details ??
+      item;
+    const plan = stringifyPlan(planCandidate);
+    return { ...item, day, plan };
+  });
+
+  const targetDays = Math.max(1, Number(daysHint) || out.length || 1);
+  return out.slice(0, targetDays);
 };
 
 
@@ -83,12 +124,33 @@ const planTrip = async (req, res) => {
     const prompt =
       `Create a ${days || 3}-day itinerary for a trip to ${destination || 'the destination'} with a budget of $${budget || 1000}.\n\n` +
       'IMPORTANT: Return ONLY valid JSON and nothing else.\n' +
+      'Rules:\n' +
+      '- itinerary must be an array of days\n' +
+      '- each day must include: day (number), plan (string)\n' +
+      '- plan should be multi-line text with clear bullets\n' +
       'JSON format:\n' +
-      '{"estimated_cost":1000,"currency":"USD","itinerary":[{"day":1,"activity":"...","cost":20}],"note":"..."}';
+      '{"estimated_cost":1000,"currency":"USD","itinerary":[{"day":1,"plan":"• Morning: ...\\n• Afternoon: ...\\n• Evening: ..."}],"note":"..."}';
 
     const text = await generateText(prompt);
     const tripData = safeJsonParse(text);
-    return res.json(tripData);
+
+    const normalized = {
+      ...tripData,
+      itinerary: normalizeItineraryItems(tripData?.itinerary, days),
+    };
+
+    if (!Array.isArray(normalized.itinerary) || normalized.itinerary.length === 0) {
+      return res.json(
+        buildFallbackPlan({
+          destination,
+          days,
+          budget,
+          note: 'AI is temporarily unavailable. Returning a standard plan.',
+        })
+      );
+    }
+
+    return res.json(normalized);
 
   } catch (error) {
     console.error("Trip Plan Error:", error);

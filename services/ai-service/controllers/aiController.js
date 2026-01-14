@@ -1,6 +1,5 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 const { INTENTS, detectIntent } = require('../utils/intentDetector');
-const { isGeminiConfigured, generateText } = require('../utils/geminiClient');
+const { isGroqConfigured, generateText } = require('../utils/groqClient');
 
 
 const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds }) => {
@@ -51,32 +50,18 @@ const buildFallbackBuddy = (reason = "AI Matchmaker is busy, meeting a popular l
 };
 
 
-const parseRetryAfterSeconds = (error) => {
-  const details = Array.isArray(error?.errorDetails) ? error.errorDetails : [];
-  const retryInfo = details.find((d) => d && d['@type'] === 'type.googleapis.com/google.rpc.RetryInfo');
-  const raw = retryInfo?.retryDelay;
-  if (typeof raw !== 'string') return null;
-  const match = raw.match(/^(\d+)s$/);
-  return match ? Number(match[1]) : null;
-};
-
-
-const getGenAI = () => {
-  const key = (process.env.GEMINI_API_KEY || '').trim();
-  if (!key) return null;
+const safeJsonParse = (rawText) => {
+  const cleanText = String(rawText || '').replace(/```json/gi, '').replace(/```/g, '').trim();
   try {
-    return new GoogleGenerativeAI(key);
+    return JSON.parse(cleanText);
   } catch {
-    return null;
+    const start = cleanText.indexOf('{');
+    const end = cleanText.lastIndexOf('}');
+    if (start !== -1 && end !== -1 && end > start) {
+      return JSON.parse(cleanText.slice(start, end + 1));
+    }
+    throw new Error('AI returned non-JSON response');
   }
-};
-
-const genAI = getGenAI();
-
-const getCandidateModels = () => {
-  const configured = (process.env.GEMINI_MODEL || '').trim();
-  const candidates = [configured, 'gemini-2.0-flash', 'gemini-1.5-flash'].filter(Boolean);
-  return [...new Set(candidates)];
 };
 
 
@@ -86,7 +71,7 @@ const planTrip = async (req, res) => {
   const { destination, days, budget } = req.body;
 
   try {
-    if (!genAI) {
+    if (!isGroqConfigured()) {
       return res.json(
         buildFallbackPlan({
           destination, days, budget,
@@ -95,87 +80,26 @@ const planTrip = async (req, res) => {
       );
     }
 
-    const prompt = `
-      You are an expert travel assistant. Create a ${days}-day itinerary for a trip to ${destination} with a budget of $${budget}.
-      
-      IMPORTANT: Return the response ONLY in valid JSON format. Do not add any text outside the JSON.
-      The JSON structure must be exactly like this:
-      {
-        "estimated_cost": "Total cost in USD",
-        "currency": "USD",
-        "itinerary": [
-          { "day": 1, "activity": "Morning activity", "cost": 20 },
-          { "day": 1, "activity": "Afternoon activity", "cost": 30 },
-          { "day": 2, "activity": "Full day tour", "cost": 100 }
-        ],
-        "note": "A brief travel tip"
-      }
-    `;
+    const prompt =
+      `Create a ${days || 3}-day itinerary for a trip to ${destination || 'the destination'} with a budget of $${budget || 1000}.\n\n` +
+      'IMPORTANT: Return ONLY valid JSON and nothing else.\n' +
+      'JSON format:\n' +
+      '{"estimated_cost":1000,"currency":"USD","itinerary":[{"day":1,"activity":"...","cost":20}],"note":"..."}';
 
-    const candidates = getCandidateModels();
-    let lastError;
-
-    for (const modelName of candidates) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-
-        const cleanText = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
-        let tripData;
-        try {
-          tripData = JSON.parse(cleanText);
-        } catch {
-          const start = cleanText.indexOf('{');
-          const end = cleanText.lastIndexOf('}');
-          if (start !== -1 && end !== -1 && end > start) {
-            tripData = JSON.parse(cleanText.slice(start, end + 1));
-          } else {
-            throw new Error('AI returned non-JSON response');
-          }
-        }
-
-        return res.json(tripData);
-      } catch (error) {
-        lastError = error;
-        const status = error?.status;
-
-        
-        if (status === 429) {
-          const retryAfterSeconds = parseRetryAfterSeconds(error);
-          console.warn(`Gemini quota/rate-limit hit (429) on ${modelName}. Returning fallback.`);
-          return res.json(
-            buildFallbackPlan({
-              destination,
-              days,
-              budget,
-              note: 'Gemini quota exceeded / rate-limited. Returning mock itinerary for now.',
-              retryAfterSeconds,
-            })
-          );
-        }
-
-        if (status === 503) {
-          console.warn(`Model ${modelName} overloaded (503). Switching...`);
-          continue;
-        }
-        if (status === 404) continue; 
-        break; 
-      }
-    }
-
-    console.error('All AI models failed for Trip:', lastError);
-    return res.json(
-      buildFallbackPlan({
-        destination, days, budget,
-        note: 'AI services are currently busy. Here is a standard plan.',
-      })
-    );
+    const text = await generateText(prompt);
+    const tripData = safeJsonParse(text);
+    return res.json(tripData);
 
   } catch (error) {
     console.error("Trip Plan Error:", error);
-    res.status(500).json({ message: "Failed to generate itinerary" });
+    return res.json(
+      buildFallbackPlan({
+        destination,
+        days,
+        budget,
+        note: 'AI is temporarily unavailable. Returning a standard plan.',
+      })
+    );
   }
 };
 
@@ -186,7 +110,7 @@ const findBuddy = async (req, res) => {
   const { destination, interests, travelStyle } = req.body;
 
   try {
-    if (!genAI) return res.json(buildFallbackBuddy("AI key missing"));
+    if (!isGroqConfigured()) return res.json(buildFallbackBuddy('AI not configured'));
 
     const prompt = `
       I am a traveler going to ${destination}.
@@ -207,47 +131,9 @@ const findBuddy = async (req, res) => {
       }
     `;
 
-    const candidates = getCandidateModels();
-    let lastError;
-
-    for (const modelName of candidates) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
-
-        const cleanText = String(text).replace(/```json/gi, '').replace(/```/g, '').trim();
-        const buddyData = JSON.parse(cleanText);
-
-        return res.json({ match_found: true, buddy: buddyData });
-
-      } catch (error) {
-        lastError = error;
-        const status = error?.status;
-
-        if (status === 429) {
-          const retryAfterSeconds = parseRetryAfterSeconds(error);
-          console.warn(`Gemini quota/rate-limit hit (429) on ${modelName}. Returning fallback buddy.`);
-          return res.json(
-            buildFallbackBuddy(
-              retryAfterSeconds
-                ? `AI quota exceeded. Try again in ~${retryAfterSeconds}s.`
-                : 'AI quota exceeded / rate-limited. Returning fallback match.'
-            )
-          );
-        }
-
-        if (status === 503 || status === 404) {
-          console.warn(`Model ${modelName} failed for Buddy (Status ${status}). Switching...`);
-          continue;
-        }
-        break;
-      }
-    }
-
-    console.error('All AI models failed for Buddy:', lastError);
-    return res.json(buildFallbackBuddy("AI services busy, returning fallback match."));
+    const text = await generateText(prompt);
+    const buddyData = safeJsonParse(text);
+    return res.json({ match_found: true, buddy: buddyData });
 
   } catch (error) {
     console.error("Buddy Match Error:", error);
@@ -257,26 +143,16 @@ const findBuddy = async (req, res) => {
 
 const listModels = async (req, res) => {
   try {
-    const key = process.env.GEMINI_API_KEY;
-    if (!key) {
-      return res.status(500).json({ message: 'Missing GEMINI_API_KEY in .env' });
-    }
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(key)}`;
-    const response = await fetch(url);
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(response.status).json(data);
-    }
-
-    const models = (data.models || []).map((m) => ({
-      name: m.name,
-      displayName: m.displayName,
-      supportedGenerationMethods: m.supportedGenerationMethods,
-    }));
-
-    return res.json({ models });
+    return res.json({
+      provider: 'groq',
+      models: [
+        {
+          name: 'llama-3.1-8b-instant',
+          displayName: 'Llama 3.1 8B Instant',
+          supportedGenerationMethods: ['generateContent'],
+        },
+      ],
+    });
   } catch (error) {
     return res.status(500).json({ message: error.message });
   }
@@ -353,17 +229,15 @@ const chatSupport = async (req, res) => {
       }
     })();
 
-    if (!isGeminiConfigured()) {
+    if (!isGroqConfigured()) {
       return res.status(503).json({
         success: false,
         message: 'AI is temporarily unavailable. Try again.',
       });
     }
 
-    const { text } = await generateText({
-      systemPrompt: `${SYSTEM_PROMPT}\n\n${intentContext}`,
-      userMessage: message,
-    });
+    const prompt = `${SYSTEM_PROMPT}\n\n${intentContext}\n\nUser: ${message}`;
+    const text = await generateText(prompt);
 
     return res.json({
       success: true,
@@ -372,9 +246,7 @@ const chatSupport = async (req, res) => {
       data: {},
     });
   } catch (error) {
-    const rawStatus = Number(error?.status) || 503;
-    const status = rawStatus === 401 || rawStatus === 403 ? 503 : rawStatus;
-    return res.status(status).json({
+    return res.status(503).json({
       success: false,
       message: 'AI is temporarily unavailable. Try again.',
     });

@@ -11,9 +11,11 @@ app.use(cors());
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+	const provider = (process.env.AI_PROVIDER || 'groq').trim() || 'groq';
   res.json({
     status: 'ok',
     service: 'ai',
+		provider,
   });
 });
 

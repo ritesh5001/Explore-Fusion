@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../../api';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
@@ -6,6 +6,8 @@ import AdminTable from '../../components/admin/AdminTable';
 import RoleSelect from '../../components/admin/RoleSelect';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
+import Input from '../../components/ui/Input';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -29,7 +31,7 @@ export default function UsersAdmin() {
 	const [busyId, setBusyId] = useState(null);
 	const [q, setQ] = useState('');
 
-	const load = async () => {
+	const load = useCallback(async () => {
 		setLoading(true);
 		setError('');
 		try {
@@ -44,12 +46,11 @@ export default function UsersAdmin() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, [showToast]);
 
 	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const filtered = useMemo(() => {
 		const term = q.trim().toLowerCase();
@@ -137,14 +138,7 @@ export default function UsersAdmin() {
 												)}
 											</div>
 											<div className="mt-2">
-												<span
-													className={
-														`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ` +
-														(blocked ? 'bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-white/70' : 'bg-green-50 text-green-700 dark:bg-green-500/10 dark:text-green-200')
-													}
-												>
-													{blocked ? 'Blocked' : 'Active'}
-												</span>
+												<Badge tone={blocked ? 'danger' : 'success'}>{blocked ? 'Blocked' : 'Active'}</Badge>
 											</div>
 									</div>
 								</div>
@@ -179,13 +173,10 @@ export default function UsersAdmin() {
 				}
 				right={
 					<div className="flex items-center gap-2">
-						<input
-							value={q}
-							onChange={(e) => setQ(e.target.value)}
-							placeholder="Search…"
-							className="rounded-xl border border-soft bg-white/80 dark:bg-white/5 dark:border-white/10 px-3 py-2 text-sm"
-						/>
-						<Button variant="link" size="sm" onClick={load} aria-label="Refresh users">
+						<div className="w-64">
+							<Input label="Search" value={q} onChange={(e) => setQ(e.target.value)} />
+						</div>
+							<Button variant="outline" size="sm" onClick={load} aria-label="Refresh users">
 							Refresh
 						</Button>
 					</div>
@@ -198,8 +189,8 @@ export default function UsersAdmin() {
 						const canEdit = busyId !== id;
 						return (
 							<tr key={id} className="align-middle">
-								<td className="px-5 py-3 whitespace-nowrap font-semibold text-gray-900">{u?.name || '—'}</td>
-								<td className="px-5 py-3 whitespace-nowrap text-gray-700">{u?.email || '—'}</td>
+								<td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">{u?.name || '—'}</td>
+								<td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">{u?.email || '—'}</td>
 								<td className="px-5 py-3 whitespace-nowrap">
 									{isSuperadmin ? (
 										<RoleSelect
@@ -208,18 +199,11 @@ export default function UsersAdmin() {
 											onChange={(r) => changeRole(u, r)}
 										/>
 									) : (
-										<span className="text-gray-700">{u?.role || 'user'}</span>
+										<span className="text-charcoal/80 dark:text-sand/80 font-semibold">{u?.role || 'user'}</span>
 									)}
 								</td>
 								<td className="px-5 py-3 whitespace-nowrap">
-									<span
-										className={
-											`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ` +
-											(blocked ? 'bg-gray-100 text-gray-700' : 'bg-green-50 text-green-700')
-										}
-									>
-										{blocked ? 'Blocked' : 'Active'}
-									</span>
+									<Badge tone={blocked ? 'danger' : 'success'}>{blocked ? 'Blocked' : 'Active'}</Badge>
 								</td>
 								<td className="px-5 py-3 whitespace-nowrap">
 									<div className="flex items-center gap-2">
@@ -239,7 +223,7 @@ export default function UsersAdmin() {
 											</Button>
 										)}
 
-										{busyId === id && <span className="text-xs text-gray-500">Working…</span>}
+										{busyId === id && <span className="text-xs text-charcoal/60 dark:text-sand/60">Working…</span>}
 									</div>
 								</td>
 							</tr>

@@ -10,7 +10,7 @@ import PackageDetails from '../pages/PackageDetails';
 import CreatePackage from '../pages/CreatePackage';
 import MyBookings from '../pages/MyBookings';
 import Itinerary from '../pages/Itinerary';
-import CreatorDashboard from '../pages/AdminDashboard';
+import CreatorDashboard from '../pages/CreatorDashboard';
 import Reviews from '../pages/Reviews';
 import Notifications from '../pages/Notifications';
 

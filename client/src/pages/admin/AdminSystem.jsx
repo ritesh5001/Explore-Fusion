@@ -2,6 +2,9 @@ import useAuth from '../../auth/useAuth';
 import { useToast } from '../../components/ToastProvider';
 import SystemToggle from '../../components/admin/SystemToggle';
 import { useSystem } from '../../context/SystemContext';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Card from '../../components/ui/Card';
+import Badge from '../../components/ui/Badge';
 
 export default function AdminSystem() {
 	const { role } = useAuth();
@@ -22,22 +25,24 @@ export default function AdminSystem() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-start justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold">System Control Panel</h1>
-					<div className="text-sm text-gray-600 mt-1">Superadmin-only controls. These toggles are frontend-only simulations.</div>
-				</div>
-			</div>
+			<SectionHeader
+				title="System Control Panel"
+				subtitle="Superadmin-only controls. These toggles are frontend-only simulations."
+				action={<Badge tone={isSuperadmin ? 'accent' : 'default'}>{isSuperadmin ? 'Superadmin' : 'Read-only'}</Badge>}
+			/>
 
 			{(maintenanceMode || readOnlyMode) && (
-				<div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-					<div className="font-semibold text-amber-900">Warning banner (simulated)</div>
-					<div className="text-sm text-amber-800 mt-1">
+				<Card className="p-5 border border-adventure/35 bg-adventure/10">
+					<div className="flex items-center gap-2">
+						<Badge tone="gold">Simulated</Badge>
+						<div className="font-heading font-extrabold tracking-tight text-adventure">System banner</div>
+					</div>
+					<div className="text-sm text-charcoal/80 dark:text-sand/80 mt-2">
 						{maintenanceMode && <div>• Maintenance mode is enabled</div>}
 						{readOnlyMode && <div>• Read-only mode is enabled</div>}
-						<div className="mt-2 text-amber-800">This state is stored in localStorage for this browser only.</div>
+						<div className="mt-2 text-charcoal/70 dark:text-sand/70">This state is stored in localStorage for this browser only.</div>
 					</div>
-				</div>
+				</Card>
 			)}
 
 			<SystemToggle
@@ -56,13 +61,13 @@ export default function AdminSystem() {
 				disabled={!isSuperadmin}
 			/>
 
-			<div className="bg-white border rounded-xl p-5">
-				<div className="font-bold text-gray-900">Notes</div>
-				<ul className="mt-2 text-sm text-gray-600 list-disc pl-5 space-y-1">
+			<Card className="p-5">
+				<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Notes</div>
+				<ul className="mt-2 text-sm text-charcoal/70 dark:text-sand/70 list-disc pl-5 space-y-1">
 					<li>No backend toggle API exists yet (per requirements).</li>
 					<li>Use these flags to validate UI behavior and admin workflows.</li>
 				</ul>
-			</div>
+			</Card>
 		</div>
 	);
 }

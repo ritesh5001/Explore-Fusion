@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
 	ResponsiveContainer,
 	LineChart,
@@ -13,6 +13,11 @@ import {
 import API from '../../api';
 import { useToast } from '../../components/ToastProvider';
 import ReportCard from '../../components/admin/ReportCard';
+import SectionHeader from '../../components/ui/SectionHeader';
+import Card from '../../components/ui/Card';
+import ErrorState from '../../components/ui/ErrorState';
+import EmptyState from '../../components/ui/EmptyState';
+import { Skeleton } from '../../components/ui/Loader';
 
 const pick = (obj, keys) => {
 	for (const k of keys) {
@@ -54,27 +59,26 @@ export default function AdminAnalytics() {
 	const [error, setError] = useState('');
 	const [data, setData] = useState(null);
 
-	useEffect(() => {
-		const load = async () => {
-			setLoading(true);
-			setError('');
-			try {
-				const res = await API.get('/admin/dashboard');
-				setData(res?.data?.data ?? res?.data ?? null);
-			} catch (e) {
-				const status = e?.response?.status;
-				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load analytics';
-				setError(msg + (status ? ` (HTTP ${status})` : ''));
-				setData(null);
-				showToast('Failed to load analytics', 'error');
-			} finally {
-				setLoading(false);
-			}
-		};
+	const load = useCallback(async () => {
+		setLoading(true);
+		setError('');
+		try {
+			const res = await API.get('/admin/dashboard');
+			setData(res?.data?.data ?? res?.data ?? null);
+		} catch (e) {
+			const status = e?.response?.status;
+			const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load analytics';
+			setError(msg + (status ? ` (HTTP ${status})` : ''));
+			setData(null);
+			showToast('Failed to load analytics', 'error');
+		} finally {
+			setLoading(false);
+		}
+	}, [showToast]);
 
+	useEffect(() => {
 		load();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [load]);
 
 	const snapshot = useMemo(() => {
 		const totalUsers = pick(data, ['totalUsers', 'users', 'userCount']);
@@ -99,20 +103,35 @@ export default function AdminAnalytics() {
 
 	return (
 		<div className="space-y-4">
-			<div className="flex items-center justify-between gap-4">
-				<div>
-					<h1 className="text-2xl font-bold">Platform Analytics</h1>
-					<div className="text-sm text-gray-600 mt-1">Uses the existing /admin/dashboard endpoint for stats.</div>
-				</div>
-			</div>
+			<SectionHeader
+				title="Platform Analytics"
+				subtitle="Uses the existing /admin/dashboard endpoint for stats."
+				action={
+					<button
+						type="button"
+						onClick={load}
+						className="text-sm font-semibold text-trail hover:underline"
+					>
+						Refresh
+					</button>
+				}
+			/>
 
 			{loading ? (
-				<div className="bg-white border rounded-xl p-6 text-gray-600">Loading analytics…</div>
-			) : error ? (
-				<div className="bg-white border rounded-xl p-6">
-					<div className="text-red-600 font-semibold">Error</div>
-					<div className="text-gray-700 text-sm mt-1">{error}</div>
+				<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+					{Array.from({ length: 4 }).map((_, i) => (
+						<Card key={i} className="p-6">
+							<Skeleton className="h-3 w-28" />
+							<div className="mt-3">
+								<Skeleton className="h-7 w-24" />
+							</div>
+						</Card>
+					))}
 				</div>
+			) : error ? (
+				<ErrorState title="Couldn’t load analytics" description={error} onRetry={load} />
+			) : !data ? (
+				<EmptyState title="No analytics available" description="The dashboard endpoint returned no payload." onAction={load} actionLabel="Retry" />
 			) : (
 				<div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
 					<ReportCard title="Total Users" value={snapshot.totalUsers ?? '—'} />
@@ -123,18 +142,18 @@ export default function AdminAnalytics() {
 			)}
 
 			{!loading && !error && !hasTrends && (
-				<div className="bg-white border rounded-xl p-6">
-					<div className="font-semibold text-gray-900">Trends unavailable</div>
-					<div className="text-sm text-gray-600 mt-1">
+				<Card className="p-6">
+					<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Trends unavailable</div>
+					<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
 						Trends available once more data is collected.
 					</div>
-				</div>
+				</Card>
 			)}
 
 			{!loading && !error && hasTrends && (
 				<div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-					<div className="bg-white border rounded-xl p-5">
-						<div className="font-bold text-gray-900">Users growth</div>
+					<Card className="p-5">
+						<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Users growth</div>
 						<div className="mt-4 h-64">
 							<ResponsiveContainer width="100%" height="100%">
 								<LineChart data={series.users} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
@@ -146,10 +165,10 @@ export default function AdminAnalytics() {
 								</LineChart>
 							</ResponsiveContainer>
 						</div>
-					</div>
+					</Card>
 
-					<div className="bg-white border rounded-xl p-5">
-						<div className="font-bold text-gray-900">Bookings trend</div>
+					<Card className="p-5">
+						<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Bookings trend</div>
 						<div className="mt-4 h-64">
 							<ResponsiveContainer width="100%" height="100%">
 								<LineChart data={series.bookings} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
@@ -161,10 +180,10 @@ export default function AdminAnalytics() {
 								</LineChart>
 							</ResponsiveContainer>
 						</div>
-					</div>
+					</Card>
 
-					<div className="bg-white border rounded-xl p-5">
-						<div className="font-bold text-gray-900">Creator onboarding</div>
+					<Card className="p-5">
+						<div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Creator onboarding</div>
 						<div className="mt-4 h-64">
 							<ResponsiveContainer width="100%" height="100%">
 								<BarChart data={series.creators} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
@@ -176,7 +195,7 @@ export default function AdminAnalytics() {
 								</BarChart>
 							</ResponsiveContainer>
 						</div>
-					</div>
+					</Card>
 				</div>
 			)}
 		</div>

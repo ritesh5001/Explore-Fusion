@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import API from '../api';
 import { useToast } from '../components/ToastProvider';
 import SectionHeader from '../components/ui/SectionHeader';
@@ -7,6 +7,7 @@ import Card from '../components/ui/Card';
 import PageLoader from '../components/ui/PageLoader';
 import ErrorState from '../components/ui/ErrorState';
 import EmptyState from '../components/ui/EmptyState';
+import Badge from '../components/ui/Badge';
 
 const asArray = (v) => (Array.isArray(v) ? v : []);
 
@@ -39,7 +40,7 @@ export default function MyBookings() {
 	const [error, setError] = useState('');
 	const [cancellingId, setCancellingId] = useState(null);
 
-	const load = async () => {
+	const load = useCallback(async () => {
 		setError('');
 		setLoading(true);
 		try {
@@ -53,11 +54,11 @@ export default function MyBookings() {
 		} finally {
 			setLoading(false);
 		}
-	};
+	}, []);
 
 	useEffect(() => {
 		load();
-	}, []);
+	}, [load]);
 
 	const hasBookings = useMemo(() => bookings.length > 0, [bookings]);
 
@@ -91,7 +92,6 @@ export default function MyBookings() {
 					</Button>
 				}
 			/>
-
 			{loading ? (
 				<PageLoader label="Loading bookings…" />
 			) : error ? (
@@ -100,9 +100,6 @@ export default function MyBookings() {
 				<EmptyState
 					title="No bookings yet"
 					description="When you book a trip, it will show up here."
-					actionLabel="Browse packages"
-					onAction={() => (window.location.href = '/packages')}
-					icon="🧳"
 				/>
 			) : (
 				<div className="space-y-3">
@@ -111,6 +108,7 @@ export default function MyBookings() {
 						const status = getStatus(b);
 						const title = getPackageTitle(b);
 						const price = getPackagePrice(b);
+						const tone = status === 'cancelled' ? 'default' : status === 'pending' ? 'gold' : 'success';
 						return (
 							<Card key={id} className="p-4 flex items-center justify-between gap-4">
 								<div>
@@ -118,13 +116,9 @@ export default function MyBookings() {
 									<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
 										Price: {price != null ? `$${price}` : '—'}
 									</div>
-									<div className="text-sm text-charcoal/70 dark:text-sand/70 mt-1">
-										Status:{' '}
-										<span
-											className={`font-semibold ${status === 'cancelled' ? 'text-charcoal/50 dark:text-sand/50' : 'text-green-700'}`}
-										>
-											{status}
-										</span>
+									<div className="mt-2 flex items-center gap-2 text-sm text-charcoal/70 dark:text-sand/70">
+										<span>Status</span>
+										<Badge tone={tone}>{status}</Badge>
 									</div>
 								</div>
 

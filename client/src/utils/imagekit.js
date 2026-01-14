@@ -17,11 +17,6 @@ const debug = (...args) => {
   }
 };
 
-const compactObject = (obj) => {
-  if (!obj || typeof obj !== 'object') return obj;
-  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined && v !== null));
-};
-
 const coerceAuth = (data) => {
   const token = data?.token ? String(data.token) : '';
   const signature = data?.signature ? String(data.signature) : '';
@@ -49,11 +44,13 @@ const extractImagekitErrorMessage = (err) => {
   const details = err?.response?.data || err?.response || err?.error;
 
   if (isDev) {
-    debug('[ImageKit] upload error', {
+    // In dev, surface the response once per failure for debugging.
+    // Never log secrets; this should not include private keys.
+    // eslint-disable-next-line no-console
+    console.error('[ImageKit Upload Failed]', {
       status,
       message: msg,
-      // Avoid printing secrets; this is best-effort.
-      details,
+      response: details,
     });
   }
 
@@ -64,8 +61,6 @@ const extractImagekitErrorMessage = (err) => {
 const imagekit = new ImageKit({
   publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
   urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
-  authenticationEndpoint:
-    getImagekitAuthEndpoint(),
 });
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -93,7 +88,7 @@ const fetchAuth = async () => {
   const endpoint = getImagekitAuthEndpoint();
 
   const resp = await fetch(endpoint, {
-    method: "POST",
+    method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -125,24 +120,30 @@ const fetchAuth = async () => {
   return auth;
 };
 
+const debugUploadIntent = ({ file, fileName, auth }) => {
+  if (!isDev) return;
+  debug('[ImageKit] upload intent', {
+    fileName,
+    size: file?.size,
+    type: file?.type,
+    expire: auth?.expire,
+    tokenLen: auth?.token ? String(auth.token).length : 0,
+    signatureLen: auth?.signature ? String(auth.signature).length : 0,
+  });
+};
+
 export const uploadImage = async (file) => {
   validateFile(file);
   const auth = await fetchAuth();
 
   const fileName = `${Date.now()}-${file?.name || 'image'}`;
-  debug('[ImageKit] uploading image', {
-    fileName,
-    folder: 'explore-fusion',
-    size: file?.size,
-    type: file?.type,
-  });
+  debugUploadIntent({ file, fileName, auth });
 
   return new Promise((resolve, reject) => {
     imagekit.upload(
       {
         file,
         fileName,
-        folder: "explore-fusion",
         token: auth.token,
         signature: auth.signature,
         expire: auth.expire,
@@ -155,43 +156,27 @@ export const uploadImage = async (file) => {
   });
 };
 
-const sanitizeFolderSegment = (v) => String(v || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+const sanitizeSegment = (v) => String(v || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
 
 export const uploadPostImage = async ({ file, postId, postedBy, location }) => {
   validateFile(file);
   if (!postId) throw new Error('Missing post id');
 
   const auth = await fetchAuth();
-  const safePostId = sanitizeFolderSegment(postId);
-  const safeUserId = sanitizeFolderSegment(postedBy?._id || postedBy?.id || 'unknown');
-  const folder = `explore-fusion/posts/${safePostId}/${safeUserId}`;
-
-  const tags = [`post:${safePostId}`, `user:${safeUserId}`];
-  const customMetadata = compactObject({
-    postId: safePostId,
-    postedById: safeUserId,
-    postedByName: postedBy?.name ? String(postedBy.name).slice(0, 80) : undefined,
-    location: location ? String(location).slice(0, 120) : undefined,
-  });
-
-  const fileName = `${Date.now()}-${file?.name || 'post-image'}`;
-  debug('[ImageKit] uploading post image', {
-    fileName,
-    folder,
-    tags,
-    customMetadataKeys: Object.keys(customMetadata || {}),
-    size: file?.size,
-    type: file?.type,
-  });
+  // Keep uploads compatible/reliable: send ONLY required fields to ImageKit.
+  // Use fileName to encode post/user info for traceability without tags/customMetadata.
+  const safePostId = sanitizeSegment(postId);
+  const safeUserId = sanitizeSegment(postedBy?._id || postedBy?.id || 'unknown');
+  const safeLoc = sanitizeSegment(location || '');
+  const baseName = `${safePostId}-${safeUserId}${safeLoc ? `-${safeLoc}` : ''}`;
+  const fileName = `${Date.now()}-${baseName}-${file?.name || 'post-image'}`;
+  debugUploadIntent({ file, fileName, auth });
 
   return new Promise((resolve, reject) => {
     imagekit.upload(
       {
         file,
         fileName,
-        folder,
-        tags,
-        customMetadata,
         token: auth.token,
         signature: auth.signature,
         expire: auth.expire,
@@ -202,7 +187,6 @@ export const uploadPostImage = async ({ file, postId, postedBy, location }) => {
           resolve({
             url: result.url,
             fileId: result.fileId,
-            folder,
           });
       }
     );

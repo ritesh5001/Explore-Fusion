@@ -108,7 +108,6 @@ const Home = () => {
         await API.put(`/posts/${postId}`, {
           imageUrl: uploaded.url,
           imageFileId: uploaded.fileId,
-          imageFolder: uploaded.folder,
         });
       } finally {
         setUploading(false);

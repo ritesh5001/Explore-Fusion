@@ -23,6 +23,12 @@ export default function BuddyProfile() {
 				});
 			} catch (e) {
 				const status = e?.response?.status;
+				// First-time users won't have a profile yet.
+				if (status === 404) {
+					setProfile({ bio: '', interests: '', location: '' });
+					setError('');
+					return;
+				}
 				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load buddy profile';
 				setError(msg + (status ? ` (HTTP ${status})` : ''));
 			} finally {

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MoreVertical } from 'lucide-react';
 import API from '../api';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
+import SafeImage from '../components/common/SafeImage';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
@@ -20,8 +22,16 @@ const Home = () => {
   const [uploading, setUploading] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState('');
+  const [openMenuPostId, setOpenMenuPostId] = useState(null);
   const { user } = useAuth();
 	const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!openMenuPostId) return;
+    const close = () => setOpenMenuPostId(null);
+    window.addEventListener('click', close);
+    return () => window.removeEventListener('click', close);
+  }, [openMenuPostId]);
   
   const hero = (
     <div className="gradient-header">
@@ -257,28 +267,42 @@ const Home = () => {
           {(Array.isArray(posts) ? posts : []).map((post) => (
             <Card key={post._id} className="p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
               <div className="flex justify-between items-start mb-2 gap-3">
-                <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {(() => {
-                      const author = post?.user || post?.author;
-                      const id = author?._id;
-                      const username = author?.username ? String(author.username) : '';
-                      const name = author?.name ? String(author.name) : '';
-                      const label = username ? `Post from ${username}` : name || 'Unknown user';
+                        {(() => {
+                          const author = post?.user || post?.author;
+                          const id = author?._id ? String(author._id) : '';
+                          const username = author?.username ? String(author.username) : '';
+                          const name = author?.name ? String(author.name) : '';
+                          const label = username ? `Post from ${username}` : name || 'Unknown user';
 
-                      if (!id) {
-                        return <div className="text-sm font-semibold text-mountain dark:text-sand">{label}</div>;
-                      }
+                          const content = (
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="h-9 w-9 rounded-full overflow-hidden border border-soft dark:border-white/10 bg-soft/60 dark:bg-white/10 shrink-0">
+                                <SafeImage
+                                  src={author?.avatar || ''}
+                                  alt={name || username || 'User avatar'}
+                                  fallback="/avatar-placeholder.png"
+                                  className="h-full w-full object-cover hover:opacity-90 transition-opacity"
+                                />
+                            </div>
+                              <div className="text-sm font-semibold text-mountain dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors">
+                              {label}
+                            </div>
+                          </div>
+                          );
 
-                      return (
-                        <Link
-                          to={`/users/${id}`}
-                          className="text-sm font-semibold text-mountain dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors"
-                        >
-                          {label}
-                        </Link>
-                      );
-                    })()}
+                          if (!id) return <div className="min-w-0">{content}</div>;
+                          return (
+                            <Link
+                              to={`/users/${id}`}
+                              className="min-w-0"
+                              aria-label={`View profile: ${name || username || 'user'}`}
+                            >
+                              {content}
+                            </Link>
+                          );
+                        })()}
 
                     {(post?.user?.role || post?.author?.role) === 'creator' && (
                       <span className="text-[11px] px-2 py-0.5 rounded-full bg-trail/15 text-mountain dark:text-sand border border-trail/25">
@@ -287,10 +311,50 @@ const Home = () => {
                     )}
                   </div>
 
-                  <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand mt-1">
+                    <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand mt-1">
                     {post.title || String(post.content || '').slice(0, 48) || 'Post'}
                   </h2>
                 </div>
+                  {(() => {
+                    const author = post?.user || post?.author;
+                    const id = author?._id ? String(author._id) : '';
+                    if (!id) return null;
+                    const isOpen = openMenuPostId === String(post._id);
+                    return (
+                      <div className="relative shrink-0">
+                        <button
+                          type="button"
+                          aria-haspopup="menu"
+                          aria-expanded={isOpen}
+                          className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuPostId((prev) => (prev === String(post._id) ? null : String(post._id)));
+                          }}
+                        >
+                          <MoreVertical className="h-4 w-4 text-charcoal/70 dark:text-sand/80" />
+                          <span className="sr-only">Open post menu</span>
+                        </button>
+
+                        {isOpen && (
+                          <div
+                            role="menu"
+                            className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-[#0B1512] text-sand shadow-lg z-10 overflow-hidden"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Link
+                            role="menuitem"
+                            to={`/users/${id}`}
+                            className="block px-3 py-2 text-sm hover:bg-white/10 transition-colors"
+                            onClick={() => setOpenMenuPostId(null)}
+                          >
+                            View profile
+                          </Link>
+                        </div>
+                      )}
+                    </div>
+                    );
+                  })()}
                 <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full shrink-0">
                   📍 {post.location}
                 </span>

@@ -93,6 +93,7 @@ const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:50
 const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006');
 const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008');
 const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009');
+const SOCIAL_SERVICE_URL = serviceUrl('SOCIAL_SERVICE_URL', 'http://localhost:5010');
 
 const coreServiceGuard = (name, url) => {
   if (url) return null;
@@ -302,6 +303,37 @@ app.use(
     : disabledRoute('notification')
 );
 
+// Follow system: expose under /api/v1/follow/*
+// - POST   /api/v1/follow/:id          -> social-service POST /api/v1/follow/:id
+// - DELETE /api/v1/follow/:id          -> social-service DELETE /api/v1/unfollow/:id
+// - GET    /api/v1/follow/followers/:id -> social-service GET /api/v1/followers/:id
+// - GET    /api/v1/follow/following/:id -> social-service GET /api/v1/following/:id
+app.use(
+  '/api/v1/follow',
+  SOCIAL_SERVICE_URL
+    ? createProxyMiddleware({
+        target: SOCIAL_SERVICE_URL,
+        changeOrigin: true,
+        onProxyReq: proxyJsonBody,
+        pathRewrite: (path, req) => {
+          const method = String(req?.method || 'GET').toUpperCase();
+          // Express strips the mount path, so `path` is typically like '/:id' or '/followers/:id'.
+          if (path.startsWith('/followers/') || path === '/followers') {
+            return `/api/v1${path}`;
+          }
+          if (path.startsWith('/following/') || path === '/following') {
+            return `/api/v1${path}`;
+          }
+          if (method === 'DELETE') {
+            return `/api/v1/unfollow${path}`;
+          }
+          // Default: follow
+          return `/api/v1/follow${path}`;
+        },
+      })
+    : disabledRoute('social')
+);
+
 app.use(
   '/api/v1/upload',
   UPLOAD_SERVICE_URL
@@ -361,6 +393,7 @@ const server = app.listen(PORT, () => {
       'https://explore-fusion-admin.onrender.com/health',
       'https://explore-fusion-notification.onrender.com/health',
       'https://explore-fusion-matches.onrender.com/health',
+      'https://explore-fusion-social.onrender.com/health',
     ];
 
     if (AI_SERVICE_URL) {

@@ -5,6 +5,7 @@ import Home from '../pages/Home';
 import Login from '../pages/Login';
 import Register from '../pages/Register';
 import Profile from '../pages/Profile';
+import UserProfile from '../pages/UserProfile';
 import Packages from '../pages/Packages';
 import PackageDetails from '../pages/PackageDetails';
 import CreatePackage from '../pages/CreatePackage';
@@ -57,6 +58,15 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/users/:id"
+        element={
+          <ProtectedRoute>
+            <UserProfile />
           </ProtectedRoute>
         }
       />

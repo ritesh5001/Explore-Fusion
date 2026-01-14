@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { protect } = require('../middleware/authMiddleware');
+const { isAdmin } = require('../middleware/authMiddleware');
 const isSuperAdmin = require('../middleware/isSuperAdmin');
 const {
   getAllUsers,
@@ -9,7 +10,7 @@ const {
 } = require('../controllers/adminController');
 
 router.get('/users', protect, isSuperAdmin, getAllUsers);
-router.patch('/users/:id/role', protect, isSuperAdmin, updateUserRole);
+router.patch('/users/:id/role', protect, isAdmin, updateUserRole);
 router.patch('/users/:id/block', protect, isSuperAdmin, toggleBlockUser);
 
 module.exports = router;

@@ -2,7 +2,8 @@ import { cn } from '../../utils/cn';
 
 const ROLES = ['user', 'creator', 'admin', 'superadmin'];
 
-export default function RoleSelect({ value, onChange, disabled }) {
+export default function RoleSelect({ value, onChange, disabled, roles }) {
+	const options = Array.isArray(roles) && roles.length ? roles : ROLES;
 	return (
 		<select
 			value={value || 'user'}
@@ -16,7 +17,7 @@ export default function RoleSelect({ value, onChange, disabled }) {
 				disabled ? 'opacity-60 cursor-not-allowed' : ''
 			)}
 		>
-			{ROLES.map((r) => (
+			{options.map((r) => (
 				<option key={r} value={r}>
 					{r}
 				</option>

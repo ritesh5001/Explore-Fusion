@@ -47,7 +47,8 @@ export const resolveGatewayUrl = (pathOrUrl) => {
 };
 
 export const getImagekitAuthEndpoint = () => {
-	return import.meta.env.VITE_IMAGEKIT_AUTH_ENDPOINT || `${getApiBaseUrl()}/imagekit-auth`;
+	// Always resolve via the gateway base URL (no localhost / hardcoded overrides).
+	return `${getApiBaseUrl()}/imagekit-auth`;
 };
 
 export const getSocketUrl = () => {

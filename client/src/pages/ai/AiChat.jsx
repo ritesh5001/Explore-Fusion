@@ -8,7 +8,7 @@ import Button from '../../components/ui/Button';
 import SectionHeader from '../../components/ui/SectionHeader';
 import ErrorState from '../../components/ui/ErrorState';
 import Input from '../../components/ui/Input';
-import { Skeleton } from '../../components/ui/Loader';
+import TypingBubble from '../../components/ai/TypingBubble';
 
 const nowTime = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -40,14 +40,28 @@ export default function AiChat() {
 		setMessages((prev) => [...prev, { role: 'user', text: trimmed, time: nowTime() }]);
 		setThinking(true);
 		try {
-			const res = await API.post('/ai/support-chat', { message: trimmed });
-			const reply = res?.data?.reply ?? res?.data?.data?.reply;
+			const res = await API.post('/ai/chat', { message: trimmed });
+			const intent = res?.data?.intent;
+			const reply = res?.data?.reply;
 			if (!reply) throw new Error('AI reply missing');
-			setMessages((prev) => [...prev, { role: 'ai', text: String(reply), time: nowTime() }]);
+
+			setMessages((prev) => [
+				...prev,
+				{
+					role: 'ai',
+					text: String(reply),
+					time: nowTime(),
+					intent: intent || null,
+				},
+			]);
 		} catch (e) {
 			const status = e?.response?.status;
-			const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'AI request failed';
-			setError(msg + (status ? ` (HTTP ${status})` : ''));
+			if (status && status !== 200) {
+				setError('AI is temporarily unavailable. Try again.');
+			} else {
+				const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'AI request failed';
+				setError(msg);
+			}
 			showToast('AI chat failed', 'error');
 		} finally {
 			setThinking(false);
@@ -73,12 +87,7 @@ export default function AiChat() {
 					{messages.map((m, idx) => (
 						<ChatBubble key={idx} role={m.role} text={m.text} time={m.time} />
 					))}
-					{thinking && (
-						<div className="space-y-2">
-							<Skeleton className="h-4 w-48" />
-							<Skeleton className="h-4 w-72" />
-						</div>
-					)}
+					{thinking && <TypingBubble />}
 					<div ref={endRef} />
 				</div>
 

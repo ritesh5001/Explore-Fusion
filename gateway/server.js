@@ -35,6 +35,13 @@ const disabledRoute = (service) => (req, res) => {
   });
 };
 
+const disabledAiRoute = (req, res) => {
+  res.status(503).json({
+    success: false,
+    message: 'AI service not configured',
+  });
+};
+
 const proxyJsonBody = (proxyReq, req) => {
   const method = String(req.method || '').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
@@ -162,17 +169,28 @@ app.use(
 
 app.use(
   '/api/v1/ai',
-  AI_SERVICE_URL
-    ? createProxyMiddleware({
-        target: AI_SERVICE_URL,
-        changeOrigin: true,
-        onProxyReq: proxyJsonBody,
-        pathRewrite: {
-          '^/api/v1/ai': '',
-        },
-      })
-    : disabledRoute('ai')
+  (req, res, next) => next()
 );
+
+const aiProxy =
+  AI_SERVICE_URL &&
+  createProxyMiddleware({
+    target: AI_SERVICE_URL,
+    changeOrigin: true,
+    onProxyReq: proxyJsonBody,
+    pathRewrite: {
+      '^/api/v1/ai': '',
+    },
+  });
+
+// Explicit route required by system design.
+app.post('/api/v1/ai/chat', (req, res, next) => {
+  if (!AI_SERVICE_URL || !aiProxy) return disabledAiRoute(req, res);
+  return aiProxy(req, res, next);
+});
+
+// Proxy the rest of /api/v1/ai/* to the AI service.
+app.use('/api/v1/ai', aiProxy || disabledAiRoute);
 
 app.use(
   '/api/v1/itineraries',
@@ -303,10 +321,16 @@ const server = app.listen(PORT, () => {
       'https://explore-fusion-matches.onrender.com/health',
     ];
 
+    if (AI_SERVICE_URL) {
+      keepAliveUrls.push(`${String(AI_SERVICE_URL).replace(/\/$/, '')}/health`);
+    }
+
+    const uniqueKeepAliveUrls = [...new Set(keepAliveUrls)];
+
     const fetchFn = getFetch();
 
     const ping = async () => {
-      for (const url of keepAliveUrls) {
+      for (const url of uniqueKeepAliveUrls) {
         try {
           await fetchFn(url, { method: 'GET' });
         } catch (_) {

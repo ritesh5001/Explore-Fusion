@@ -1,4 +1,6 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { INTENTS, detectIntent } = require('../utils/intentDetector');
+const { isGeminiConfigured, generateText } = require('../utils/geminiClient');
 
 
 const buildFallbackPlan = ({ destination, days, budget, note, retryAfterSeconds }) => {
@@ -288,56 +290,93 @@ const chatSupport = async (req, res) => {
   try {
     const message = String(req.body?.message ?? req.body?.prompt ?? '').trim();
     if (!message) {
-      return res.status(400).json({ message: 'message is required' });
+      return res.status(400).json({ success: false, message: 'message is required' });
     }
 
-    if (!genAI) {
+    const intent = detectIntent(message);
+
+    if (intent === INTENTS.HELP) {
+      const commands = [
+        'plan trip to <place> for <days> days',
+        'budget for <place> for <days> days under <amount>',
+        'recommend places in <city/country>',
+        'create tour package for <place>',
+        'summarize: <paste text>',
+      ];
+
       return res.json({
-        reply: 'AI is not configured on the server. Please set GEMINI_API_KEY and try again.',
-        ai_used: false,
+        success: true,
+        intent,
+        reply:
+          'Here are a few things I can do:\n' +
+          commands.map((c) => `• ${c}`).join('\n') +
+          '\n\nTip: Add dates, budget, vibe, and interests for best results.',
+        data: { commands },
       });
     }
 
-    const prompt = `You are Explore Fusion support, a helpful travel assistant.\nUser: ${message}\nReply in plain text.`;
-    const candidates = getCandidateModels();
-    let lastError;
+    const SYSTEM_PROMPT =
+      'You are Explore Fusion AI — a luxury travel assistant.\n' +
+      'You help users plan trips, budgets, itineraries and packages.\n' +
+      'Be concise, premium tone, helpful, and structured.';
 
-    for (const modelName of candidates) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = String(response.text() ?? '').trim();
-
-        if (!text) {
-          return res.status(502).json({ message: 'Empty response from AI model' });
-        }
-
-        return res.json({ reply: text, ai_used: true, model: modelName });
-      } catch (error) {
-        lastError = error;
-        const status = error?.status;
-
-        if (status === 429) {
-          const retryAfterSeconds = parseRetryAfterSeconds(error);
-          return res.json({
-            reply: retryAfterSeconds
-              ? `AI is rate-limited. Try again in ~${retryAfterSeconds}s.`
-              : 'AI is rate-limited. Please try again shortly.',
-            ai_used: false,
-            retryAfterSeconds: retryAfterSeconds ?? null,
-          });
-        }
-
-        if (status === 503 || status === 404) continue;
-        break;
+    const intentContext = (() => {
+      switch (intent) {
+        case INTENTS.PLAN_TRIP:
+          return (
+            'Intent: PLAN_TRIP\n' +
+            'Provide a day-by-day itinerary with sections: Overview, Daily Plan, Food, Transport, Tips. ' +
+            'Ask 1-2 clarifying questions if key details are missing (dates, city, budget, interests).'
+          );
+        case INTENTS.BUDGET_TRIP:
+          return (
+            'Intent: BUDGET_TRIP\n' +
+            'Provide a practical budget breakdown (stay/food/transport/activities/misc), with low/mid/premium options and money-saving tips.'
+          );
+        case INTENTS.SUGGEST_PLACES:
+          return (
+            'Intent: SUGGEST_PLACES\n' +
+            'Recommend places grouped by vibe (luxury, culture, nature, nightlife, family). Give 5-10 picks with 1-line reasons each.'
+          );
+        case INTENTS.CREATE_PACKAGE:
+          return (
+            'Intent: CREATE_PACKAGE\n' +
+            'Draft a premium tour package outline: Title, Ideal For, Duration, Highlights, Day-by-day itinerary, Pricing tiers, Inclusions/Exclusions, Cancellation policy.'
+          );
+        case INTENTS.SUMMARIZE:
+          return (
+            'Intent: SUMMARIZE\n' +
+            'Summarize the user content into a short, clear bullet list (max 6 bullets) and a 1-line takeaway.'
+          );
+        default:
+          return 'Intent: CHAT\nBe helpful and ask clarifying questions when needed.';
       }
+    })();
+
+    if (!isGeminiConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'AI is temporarily unavailable. Try again.',
+      });
     }
 
-    console.error('All AI models failed for chat:', lastError);
-    return res.status(503).json({ message: 'AI service unavailable right now' });
+    const { text } = await generateText({
+      systemPrompt: `${SYSTEM_PROMPT}\n\n${intentContext}`,
+      userMessage: message,
+    });
+
+    return res.json({
+      success: true,
+      intent,
+      reply: text,
+      data: {},
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    const status = Number(error?.status) || 503;
+    return res.status(status).json({
+      success: false,
+      message: 'AI is temporarily unavailable. Try again.',
+    });
   }
 };
 

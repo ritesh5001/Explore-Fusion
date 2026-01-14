@@ -14,7 +14,6 @@ app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'ai',
-    env: process.env.NODE_ENV,
   });
 });
 

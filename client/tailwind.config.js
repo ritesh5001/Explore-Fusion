@@ -7,20 +7,20 @@ export default {
   theme: {
     extend: {
       colors: {
-			// Luxury travel × energetic tech palette
-			// Keep existing token names to avoid large refactors.
-			forest: '#0A1B3F', // primary deep navy
-			trail: '#22D3EE', // accent cyan
-			olive: '#60A5FA', // supporting blue
-			mountain: '#0A1B3F', // headings (light mode)
-			adventure: '#D6B25E', // premium gold
-			gold: '#D6B25E',
-			sand: '#F7F9FC', // surface light
-			soft: '#E6ECF5',
-			charcoal: '#0B1220', // surface dark / ink
+      // Luxury palette (cream background, charcoal text, muted accents)
+      // Keep existing token names to avoid large refactors.
+      forest: '#2F5D50',
+      trail: '#C46A2D',
+      olive: '#6B8E23',
+      mountain: '#1F3D2B',
+      adventure: '#8B5A2B',
+      gold: '#8B5A2B',
+      sand: '#F5F1E8',
+      soft: '#E5E7EB',
+      charcoal: '#1F2933',
       },
       fontFamily: {
-        sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+    sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         heading: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       keyframes: {

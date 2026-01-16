@@ -1,7 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
-import { useTheme } from '../context/ThemeContext';
 import Button from './ui/Button';
 import { AnimatePresence, motion } from 'framer-motion';
 import SafeImage from './common/SafeImage';
@@ -12,7 +11,6 @@ const MotionButton = motion.button;
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
@@ -67,17 +65,6 @@ const Navbar = () => {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleTheme}
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
-            className="hidden sm:inline-flex"
-          >
-            {theme === 'dark' ? 'Light' : 'Dark'}
-          </Button>
-
           <button
             type="button"
             className="md:hidden inline-flex items-center justify-center rounded-2xl border border-border bg-white px-3 py-2 text-charcoal"
@@ -141,12 +128,6 @@ const Navbar = () => {
               </div>
 
               <div className="px-4 pb-4">
-                <Button variant="secondary" size="sm" onClick={toggleTheme} className="w-full justify-center">
-                  {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
-                </Button>
-
-                <div className="h-px bg-border my-4" />
-
                 <div className="flex flex-col gap-1">
                   {links.map((l) => (
                     <Link
@@ -173,7 +154,7 @@ const Navbar = () => {
                   </div>
                 ) : (
                   <div className="flex items-center justify-between gap-3">
-                    <span className="text-mountain dark:text-sand font-semibold truncate">{user?.name || 'User'}</span>
+                  <span className="text-charcoal font-medium truncate">{user?.name || 'User'}</span>
                     <Button variant="danger" size="sm" onClick={handleLogout}>
                       Logout
                     </Button>

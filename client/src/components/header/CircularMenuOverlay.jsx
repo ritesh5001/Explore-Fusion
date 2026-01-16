@@ -10,13 +10,9 @@ const MotionButton = motion.button;
 const MotionSvg = motion.svg;
 const MotionPath = motion.path;
 
-function getMenuButtonCoords(ref) {
-	if (!ref.current) return { x: 40, y: 44 };
-	const rect = ref.current.getBoundingClientRect();
-	return {
-		x: rect.left + rect.width / 2,
-		y: rect.top + rect.height / 2,
-	};
+function getMenuButtonRect(ref) {
+  if (!ref.current) return { left: 0, top: 0, width: 0, height: 0 };
+  return ref.current.getBoundingClientRect();
 }
 
 export function CircularMenuToggleIcon({ open }) {
@@ -62,44 +58,37 @@ export default function CircularMenuOverlay({
 	onLogout,
 }) {
 	const reduceMotion = useReducedMotion();
-	const [coords, setCoords] = useState({ x: 40, y: 44 });
-	const overlayRef = useRef(null);
+	const [menuRect, setMenuRect] = useState({ left: 0, top: 0, width: 0, height: 0 });
+	const panelRef = useRef(null);
 
+	// Get menu button position for anchoring
 	useEffect(() => {
 		if (!open) return;
-		setCoords(getMenuButtonCoords(menuButtonRef));
-		const handleResize = () => setCoords(getMenuButtonCoords(menuButtonRef));
-		window.addEventListener('resize', handleResize);
-		window.addEventListener('scroll', handleResize, true);
+		const updateRect = () => setMenuRect(getMenuButtonRect(menuButtonRef));
+		updateRect();
+		window.addEventListener('resize', updateRect);
+		window.addEventListener('scroll', updateRect, true);
 		return () => {
-			window.removeEventListener('resize', handleResize);
-			window.removeEventListener('scroll', handleResize, true);
+			window.removeEventListener('resize', updateRect);
+			window.removeEventListener('scroll', updateRect, true);
 		};
 	}, [open, menuButtonRef]);
 
+	// ESC closes
 	useEffect(() => {
 		if (!open) return;
-		const html = document.documentElement;
-		const body = document.body;
-		const prevHtmlOverflow = html.style.overflow;
-		const prevBodyOverflow = body.style.overflow;
-		html.style.overflow = 'hidden';
-		body.style.overflow = 'hidden';
 		const onKeyDown = (e) => {
 			if (e.key === 'Escape') onClose?.();
 		};
 		window.addEventListener('keydown', onKeyDown);
-		return () => {
-			html.style.overflow = prevHtmlOverflow;
-			body.style.overflow = prevBodyOverflow;
-			window.removeEventListener('keydown', onKeyDown);
-		};
+		return () => window.removeEventListener('keydown', onKeyDown);
 	}, [open, onClose]);
 
+	// Click outside closes
 	useEffect(() => {
 		if (!open) return;
 		const handleClickOutside = (e) => {
-			if (overlayRef.current && !overlayRef.current.contains(e.target) && !menuButtonRef.current.contains(e.target)) {
+			if (panelRef.current && !panelRef.current.contains(e.target) && !menuButtonRef.current.contains(e.target)) {
 				onClose?.();
 			}
 		};
@@ -107,52 +96,63 @@ export default function CircularMenuOverlay({
 		return () => document.removeEventListener('mousedown', handleClickOutside);
 	}, [open, onClose, menuButtonRef]);
 
-	const sidebarVariants = useMemo(() => {
-		const x = coords.x;
-		const y = coords.y;
-		if (reduceMotion) {
-			return {
-				open: {
-					opacity: 1,
-					clipPath: `circle(1200px at ${x}px ${y}px)`,
-					transition: { duration: 0.3 },
-				},
-				closed: {
-					opacity: 0,
-					clipPath: `circle(24px at ${x}px ${y}px)`,
-					transition: { duration: 0.2 },
-				},
-			};
-		}
+	// Animation config
+	const EASE = [0.22, 1, 0.36, 1];
+	const OPEN_DURATION = 0.28;
+	const CLOSE_DURATION = 0.22;
+	const STAGGER = 0.06;
+
+	// Panel position: below button, centered horizontally
+	const panelStyle = useMemo(() => {
+		const { left, top, width, height } = menuRect;
 		return {
-			open: {
-				opacity: 1,
-				clipPath: `circle(1200px at ${x}px ${y}px)`,
-				transition: { type: 'spring', stiffness: 20, damping: 18 },
-			},
-			closed: {
-				opacity: 0,
-				clipPath: `circle(24px at ${x}px ${y}px)`,
-				transition: { type: 'spring', stiffness: 400, damping: 40 },
-			},
+			position: 'absolute',
+			left: left + width / 2 - 160, // 320px/2
+			top: top + height + 12, // 12px below button
+			zIndex: 40,
+			width: 320,
+			maxWidth: '90vw',
+			borderRadius: '1.25rem',
+			boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
+			background: 'rgba(246,243,239,0.96)',
+			backdropFilter: 'blur(16px)',
+			overflow: 'hidden',
+			pointerEvents: open ? 'auto' : 'none',
 		};
-	}, [coords, reduceMotion]);
+	}, [menuRect, open]);
+
+	// Clip-path origin: center top of panel (matches button)
+	const originX = menuRect.left + menuRect.width / 2 - (panelStyle.left ?? 0);
+	const originY = 0;
+
+	const panelVariants = {
+		open: {
+			opacity: 1,
+			scale: 1,
+			clipPath: `circle(400px at ${originX}px ${originY}px)`,
+			transition: { duration: OPEN_DURATION, ease: EASE },
+		},
+		closed: {
+			opacity: 0,
+			scale: 0.98,
+			clipPath: `circle(24px at ${originX}px ${originY}px)`,
+			transition: { duration: CLOSE_DURATION, ease: EASE },
+		},
+	};
 
 	const menuVariants = {
 		open: {
-			transition: { delayChildren: stagger(0.07, { startDelay: 0.2 }) },
+			transition: { staggerChildren: STAGGER, delayChildren: 0.08 },
 		},
 		closed: {
-			transition: { delayChildren: stagger(0.05, { from: 'last' }) },
+			transition: { staggerChildren: STAGGER, staggerDirection: -1 },
 		},
 	};
 
 	const itemVariants = {
-		open: { y: 0, opacity: 1 },
-		closed: { y: 40, opacity: 0 },
+		open: { y: 0, opacity: 1, transition: { duration: 0.18, ease: EASE } },
+		closed: { y: 32, opacity: 0, transition: { duration: 0.16, ease: EASE } },
 	};
-
-	// removed unused totalItems
 
 	if (typeof window === 'undefined') return null;
 
@@ -160,70 +160,57 @@ export default function CircularMenuOverlay({
 		<AnimatePresence>
 			{open && (
 				<MotionDiv
-					ref={overlayRef}
-					className="fixed inset-0 z-[100] flex items-start justify-center"
+					ref={panelRef}
+					className="luxury-menu-panel"
+					style={panelStyle}
 					initial="closed"
 					animate="open"
 					exit="closed"
-					variants={sidebarVariants}
-					style={{ background: 'rgba(246,243,239,0.98)', backdropFilter: 'blur(16px)', willChange: 'clip-path' }}
+					variants={panelVariants}
 				>
-					<div className="mt-24 w-full max-w-sm mx-auto">
-						<div className="flex items-center justify-between px-4 pb-2">
-							<div className="min-w-0">
-								<div className="font-heading font-medium tracking-[0.04em] text-[#1c1c1c]">Menu</div>
-								{!!userName && (
-									<div className="text-xs text-[#1c1c1c]/70 mt-1 truncate">{userName}</div>
-								)}
-							</div>
-							<Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
-								✕
-							</Button>
-						</div>
-						<MotionDiv
-							className="flex flex-col gap-2 px-4 pb-6"
-							initial="closed"
-							animate="open"
-							exit="closed"
-							variants={menuVariants}
-						>
-							{(links || []).map((l) => (
-								<MotionDiv
-									key={l.to}
-									initial="closed"
-									animate="open"
-									exit="closed"
-									variants={itemVariants}
+					<MotionDiv
+						className="flex flex-col gap-2 p-4"
+						initial="closed"
+						animate="open"
+						exit="closed"
+						variants={menuVariants}
+					>
+						{(links || []).map((l) => (
+							<MotionDiv
+								key={l.to}
+								initial="closed"
+								animate="open"
+								exit="closed"
+								variants={itemVariants}
+							>
+								<Link
+									to={l.to}
+									onClick={onClose}
+									className="rounded-2xl px-3 py-2 font-medium text-[#1c1c1c]/85 hover:bg-black/5 transition"
 								>
-									<Link
-										to={l.to}
-										onClick={onClose}
-										className="rounded-2xl px-3 py-2 font-medium text-[#1c1c1c]/85 hover:bg-black/5 transition"
-									>
-										{l.label}
-									</Link>
-								</MotionDiv>
-							))}
-							<div className="h-px bg-black/10 my-4" />
-							{!isAuthenticated ? (
-								<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="grid grid-cols-2 gap-2">
-									<Button as={Link} to="/login" variant="secondary" size="sm" className="w-full" onClick={onClose}>
-										Sign in
-									</Button>
-									<Button as={Link} to="/register" size="sm" className="w-full" onClick={onClose}>
-										Register
-									</Button>
-								</MotionDiv>
-							) : (
-								<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="flex items-center justify-between gap-3">
-									<span className="text-[#1c1c1c] font-medium truncate">{userName || 'User'}</span>
-									<Button variant="danger" size="sm" onClick={onLogout}>
-										Logout
-									</Button>
-								</MotionDiv>
-							)}
-						</MotionDiv>
-					</div>
+									{l.label}
+								</Link>
+							</MotionDiv>
+						))}
+						<div className="h-px bg-black/10 my-3" />
+						{!isAuthenticated ? (
+							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="grid grid-cols-2 gap-2">
+								<Button as={Link} to="/login" variant="secondary" size="sm" className="w-full" onClick={onClose}>
+									Sign in
+								</Button>
+								<Button as={Link} to="/register" size="sm" className="w-full" onClick={onClose}>
+									Register
+								</Button>
+							</MotionDiv>
+						) : (
+							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="flex items-center justify-between gap-3">
+								<span className="text-[#1c1c1c] font-medium truncate">{userName || 'User'}</span>
+								<Button variant="danger" size="sm" onClick={onLogout}>
+									Logout
+								</Button>
+							</MotionDiv>
+						)}
+					</MotionDiv>
 				</MotionDiv>
 			)}
 		</AnimatePresence>,

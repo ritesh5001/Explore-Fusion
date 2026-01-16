@@ -34,7 +34,7 @@ export default function LuxuryPostCard({ post }) {
 
 	return (
 		<article className="w-[78vw] sm:w-[520px] lg:w-[560px]">
-			<div className="rounded-[26px] border border-soft/80 bg-white/55 overflow-hidden">
+			<div className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 				<div className="relative">
 					{imageUrl ? (
 						<LuxImage
@@ -48,7 +48,7 @@ export default function LuxuryPostCard({ post }) {
 					)}
 
 					<div className="absolute inset-x-0 bottom-0 p-4">
-						<div className="rounded-2xl bg-sand/85 backdrop-blur-sm border border-soft/60 px-4 py-3">
+						<div className="rounded-2xl bg-white/85 backdrop-blur-sm border border-border px-4 py-3">
 							<div className="flex items-center justify-between gap-4">
 								{authorId ? (
 									<Link
@@ -61,7 +61,7 @@ export default function LuxuryPostCard({ post }) {
 								) : (
 									header
 								)}
-								<div className="text-[11px] tracking-[0.18em] text-charcoal/55 uppercase whitespace-nowrap">
+								<div className="text-[11px] tracking-[0.18em] text-muted uppercase whitespace-nowrap">
 									Recent
 								</div>
 							</div>

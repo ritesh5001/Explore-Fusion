@@ -7,17 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-      // Luxury palette (cream background, charcoal text, muted accents)
+      // Luxury travel palette (exact values from spec)
       // Keep existing token names to avoid large refactors.
-      forest: '#2F5D50',
-      trail: '#C46A2D',
-      olive: '#6B8E23',
-      mountain: '#1F3D2B',
-      adventure: '#8B5A2B',
-      gold: '#8B5A2B',
-      sand: '#F5F1E8',
-      soft: '#E5E7EB',
-      charcoal: '#1F2933',
+      sand: '#F6F3EE', // primary background
+      paper: '#FAF8F4', // section background
+      card: '#FFFFFF',
+      charcoal: '#2B2B2B', // primary text
+      muted: '#6F6F6F',
+      gold: '#C9A76A',
+      olive: '#8A9A7B',
+      border: 'rgba(0,0,0,0.06)',
+
+      // Legacy aliases
+      forest: '#2B2B2B',
+      mountain: '#2B2B2B',
+      trail: '#C9A76A',
+      adventure: '#C9A76A',
+      soft: 'rgba(0,0,0,0.06)',
       },
       fontFamily: {
     sans: ['Poppins', 'ui-sans-serif', 'system-ui', 'sans-serif'],

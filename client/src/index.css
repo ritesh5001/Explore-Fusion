@@ -14,6 +14,7 @@
 
 	body {
 		@apply bg-sand text-charcoal;
+		text-rendering: geometricPrecision;
 	}
 
 	h1,
@@ -22,7 +23,8 @@
 	h4,
 	h5,
 	h6 {
-		@apply font-heading font-medium tracking-tight text-mountain;
+		@apply font-heading font-normal text-charcoal;
+		letter-spacing: 0.02em;
 	}
 }
 
@@ -36,43 +38,43 @@
 	}
 
 	.section-title {
-		@apply text-2xl md:text-3xl font-heading font-bold tracking-tight text-mountain dark:text-sand;
+		@apply text-2xl md:text-3xl font-heading font-normal text-charcoal;
+		letter-spacing: 0.02em;
 	}
 
 	.btn-primary {
-		@apply inline-flex items-center justify-center gap-2 bg-mountain text-sand rounded-xl px-4 py-2 font-medium transition;
-		@apply hover:bg-charcoal;
+		@apply inline-flex items-center justify-center gap-2 bg-charcoal text-white rounded-xl px-4 py-2 font-medium transition;
+		@apply hover:bg-charcoal/90;
 		@apply disabled:opacity-60 disabled:cursor-not-allowed;
 	}
 
 	.btn-outline {
-		@apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium border border-soft bg-white/60 backdrop-blur-sm transition;
-		@apply hover:border-charcoal/30 hover:text-charcoal;
+		@apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 font-medium border border-border bg-white/70 backdrop-blur-sm transition;
+		@apply hover:border-charcoal/25 hover:text-charcoal;
 		@apply disabled:opacity-60 disabled:cursor-not-allowed;
 	}
 
 	.btn-link {
-		@apply font-medium text-forest hover:text-trail hover:underline transition;
+		@apply font-medium text-charcoal hover:text-gold hover:underline transition;
 	}
 
 	.card {
-		@apply bg-white/55 border border-soft/80 rounded-2xl shadow-none p-6 transition;
-		@apply backdrop-blur-sm;
+		@apply bg-card border border-border rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.06)] p-6 transition;
 	}
 
 	.glass-card {
-		@apply backdrop-blur-sm bg-white/55 border border-soft/80 rounded-2xl shadow-none;
+		@apply bg-card border border-border rounded-2xl shadow-[0_18px_48px_rgba(0,0,0,0.06)];
 	}
 
 	.gradient-header {
-		@apply text-sand rounded-2xl;
-		background: linear-gradient(135deg, #1F3D2B, #0F1F1A);
+		@apply text-charcoal rounded-2xl;
+		background: transparent;
 	}
 
 	/* Premium focus ring */
 	:focus-visible {
 		outline: none;
-		box-shadow: 0 0 0 3px rgba(196, 106, 45, 0.22);
+		box-shadow: 0 0 0 3px rgba(201, 167, 106, 0.25);
 		border-radius: 14px;
 	}
 }
@@ -98,7 +100,7 @@
 	}
 
 	.lux-fade-up {
-		animation: lux-fade-up 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+		animation: lux-fade-up 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
 	}
 
 	@media (prefers-reduced-motion: reduce) {

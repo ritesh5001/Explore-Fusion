@@ -167,26 +167,26 @@ const Home = () => {
   return (
     <div className="min-h-screen">
 		{/* HERO: Recent posts (visual-first) */}
-		<section className="px-4 sm:px-6 lg:px-10 pt-10 pb-14 lux-fade-up">
+		<section className="px-4 sm:px-6 lg:px-10 pt-12 pb-16 lux-fade-up">
 			<div className="flex items-start justify-between gap-8">
 				<div className="min-w-0">
-					<h1 className="text-[34px] sm:text-[44px] leading-[1.05] font-heading font-medium tracking-tight text-mountain">
+					<h1 className="text-[34px] sm:text-[46px] leading-[1.05] font-heading font-normal tracking-[0.02em] text-charcoal">
 						Explore Fusion
 					</h1>
-					<p className="mt-4 text-base sm:text-lg text-charcoal/70 max-w-2xl">
+					<p className="mt-5 text-base sm:text-lg text-muted max-w-2xl">
 						A calm, premium travel space for stories, companions, and curated experiences.
 					</p>
 				</div>
 				<div className="hidden sm:flex items-center gap-2 shrink-0">
-					<Button as={Link} to="/packages" variant="outline" size="sm">
+						<Button as={Link} to="/packages" variant="outline" size="sm">
 						Explore trips
 					</Button>
 					{user ? (
-						<Button as={Link} to="/dashboard" variant="primary" size="sm">
+							<Button as={Link} to="/dashboard" variant="primary" size="sm">
 							Dashboard
 						</Button>
 					) : (
-						<Button as={Link} to="/login" variant="primary" size="sm">
+							<Button as={Link} to="/login" variant="primary" size="sm">
 							Sign in
 						</Button>
 					)}
@@ -198,7 +198,7 @@ const Home = () => {
 					title="Recent posts"
 					subtitle="A quiet feed of moments shared by travelers."
 					right={
-						<div className="hidden sm:block text-[11px] tracking-[0.18em] uppercase text-charcoal/45">
+						<div className="hidden sm:block text-[11px] tracking-[0.18em] uppercase text-muted">
 							Drag · Swipe · Slow scroll
 						</div>
 					}
@@ -207,7 +207,7 @@ const Home = () => {
 
 			<div className="mt-6">
 				{loadingPosts ? (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6">
+					<div className="rounded-[26px] border border-border bg-card p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 						<div className="space-y-3">
 							<Skeleton className="h-5 w-1/3" />
 							<Skeleton className="h-4 w-1/2" />
@@ -225,7 +225,7 @@ const Home = () => {
 						renderItem={(post) => <LuxuryPostCard post={post} />}
 					/>
 				) : (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8 text-charcoal/70">
+					<div className="rounded-[26px] border border-border bg-card p-8 text-muted shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 						No posts yet.
 					</div>
 				)}
@@ -233,7 +233,7 @@ const Home = () => {
 		</section>
 
 		{/* Buddy match finder */}
-		<section className="px-4 sm:px-6 lg:px-10 py-14 border-t border-soft/70 lux-fade-up">
+		<section className="px-4 sm:px-6 lg:px-10 py-16 border-t border-border bg-paper lux-fade-up">
 			<HomeSectionHeader
 				title="Buddy match finder"
 				subtitle="People you might genuinely enjoy traveling with."
@@ -252,8 +252,8 @@ const Home = () => {
 
 			<div className="mt-6">
 				{!user ? (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8">
-						<p className="text-charcoal/70">Sign in to see personalized buddy suggestions.</p>
+					<div className="rounded-[26px] border border-border bg-card p-8 shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
+						<p className="text-muted">Sign in to see personalized buddy suggestions.</p>
 						<div className="mt-4 flex items-center gap-2">
 							<Button as={Link} to="/login" variant="primary" size="sm">
 								Sign in
@@ -264,11 +264,11 @@ const Home = () => {
 						</div>
 					</div>
 				) : loadingBuddies ? (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6">
+					<div className="rounded-[26px] border border-border bg-card p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 						<Loader label="Finding companions…" />
 					</div>
 				) : buddyError ? (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6 text-charcoal/70">
+					<div className="rounded-[26px] border border-border bg-card p-6 text-muted shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 						<div className="text-sm">{buddyError}</div>
 						<div className="mt-3">
 							<Button variant="outline" size="sm" onClick={loadBuddySuggestions}>
@@ -285,7 +285,7 @@ const Home = () => {
 						renderItem={(u) => <BuddyProfileCard user={u} />}
 					/>
 				) : (
-					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8 text-charcoal/70">
+					<div className="rounded-[26px] border border-border bg-card p-8 text-muted shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 						No suggestions right now. Add your buddy profile to improve matching.
 						<div className="mt-4">
 							<Button as={Link} to="/buddy" variant="outline" size="sm">

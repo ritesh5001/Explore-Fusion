@@ -4,20 +4,23 @@ import { animate } from 'framer-motion';
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 
 type HookConfig = {
-	duration?: number;
-	ease?: [number, number, number, number];
+		duration?: number;
+		ease?: [number, number, number, number];
+		multiplier?: number;
 };
 
 const DEFAULT_CONFIG: Required<HookConfig> = {
-	duration: 0.45,
-	ease: [0.22, 0.61, 0.36, 1],
+		duration: 0.45,
+		ease: [0.22, 0.61, 0.36, 1],
+		multiplier: 1,
 };
+
 
 export default function useVerticalToHorizontalScroll(
 	containerRef: RefObject<HTMLElement>,
 	config: HookConfig = {}
 ) {
-	const { duration, ease } = { ...DEFAULT_CONFIG, ...config };
+	const { duration, ease, multiplier } = { ...DEFAULT_CONFIG, ...config };
 	const isEngagedRef = useRef(false);
 	const wheelDeltaRef = useRef(0);
 	const rafRef = useRef<number | null>(null);
@@ -101,12 +104,13 @@ export default function useVerticalToHorizontalScroll(
 			if (maxScroll <= 0) return;
 			event.preventDefault();
 			const delta = event.deltaY;
+			const adjustedDelta = delta * multiplier;
 			if (fallbackRef.current) {
 				// Native fallback directly adjusts scrollLeft.
-				container.scrollLeft = clamp(container.scrollLeft + delta, 0, maxScroll);
+				container.scrollLeft = clamp(container.scrollLeft + adjustedDelta, 0, maxScroll);
 				return;
 			}
-			wheelDeltaRef.current += delta;
+			wheelDeltaRef.current += adjustedDelta;
 			scheduleMotion();
 		};
 

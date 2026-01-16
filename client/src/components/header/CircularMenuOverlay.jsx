@@ -188,8 +188,8 @@ export default function CircularMenuOverlay({
 								<Link
 									to={l.to}
 									onClick={onClose}
-									className="block text-left px-6 py-[1.15rem] leading-[48px] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
-									style={{ fontWeight: 500, fontSize: '1.08rem' }}
+									className="block text-left px-6 py-2 leading-[1.4] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
+									style={{ fontWeight: 500, fontSize: '1.08rem', marginBottom: '8px' }}
 								>
 									{l.label}
 								</Link>

@@ -117,7 +117,8 @@ export default function CircularMenuOverlay({
 			boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
 			background: 'rgba(246,243,239,0.96)',
 			backdropFilter: 'blur(16px)',
-			overflow: 'hidden',
+			overflow: 'auto',
+			maxHeight: '70vh',
 			pointerEvents: open ? 'auto' : 'none',
 			border: '1px solid rgba(30,30,30,0.07)',
 		};

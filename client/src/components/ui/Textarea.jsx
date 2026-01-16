@@ -34,7 +34,7 @@ export default function Textarea({
 						className={cn(
 							'pointer-events-none absolute left-4 top-3 origin-left text-xs font-medium',
 							'text-muted',
-								'transition-[border-color,box-shadow,background-color] duration-200 ease-standard',
+							'transition-[top,font-size,color] duration-200 ease-standard',
 							'peer-placeholder-shown:top-4 peer-placeholder-shown:text-sm peer-placeholder-shown:font-medium',
 							'peer-focus:top-3 peer-focus:text-xs peer-focus:font-medium'
 						)}

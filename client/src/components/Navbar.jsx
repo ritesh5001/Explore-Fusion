@@ -3,10 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
 import API from '../api';
 import { motion } from 'framer-motion';
-import { Bell, Menu, MessageCircle } from 'lucide-react';
+import { Bell, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
 import GlassNavbarContainer from './header/GlassNavbarContainer';
-import MobileMenuDrawer from './header/MobileMenuDrawer';
+import AnimatedDrawer, { DrawerToggleIcon } from './header/AnimatedDrawer';
 import { fadeLift, glassShift } from '../theme/variants';
 
 const MotionDiv = motion.div;
@@ -109,11 +109,11 @@ const Navbar = () => {
             <button
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
-              aria-label="Open menu"
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen(true)}
+              onClick={() => setIsMenuOpen((v) => !v)}
             >
-              <Menu className="h-5 w-5" />
+              <DrawerToggleIcon open={isMenuOpen} />
             </button>
 
             {isAuthenticated ? (
@@ -179,7 +179,7 @@ const Navbar = () => {
         </GlassNavbarContainer>
       </div>
 
-      <MobileMenuDrawer
+      <AnimatedDrawer
         open={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
         links={links}

@@ -49,21 +49,21 @@ const Navbar = () => {
   }, [isAuthenticated, user?.role]);
 
   return (
-    <nav className="sticky top-0 z-50 border-b border-soft/80 dark:border-white/10 bg-white/70 dark:bg-white/5 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-border bg-sand/80 backdrop-blur-sm">
       <div className="container-app py-3 flex items-center justify-between gap-3">
         <Link
           to="/"
-          className="flex items-center gap-2 text-xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand hover:text-trail transition"
+          className="flex items-center gap-2 text-xl font-heading font-medium tracking-[0.04em] text-charcoal hover:text-gold transition"
         >
       <SafeImage
         src={LOGO_URL}
         fallback="/images/placeholder.svg"
         alt="Explore Fusion"
-        className="h-8 w-8 rounded-xl object-contain bg-white/60 dark:bg-white/10"
+        className="h-8 w-8 rounded-xl object-contain bg-white"
         loading="eager"
         decoding="async"
       />
-          Explore <span className="text-trail">Fusion</span>
+          Explore <span className="text-gold">Fusion</span>
         </Link>
 
         <div className="flex items-center gap-2">
@@ -80,7 +80,7 @@ const Navbar = () => {
 
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center rounded-2xl border border-soft/80 dark:border-white/10 bg-white/60 dark:bg-white/5 px-3 py-2 text-charcoal dark:text-sand"
+            className="md:hidden inline-flex items-center justify-center rounded-2xl border border-border bg-white px-3 py-2 text-charcoal"
             aria-label="Open menu"
             aria-expanded={isMobileOpen}
             onClick={() => setIsMobileOpen((v) => !v)}
@@ -93,7 +93,7 @@ const Navbar = () => {
       <div className="hidden md:block">
         <div className="container-app pb-3 flex items-center justify-end gap-4">
           {links.map((l) => (
-            <Link key={l.to} to={l.to} className="text-charcoal/80 dark:text-sand/80 hover:text-trail transition font-semibold">
+            <Link key={l.to} to={l.to} className="text-charcoal/70 hover:text-gold transition font-medium">
               {l.label}
             </Link>
           ))}
@@ -104,8 +104,8 @@ const Navbar = () => {
             </Button>
           ) : (
             <>
-              <span className="text-mountain dark:text-sand font-semibold">{user?.name || 'User'}</span>
-              <button onClick={handleLogout} className="text-red-700 dark:text-red-300 hover:text-red-900 font-semibold transition">
+              <span className="text-charcoal font-medium">{user?.name || 'User'}</span>
+              <button onClick={handleLogout} className="text-red-700 hover:text-red-900 font-medium transition">
                 Logout
               </button>
             </>
@@ -119,7 +119,7 @@ const Navbar = () => {
             <MotionButton
               type="button"
               aria-label="Close menu"
-              className="fixed inset-0 z-40 bg-charcoal/35"
+              className="fixed inset-0 z-40 bg-black/15"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -127,14 +127,14 @@ const Navbar = () => {
               onClick={() => setIsMobileOpen(false)}
             />
             <MotionDiv
-              className="md:hidden fixed top-0 right-0 z-50 h-dvh w-[86vw] max-w-sm border-l border-soft/80 dark:border-white/10 bg-white/80 dark:bg-charcoal/90 backdrop-blur-xl"
+              className="md:hidden fixed top-0 right-0 z-50 h-dvh w-[86vw] max-w-sm border-l border-border bg-paper/90 backdrop-blur-xl"
               initial={{ x: 40, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               exit={{ x: 40, opacity: 0 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="p-4 flex items-center justify-between">
-                <div className="font-heading font-bold text-mountain dark:text-sand">Menu</div>
+                <div className="font-heading font-medium tracking-[0.04em] text-charcoal">Menu</div>
                 <Button variant="ghost" size="sm" onClick={() => setIsMobileOpen(false)} aria-label="Close">
                   ✕
                 </Button>
@@ -145,7 +145,7 @@ const Navbar = () => {
                   {theme === 'dark' ? 'Switch to Light' : 'Switch to Dark'}
                 </Button>
 
-                <div className="h-px bg-soft/80 dark:bg-white/10 my-4" />
+                <div className="h-px bg-border my-4" />
 
                 <div className="flex flex-col gap-1">
                   {links.map((l) => (
@@ -153,14 +153,14 @@ const Navbar = () => {
                       key={l.to}
                       to={l.to}
                       onClick={() => setIsMobileOpen(false)}
-                      className="rounded-2xl px-3 py-2 font-semibold text-charcoal/90 dark:text-sand/90 hover:bg-soft/60 dark:hover:bg-white/10 transition"
+                      className="rounded-2xl px-3 py-2 font-medium text-charcoal/85 hover:bg-black/5 transition"
                     >
                       {l.label}
                     </Link>
                   ))}
                 </div>
 
-                <div className="h-px bg-soft/80 dark:bg-white/10 my-4" />
+                <div className="h-px bg-border my-4" />
 
                 {!isAuthenticated ? (
                   <div className="grid grid-cols-2 gap-2">

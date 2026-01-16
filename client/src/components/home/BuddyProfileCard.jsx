@@ -53,10 +53,10 @@ export default function BuddyProfileCard({ user }) {
 
 	return (
 		<article className="w-[72vw] sm:w-[360px] lg:w-[380px]">
-			<div className="rounded-[26px] border border-soft/80 bg-white/55 overflow-hidden p-5">
+			<div className="rounded-[26px] border border-border bg-card overflow-hidden p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
 				<div className="flex items-start justify-between gap-4">
 					<Link to={id ? `/users/${id}` : '#'} className="flex items-start gap-3 min-w-0" aria-label={`View profile: ${handle}`}>
-						<div className="h-12 w-12 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
+						<div className="h-16 w-16 rounded-full overflow-hidden border border-border bg-paper shrink-0">
 							<SafeImage
 								src={user?.avatar || ''}
 								alt={handle}
@@ -65,8 +65,8 @@ export default function BuddyProfileCard({ user }) {
 							/>
 						</div>
 						<div className="min-w-0">
-							<div className="text-sm text-charcoal/90 truncate">{name}</div>
-							<div className="text-xs tracking-wide text-charcoal/55 truncate">{username ? `@${username}` : 'Travel Buddy'}</div>
+							<div className="text-[15px] font-medium text-charcoal truncate">{name}</div>
+							<div className="text-xs tracking-[0.12em] text-muted truncate">{username ? `@${username}` : 'Travel Buddy'}</div>
 						</div>
 					</Link>
 
@@ -74,8 +74,9 @@ export default function BuddyProfileCard({ user }) {
 						<Button
 							onClick={toggleFollow}
 							disabled={loading || isSelf || !id}
-							variant={isFollowing ? 'outline' : 'primary'}
+							variant="outline"
 							size="sm"
+							className={isFollowing ? 'bg-paper' : ''}
 						>
 							{loading ? '…' : isSelf ? 'You' : isFollowing ? 'Following' : 'Follow'}
 						</Button>
@@ -83,12 +84,12 @@ export default function BuddyProfileCard({ user }) {
 				</div>
 
 				{bio ? (
-					<p className="mt-4 text-sm leading-relaxed text-charcoal/70 line-clamp-3">{bio}</p>
+					<p className="mt-4 text-sm leading-relaxed text-muted line-clamp-3">{bio}</p>
 				) : (
-					<p className="mt-4 text-sm leading-relaxed text-charcoal/50">Quiet traveler. Minimal details.</p>
+					<p className="mt-4 text-sm leading-relaxed text-muted">Travel style, calmly shared.</p>
 				)}
 
-				<div className="mt-5 text-[11px] tracking-[0.18em] uppercase text-charcoal/45">
+				<div className="mt-5 text-[11px] tracking-[0.18em] uppercase text-muted">
 					Suggested companion
 				</div>
 			</div>

@@ -2,22 +2,20 @@ import { createElement } from 'react';
 import { cn } from '../../utils/cn';
 
 const base =
-	'inline-flex items-center justify-center gap-2 rounded-2xl font-semibold transition focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
+	'inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
 
 const variants = {
 	primary:
-		'text-white bg-forest shadow-[0_14px_40px_rgba(10,27,63,0.30)] hover:shadow-[0_18px_55px_rgba(10,27,63,0.42)] active:scale-[0.99] ' +
-		'bg-[linear-gradient(135deg,rgba(10,27,63,1),rgba(10,27,63,0.85),rgba(34,211,238,0.22))] hover:bg-[linear-gradient(135deg,rgba(10,27,63,1),rgba(10,27,63,0.88),rgba(34,211,238,0.30))]',
+		'text-white bg-charcoal shadow-[0_18px_48px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_60px_rgba(0,0,0,0.12)] active:translate-y-px',
 	secondary:
-		'border border-soft/90 dark:border-white/10 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand backdrop-blur-md ' +
-		'hover:border-trail/60 hover:shadow-[0_12px_40px_rgba(34,211,238,0.10)]',
+		'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20',
 	ghost:
-		'text-charcoal dark:text-sand hover:bg-soft/60 dark:hover:bg-white/10',
+		'text-charcoal hover:bg-black/5',
 	danger:
 		'text-white bg-red-600 hover:bg-red-700 shadow-[0_14px_40px_rgba(239,68,68,0.25)] active:scale-[0.99]',
-	link: 'text-forest hover:text-trail hover:underline',
+	link: 'text-charcoal hover:text-gold hover:underline',
 	// Back-compat
-	outline: 'border border-soft/90 dark:border-white/10 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand backdrop-blur-md hover:border-trail/60',
+	outline: 'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20',
 };
 
 const sizes = {
@@ -48,7 +46,7 @@ export default function Button({
 			disabled: disabled || loading,
 			className: cn(
 				base,
-				'focus-visible:ring-2 focus-visible:ring-trail/35 focus-visible:ring-offset-2 focus-visible:ring-offset-sand dark:focus-visible:ring-offset-charcoal',
+				'focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:ring-offset-2 focus-visible:ring-offset-sand',
 				v,
 				sizes[size] || sizes.md,
 				className

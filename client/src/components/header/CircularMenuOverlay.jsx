@@ -108,7 +108,7 @@ export default function CircularMenuOverlay({
 		if (!open) return;
 		if (!panelRef.current) return;
 		const updateHeight = () => {
-			setPanelHeight(panelRef.current.offsetHeight);
+			setPanelHeight(panelRef.current.scrollHeight);
 		};
 		updateHeight();
 		// Listen for resize/scroll in case content changes
@@ -130,31 +130,28 @@ export default function CircularMenuOverlay({
 			background: 'rgba(246,243,239,0.96)',
 			backdropFilter: 'blur(16px)',
 			overflow: 'auto',
-			maxHeight: '88vh',
+			maxHeight: '70vh',
 			pointerEvents: open ? 'auto' : 'none',
 			border: '1px solid rgba(30,30,30,0.07)',
-			minHeight: 'fit-content',
 		};
 	}, [menuRect, open]);
 
 	// Clip-path origin: center top of panel (matches button)
 	const originX = menuRect.left + menuRect.width / 2 - (panelStyle.left ?? 0);
 	const originY = 0;
-	const minRadius = 260;
-	const openRadius = Math.max(panelHeight / 2 + 40, minRadius);
+	const minRadius = 120;
+	const openRadius = Math.max(Math.min(panelHeight / 2 + 40, 320), minRadius);
 
 	const panelVariants = {
 		open: {
 			opacity: 1,
-			scale: 1,
 			clipPath: `circle(${openRadius}px at ${originX}px ${originY}px)`,
-			transition: { duration: OPEN_DURATION, ease: OPEN_EASE },
+			transition: { duration: 0.42, ease: OPEN_EASE },
 		},
 		closed: {
 			opacity: 0,
-			scale: 0.98,
 			clipPath: `circle(24px at ${originX}px ${originY}px)`,
-			transition: { duration: CLOSE_DURATION, ease: CLOSE_EASE },
+			transition: { duration: 0.32, ease: CLOSE_EASE },
 		},
 	};
 

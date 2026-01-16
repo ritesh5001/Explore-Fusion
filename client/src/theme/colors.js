@@ -1,13 +1,13 @@
 export const colors = {
-	forest: '#2F5D50',
-	olive: '#6B8E23',
-	mountain: '#1F3D2B',
-	adventure: '#8B5A2B',
-	trail: '#C46A2D',
-	sand: '#F5F1E8',
-	soft: '#E5E7EB',
-	charcoal: '#1F2933',
-	darkBg: '#0F1F1A',
+	// Luxury travel palette (light-only)
+	sand: '#F6F3EE',
+	paper: '#FAF8F4',
+	card: '#FFFFFF',
+	charcoal: '#2B2B2B',
+	muted: '#6F6F6F',
+	gold: '#C9A76A',
+	olive: '#8A9A7B',
+	border: 'rgba(0,0,0,0.06)',
 };
 
 export default colors;

@@ -6,7 +6,7 @@ export default function HorizontalScroller({
 	items,
 	renderItem,
 	ariaLabel,
-	speed = 14, // px / second
+	speed = 8, // px / second
 	className = '',
 	itemClassName = '',
 }) {
@@ -161,7 +161,7 @@ export default function HorizontalScroller({
 			aria-label={ariaLabel}
 			className={
 				'no-scrollbar overflow-x-auto overflow-y-hidden whitespace-nowrap select-none ' +
-				'[-webkit-overflow-scrolling:touch] scroll-smooth ' +
+				'[-webkit-overflow-scrolling:touch] ' +
 				(isDragging ? 'cursor-grabbing ' : 'cursor-grab ') +
 				className
 			}

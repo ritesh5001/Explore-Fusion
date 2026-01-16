@@ -89,7 +89,7 @@ const PackageDetails = () => {
 							className="w-full h-80"
 						/>
 					) : (
-						<div className="w-full h-80 bg-soft/60 dark:bg-white/10 flex items-center justify-center text-charcoal/60 dark:text-sand/60">
+							<div className="w-full h-80 bg-soft/60 flex items-center justify-center text-charcoal/60">
 							No image
 						</div>
 					)}
@@ -99,25 +99,25 @@ const PackageDetails = () => {
 							subtitle={pkg.destination ? `📍 ${pkg.destination}` : undefined}
 							right={
 								<div className="text-right">
-									<div className="text-xs text-charcoal/60 dark:text-sand/60">Price</div>
+										<div className="text-xs text-charcoal/60">Price</div>
 									<div className="text-xl font-bold">${pkg.price}</div>
 								</div>
 							}
 						/>
 
-						<p className="mt-4 text-sm text-charcoal/80 dark:text-sand/80 leading-relaxed">{pkg.description}</p>
+							<p className="mt-4 text-sm text-charcoal/80 leading-relaxed">{pkg.description}</p>
 
 						<div className="mt-4 flex flex-wrap gap-3 text-sm">
 							{!!pkg.destination && (
-								<span className="px-3 py-1 rounded-full bg-soft/70 dark:bg-white/10">📍 {pkg.destination}</span>
+									<span className="px-3 py-1 rounded-full bg-soft/70">📍 {pkg.destination}</span>
 							)}
 							{!!pkg.duration && (
-								<span className="px-3 py-1 rounded-full bg-soft/70 dark:bg-white/10">⏳ {pkg.duration}</span>
+									<span className="px-3 py-1 rounded-full bg-soft/70">⏳ {pkg.duration}</span>
 							)}
 						</div>
 
 						{creatorDisplay && (
-							<div className="mt-4 text-sm text-charcoal/80 dark:text-sand/80">
+								<div className="mt-4 text-sm text-charcoal/80">
 								<span className="font-semibold">Creator:</span> {creatorDisplay}
 							</div>
 						)}
@@ -132,7 +132,7 @@ const PackageDetails = () => {
 				<div ref={detailsRevealRef} data-reveal style={{ ['--reveal-delay']: '160ms' }}>
 					<Card className="p-6 h-fit">
 						<SectionHeader title="Details" />
-						<div className="mt-3 text-sm text-charcoal/80 dark:text-sand/80 space-y-2">
+						<div className="mt-3 text-sm text-charcoal/80 space-y-2">
 							<div>
 								<span className="font-semibold">Destination:</span> {pkg.destination}
 							</div>
@@ -146,8 +146,8 @@ const PackageDetails = () => {
 
 						<div className="mt-6 md:mt-6 md:static md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0 fixed bottom-4 left-0 right-0 z-40 px-4">
 						<div className="md:max-w-none max-w-5xl mx-auto">
-							<div className="md:p-0 md:border-0 md:bg-transparent md:shadow-none rounded-2xl shadow-xl border border-soft dark:border-white/10 bg-white/90 dark:bg-[#0F1F1A]/90 backdrop-blur-md p-4">
-								<div className="md:hidden text-xs font-semibold text-charcoal/70 dark:text-sand/70 mb-2">Ready to book?</div>
+								<div className="md:p-0 md:border-0 md:bg-transparent md:shadow-none rounded-2xl shadow-xl border border-soft bg-white/90 backdrop-blur-md p-4">
+									<div className="md:hidden text-xs font-semibold text-charcoal/70 mb-2">Ready to book?</div>
 								<BookPackageButton packageId={id} />
 							</div>
 						</div>

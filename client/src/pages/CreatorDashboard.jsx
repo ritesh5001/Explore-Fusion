@@ -101,9 +101,9 @@ export default function CreatorDashboard() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 				<div ref={statsARevealRef} data-reveal style={{ ['--reveal-delay']: '80ms' }}>
-					<Card className="p-6">
-              <div className="text-sm font-semibold text-charcoal/70 dark:text-sand/70">Total bookings</div>
-              <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand">
+          <Card className="p-6">
+            <div className="text-sm font-semibold text-charcoal/70">Total bookings</div>
+            <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain">
                 {stats.totalBookings}
               </div>
               <div className="mt-3">
@@ -112,54 +112,54 @@ export default function CreatorDashboard() {
 					</Card>
 				</div>
 				<div ref={statsBRevealRef} data-reveal style={{ ['--reveal-delay']: '160ms' }}>
-					<Card className="p-6">
-              <div className="text-sm font-semibold text-charcoal/70 dark:text-sand/70">Revenue (est.)</div>
-              <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand">
+          <Card className="p-6">
+            <div className="text-sm font-semibold text-charcoal/70">Revenue (est.)</div>
+            <div className="mt-2 text-3xl font-heading font-extrabold tracking-tight text-mountain">
                 {money(stats.totalRevenue)}
               </div>
-              <div className="mt-3 text-sm text-charcoal/60 dark:text-sand/60">Sum of booked package prices.</div>
+            <div className="mt-3 text-sm text-charcoal/60">Sum of booked package prices.</div>
 					</Card>
 				</div>
           </div>
 
 			<div ref={tableRevealRef} data-reveal style={{ ['--reveal-delay']: '240ms' }}>
-				<Card className="overflow-hidden">
-            <div className="px-5 py-4 border-b border-soft/80 dark:border-white/10">
-              <div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Recent bookings</div>
-              <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Your latest sales activity.</div>
+        <Card className="overflow-hidden">
+          <div className="px-5 py-4 border-b border-soft/80">
+            <div className="font-heading font-extrabold tracking-tight text-mountain">Recent bookings</div>
+            <div className="mt-1 text-sm text-charcoal/70">Your latest sales activity.</div>
             </div>
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="bg-sand/80 dark:bg-white/5">
+              <thead className="bg-sand/80">
                   <tr>
-                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                  <th className="text-left font-semibold text-charcoal/70 px-5 py-3 whitespace-nowrap">
                       Package
                     </th>
-                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                  <th className="text-left font-semibold text-charcoal/70 px-5 py-3 whitespace-nowrap">
                       Price
                     </th>
-                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                  <th className="text-left font-semibold text-charcoal/70 px-5 py-3 whitespace-nowrap">
                       Customer
                     </th>
-                    <th className="text-left font-semibold text-charcoal/70 dark:text-sand/70 px-5 py-3 whitespace-nowrap">
+                  <th className="text-left font-semibold text-charcoal/70 px-5 py-3 whitespace-nowrap">
                       Status
                     </th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-soft/80 dark:divide-white/10">
+              <tbody className="divide-y divide-soft/80">
                   {sales.map((row) => {
                     const id = getId(row);
                     const status = getStatus(row);
                     const tone = status === 'cancelled' ? 'default' : status === 'pending' ? 'gold' : 'success';
                     return (
                       <tr key={id}>
-                        <td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain dark:text-sand">
+                      <td className="px-5 py-3 whitespace-nowrap font-semibold text-mountain">
                           {getTitle(row)}
                         </td>
-                        <td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">
+                      <td className="px-5 py-3 whitespace-nowrap text-charcoal/80">
                           {money(getPrice(row))}
                         </td>
-                        <td className="px-5 py-3 whitespace-nowrap text-charcoal/80 dark:text-sand/80">
+                      <td className="px-5 py-3 whitespace-nowrap text-charcoal/80">
                           {String(getCustomer(row))}
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap">

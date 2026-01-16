@@ -131,9 +131,9 @@ const CreatePackage = () => {
             aria-label="Location"
           />
 
-          <div className="rounded-2xl border border-dashed border-soft/80 dark:border-white/10 p-4 bg-white/40 dark:bg-white/5">
+          <div className="rounded-2xl border border-dashed border-soft/80 p-4 bg-white/40">
             <div className="flex items-center justify-between gap-3">
-              <div className="font-heading font-extrabold tracking-tight text-mountain dark:text-sand">Trip Image</div>
+              <div className="font-heading font-extrabold tracking-tight text-mountain">Trip Image</div>
               {formData.image && (
                 <Button
                   type="button"
@@ -157,11 +157,11 @@ const CreatePackage = () => {
                   accept="image/*"
                   onChange={handleFileChange}
                   disabled={uploading || submitting}
-                  className="block w-full text-sm text-charcoal/80 dark:text-sand/80 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-sand file:text-mountain hover:file:bg-soft"
+                  className="block w-full text-sm text-charcoal/80 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-sand file:text-mountain hover:file:bg-soft"
                 />
               )}
               {uploading && <div className="mt-2 text-sm text-trail font-semibold">Uploading…</div>}
-              {!!uploadError && <div className="mt-2 text-sm text-red-600 dark:text-red-300">{uploadError}</div>}
+              {!!uploadError && <div className="mt-2 text-sm text-red-600">{uploadError}</div>}
             </div>
           </div>
 

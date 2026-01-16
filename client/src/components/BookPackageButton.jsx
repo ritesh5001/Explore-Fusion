@@ -31,7 +31,7 @@ export default function BookPackageButton({ packageId }) {
 	return (
 		<div>
 			<div className="flex items-center gap-3">
-				<label className="text-sm font-medium text-charcoal/80 dark:text-sand/80">Guests</label>
+				<label className="text-sm font-medium text-charcoal/80">Guests</label>
 				<input
 					type="number"
 					min={1}
@@ -39,7 +39,7 @@ export default function BookPackageButton({ packageId }) {
 					onChange={(e) => setGuests(e.target.value)}
 					className={
 						'w-24 rounded-xl px-3 py-2 text-sm ' +
-						'bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand ' +
+						'bg-white/70 text-charcoal ' +
 						'border border-border ' +
 						'focus:outline-none focus:ring-2 focus:ring-gold/25 focus:border-charcoal/20 ' +
 						'transition-[border-color,box-shadow,background-color] duration-200 ease-standard'
@@ -53,7 +53,7 @@ export default function BookPackageButton({ packageId }) {
 					{loading ? 'Booking…' : 'Book Now'}
 				</Button>
 			</div>
-			{!!error && <div className="mt-2 text-sm text-red-600 dark:text-red-300">{error}</div>}
+			{!!error && <div className="mt-2 text-sm text-red-600">{error}</div>}
 		</div>
 	);
 }

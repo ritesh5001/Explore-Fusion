@@ -1,9 +1,14 @@
 import { memo } from 'react';
 import { Link } from 'react-router-dom';
-import Card from './ui/Card';
+import { motion } from 'framer-motion';
+import { cn } from '../utils/cn';
 import Button from './ui/Button';
 import LuxImage from './ui/LuxImage';
 import Badge from './ui/Badge';
+import { useReveal } from '../hooks/useReveal';
+import { hoverLuxury } from '../theme/variants';
+
+const MotionDiv = motion.div;
 
 const FALLBACK_IMAGE =
 	'data:image/svg+xml;utf8,' +
@@ -22,9 +27,20 @@ const FALLBACK_IMAGE =
     </svg>`
 	);
 
-function PackageCard({ id, title, price, image, destination, duration }) {
+
+function PackageCard({ id, title, price, image, destination, duration, revealDelayMs = 0 }) {
+	const revealRef = useReveal();
 	return (
-		<Card className="overflow-hidden">
+		<MotionDiv
+			ref={revealRef}
+			data-reveal
+			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
+			{...hoverLuxury}
+			className={cn(
+				'relative overflow-hidden rounded-2xl border',
+				'bg-card border-border shadow-[0_18px_48px_rgba(0,0,0,0.06)]'
+			)}
+		>
 			{image ? (
 				<LuxImage src={image} alt={title} mode="card" transform="w-400,h-300" className="w-full h-44" />
 			) : (
@@ -48,7 +64,7 @@ function PackageCard({ id, title, price, image, destination, duration }) {
 					View Details
 				</Button>
 			</div>
-		</Card>
+		</MotionDiv>
 	);
 }
 

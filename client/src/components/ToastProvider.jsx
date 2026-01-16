@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { motionDuration, motionEasing } from '../theme/motion';
 
 const MotionDiv = motion.div;
 
@@ -48,7 +49,7 @@ export const ToastProvider = ({ children }) => {
 							initial={{ opacity: 0, y: -8, filter: 'blur(6px)' }}
 							animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
 							exit={{ opacity: 0, y: -10, filter: 'blur(6px)' }}
-							transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
+							transition={{ duration: motionDuration.sm / 1000, ease: motionEasing.softOut }}
 							className={`min-w-[240px] max-w-sm rounded-2xl shadow border px-4 py-3 bg-white/80 backdrop-blur-md dark:bg-white/10 ${
 								t.type === 'success'
 									? 'border-emerald-300/50'

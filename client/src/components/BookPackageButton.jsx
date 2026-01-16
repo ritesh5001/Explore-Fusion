@@ -37,7 +37,13 @@ export default function BookPackageButton({ packageId }) {
 					min={1}
 					value={guests}
 					onChange={(e) => setGuests(e.target.value)}
-					className="w-24 border border-soft dark:border-white/10 rounded-xl px-3 py-2 bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand"
+					className={
+						'w-24 rounded-xl px-3 py-2 text-sm ' +
+						'bg-white/70 dark:bg-white/5 text-charcoal dark:text-sand ' +
+						'border border-border ' +
+						'focus:outline-none focus:ring-2 focus:ring-gold/25 focus:border-charcoal/20 ' +
+						'transition-[border-color,box-shadow,background-color] duration-200 ease-standard'
+					}
 				/>
 				<Button
 					onClick={onBook}

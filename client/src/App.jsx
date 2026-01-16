@@ -5,20 +5,24 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import PageTransition from './components/motion/PageTransition';
 
 function App() {
+	const wrap = (node) => <PageTransition>{node}</PageTransition>;
   return (
     <Router>
 		<AppLayout>
 			<Routes>
-				<Route path="/login" element={<Login />} />
-				<Route path="/register" element={<Register />} />
+				<Route path="/login" element={wrap(<Login />)} />
+				<Route path="/register" element={wrap(<Register />)} />
 				<Route
 					path="/dashboard"
 					element={
-						<ProtectedRoute>
-							<Dashboard />
-						</ProtectedRoute>
+						wrap(
+							<ProtectedRoute>
+								<Dashboard />
+							</ProtectedRoute>
+						)
 					}
 				/>
 				<Route

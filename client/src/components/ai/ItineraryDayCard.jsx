@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import Badge from '../ui/Badge';
 import Card from '../ui/Card';
-import { fadeInUp } from '../ui/motion';
+import { fadeLiftFast } from '../../theme/variants';
 
 const MotionDiv = motion.div;
 
@@ -9,7 +9,7 @@ export default function ItineraryDayCard({ day, plan }) {
 	return (
 		<div className="relative pl-10">
 			<div className="absolute left-3 top-6 w-3 h-3 rounded-full bg-trail shadow-[0_0_0_6px_rgba(56,189,248,0.14)]" />
-			<MotionDiv {...fadeInUp}>
+			<MotionDiv variants={fadeLiftFast} initial="hidden" animate="show">
 				<Card className="p-5">
 					<div className="flex items-center gap-2">
 						<Badge tone="accent">Day {day}</Badge>

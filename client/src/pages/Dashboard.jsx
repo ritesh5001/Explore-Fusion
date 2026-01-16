@@ -5,8 +5,14 @@ import Loader from '../components/ui/Loader';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
 import { Link } from 'react-router-dom';
+import { useReveal } from '../hooks/useReveal';
 
 export default function Dashboard() {
+	const headerRevealRef = useReveal();
+	const welcomeRevealRef = useReveal();
+	const accountRevealRef = useReveal();
+	const nextRevealRef = useReveal();
+	const discoverRevealRef = useReveal();
 	const { user, loading } = useAuth();
 
 	if (loading) {
@@ -19,9 +25,12 @@ export default function Dashboard() {
 
 	return (
 		<div className="container-app page-section max-w-5xl">
-			<SectionHeader title="Dashboard" subtitle="Your control center for trips, buddies, and AI." />
+			<div ref={headerRevealRef} data-reveal>
+				<SectionHeader title="Dashboard" subtitle="Your control center for trips, buddies, and AI." />
+			</div>
 
-			<Card className="mt-6 p-6 overflow-hidden">
+			<div ref={welcomeRevealRef} data-reveal style={{ ['--reveal-delay']: '80ms' }}>
+				<Card className="mt-6 p-6 overflow-hidden">
 				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 					<div className="min-w-0">
 						<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">WELCOME</div>
@@ -45,10 +54,12 @@ export default function Dashboard() {
 						<Button as={Link} to="/ai/itinerary" variant="ghost" className="w-full">AI</Button>
 					</div>
 				</div>
-			</Card>
+				</Card>
+			</div>
 
 			<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-				<Card className="p-6">
+				<div ref={accountRevealRef} data-reveal style={{ ['--reveal-delay']: '160ms' }}>
+					<Card className="p-6">
 					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">ACCOUNT</div>
 					<div className="mt-2 text-sm text-charcoal/80 dark:text-sand/80">
 						<div className="flex items-center justify-between">
@@ -63,25 +74,30 @@ export default function Dashboard() {
 					<div className="mt-4">
 						<Button as={Link} to="/profile" variant="secondary" size="sm">Manage profile</Button>
 					</div>
-				</Card>
+					</Card>
+				</div>
 
-				<Card className="p-6">
+				<div ref={nextRevealRef} data-reveal style={{ ['--reveal-delay']: '240ms' }}>
+					<Card className="p-6">
 					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">NEXT</div>
 					<div className="mt-2 text-lg font-heading font-bold text-mountain dark:text-sand">Create your buddy profile</div>
 					<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70">Better matches come from better preferences.</div>
 					<div className="mt-4">
 						<Button as={Link} to="/buddy/profile" size="sm">Update buddy profile</Button>
 					</div>
-				</Card>
+					</Card>
+				</div>
 
-				<Card className="p-6">
+				<div ref={discoverRevealRef} data-reveal style={{ ['--reveal-delay']: '320ms' }}>
+					<Card className="p-6">
 					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">DISCOVER</div>
 					<div className="mt-2 text-lg font-heading font-bold text-mountain dark:text-sand">Premium packages</div>
 					<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70">Hand-picked creator trips with clean booking flow.</div>
 					<div className="mt-4">
 						<Button as={Link} to="/packages" variant="secondary" size="sm">Explore packages</Button>
 					</div>
-				</Card>
+					</Card>
+				</div>
 			</div>
 		</div>
 	);

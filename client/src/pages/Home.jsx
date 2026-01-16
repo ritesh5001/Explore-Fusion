@@ -1,18 +1,20 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MoreVertical } from 'lucide-react';
 import API from '../api';
 import useAuth from '../auth/useAuth';
 import { useToast } from '../components/ToastProvider';
-import SafeImage from '../components/common/SafeImage';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
-import SectionHeader from '../components/ui/SectionHeader';
 import Loader, { Skeleton } from '../components/ui/Loader';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
-import LuxImage from '../components/ui/LuxImage';
 import { uploadPostImage } from '../utils/imagekit';
+import {
+  BuddyProfileCard,
+  HomeSectionHeader,
+  HorizontalScroller,
+  LuxuryPostCard,
+} from '../components/home';
 
 
 const Home = () => {
@@ -22,45 +24,18 @@ const Home = () => {
   const [uploading, setUploading] = useState(false);
 	const [selectedFile, setSelectedFile] = useState(null);
 	const [previewUrl, setPreviewUrl] = useState('');
-  const [openMenuPostId, setOpenMenuPostId] = useState(null);
+	const [buddySuggestions, setBuddySuggestions] = useState([]);
+	const [loadingBuddies, setLoadingBuddies] = useState(false);
+	const [buddyError, setBuddyError] = useState('');
   const { user } = useAuth();
 	const { showToast } = useToast();
 
-  useEffect(() => {
-    if (!openMenuPostId) return;
-    const close = () => setOpenMenuPostId(null);
-    window.addEventListener('click', close);
-    return () => window.removeEventListener('click', close);
-  }, [openMenuPostId]);
-  
-  const hero = (
-    <div className="gradient-header">
-      <div className="container-app py-12">
-        <div className="flex flex-col items-start justify-center gap-6">
-          <h1 className="text-4xl md:text-5xl font-heading font-extrabold tracking-tight text-white">
-            Explore Fusion
-          </h1>
-          <p className="text-white/90 text-lg max-w-2xl">
-            Plan trips in seconds, find travel buddies, and book exclusive creator packages.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-            <Button as={Link} to="/packages" size="lg" className="w-full sm:w-auto">
-              Explore Trips
-            </Button>
-            {user ? (
-              <Button as={Link} to="/dashboard" variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-mountain">
-                Go to Dashboard
-              </Button>
-            ) : (
-              <Button as={Link} to="/login" variant="outline" size="lg" className="w-full sm:w-auto border-white text-white hover:bg-white hover:text-mountain">
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+	const featuredPosts = useMemo(() => {
+		const list = Array.isArray(posts) ? posts : [];
+		// Hero should feel visual-first. Prefer posts that have images.
+		const withImages = list.filter((p) => p?.imageUrl);
+		return (withImages.length ? withImages : list).slice(0, 10);
+	}, [posts]);
 
   const fetchPosts = useCallback(async () => {
     setLoadingPosts(true);
@@ -81,6 +56,38 @@ const Home = () => {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
+
+  const loadBuddySuggestions = useCallback(async () => {
+    if (!user) {
+      setBuddySuggestions([]);
+      return;
+    }
+    setBuddyError('');
+    setLoadingBuddies(true);
+    try {
+      const res = await API.get('/matches/suggestions');
+      const data = res?.data?.data ?? res?.data;
+      const list = Array.isArray(data?.suggestions)
+        ? data.suggestions
+        : Array.isArray(data?.users)
+          ? data.users
+          : Array.isArray(data)
+            ? data
+            : [];
+      setBuddySuggestions(list);
+    } catch (e) {
+      setBuddySuggestions([]);
+      const status = e?.response?.status;
+      const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load suggestions';
+      setBuddyError(msg + (status ? ` (HTTP ${status})` : ''));
+    } finally {
+      setLoadingBuddies(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    loadBuddySuggestions();
+  }, [loadBuddySuggestions]);
 
   useEffect(() => {
     if (!previewUrl) return;
@@ -157,237 +164,203 @@ const Home = () => {
     setPreviewUrl('');
   };
 
-  const featureCards = (
-    <div className="container-app py-10">
-      <SectionHeader title="What you can do" subtitle="A travel stack built for speed, community, and control." />
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <Card className="p-6">
-          <div className="text-2xl">🧠</div>
-          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">AI Itineraries</div>
-          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Generate day-by-day plans in seconds.</div>
-          <div className="mt-4">
-            <Button as={Link} to="/ai/itinerary" variant="outline" size="sm">Try It</Button>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-2xl">🤝</div>
-          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">Buddy Matching</div>
-          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Find travel partners for your vibe.</div>
-          <div className="mt-4">
-            <Button as={Link} to="/buddy" variant="outline" size="sm">Find Buddies</Button>
-          </div>
-        </Card>
-        <Card className="p-6">
-          <div className="text-2xl">💬</div>
-          <div className="mt-3 font-heading font-bold text-mountain dark:text-sand">Real-time Chat</div>
-          <div className="mt-1 text-sm text-charcoal/70 dark:text-sand/70">Coordinate plans and meetups live.</div>
-          <div className="mt-4">
-            <Button as={Link} to="/chat" variant="outline" size="sm">Open Chat</Button>
-          </div>
-        </Card>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen">
-    {hero}
-    {featureCards}
+		{/* HERO: Recent posts (visual-first) */}
+		<section className="px-4 sm:px-6 lg:px-10 pt-10 pb-14 lux-fade-up">
+			<div className="flex items-start justify-between gap-8">
+				<div className="min-w-0">
+					<h1 className="text-[34px] sm:text-[44px] leading-[1.05] font-heading font-medium tracking-tight text-mountain">
+						Explore Fusion
+					</h1>
+					<p className="mt-4 text-base sm:text-lg text-charcoal/70 max-w-2xl">
+						A calm, premium travel space for stories, companions, and curated experiences.
+					</p>
+				</div>
+				<div className="hidden sm:flex items-center gap-2 shrink-0">
+					<Button as={Link} to="/packages" variant="outline" size="sm">
+						Explore trips
+					</Button>
+					{user ? (
+						<Button as={Link} to="/dashboard" variant="primary" size="sm">
+							Dashboard
+						</Button>
+					) : (
+						<Button as={Link} to="/login" variant="primary" size="sm">
+							Sign in
+						</Button>
+					)}
+				</div>
+			</div>
 
-    {user ? (
-      <div className="container-app pb-12 max-w-2xl">
-        <SectionHeader
-          title="Share your journey"
-          subtitle="Post a quick story from your latest trip."
-        />
+			<div className="mt-10">
+				<HomeSectionHeader
+					title="Recent posts"
+					subtitle="A quiet feed of moments shared by travelers."
+					right={
+						<div className="hidden sm:block text-[11px] tracking-[0.18em] uppercase text-charcoal/45">
+							Drag · Swipe · Slow scroll
+						</div>
+					}
+				/>
+			</div>
 
-        <Card className="mt-4 p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
-          <form onSubmit={handleCreatePost} className="space-y-4">
-            <Textarea
-              label="Your story"
-              aria-label="Trip story"
-              value={newPost.content}
-              onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-              className="min-h-28"
-            />
-            <Input
-              label="Location"
-              aria-label="Trip location"
-              value={newPost.location}
-              onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
-            />
+			<div className="mt-6">
+				{loadingPosts ? (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6">
+						<div className="space-y-3">
+							<Skeleton className="h-5 w-1/3" />
+							<Skeleton className="h-4 w-1/2" />
+						</div>
+						<div className="mt-4">
+							<Loader label="Loading posts…" />
+						</div>
+					</div>
+				) : featuredPosts.length ? (
+					<HorizontalScroller
+						items={featuredPosts}
+						speed={12}
+						ariaLabel="Recent posts"
+						className="-mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10"
+						renderItem={(post) => <LuxuryPostCard post={post} />}
+					/>
+				) : (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8 text-charcoal/70">
+						No posts yet.
+					</div>
+				)}
+			</div>
+		</section>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-semibold text-mountain dark:text-sand">Image (optional)</label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="block w-full text-sm text-charcoal/80 file:mr-3 file:rounded-xl file:border-0 file:bg-trail/15 file:px-4 file:py-2 file:text-mountain file:font-semibold hover:file:bg-trail/25 dark:text-sand/80"
-              />
-              {previewUrl ? (
-                <div className="mt-2">
-                  <img
-                    src={previewUrl}
-                    alt="Post image preview"
-                    className="w-full h-56 rounded-2xl object-cover"
-                  />
-                  <div className="mt-2 flex justify-end">
-                    <Button type="button" size="sm" variant="outline" onClick={clearSelectedImage}>
-                      Remove image
-                    </Button>
-                  </div>
-                </div>
-              ) : null}
-            </div>
+		{/* Buddy match finder */}
+		<section className="px-4 sm:px-6 lg:px-10 py-14 border-t border-soft/70 lux-fade-up">
+			<HomeSectionHeader
+				title="Buddy match finder"
+				subtitle="People you might genuinely enjoy traveling with."
+				right={
+					user ? (
+						<Button variant="link" size="sm" onClick={loadBuddySuggestions} aria-label="Refresh buddy suggestions">
+							Refresh
+						</Button>
+					) : (
+						<Button as={Link} to="/login" variant="link" size="sm">
+							Sign in
+						</Button>
+					)
+				}
+			/>
 
-            <Button type="submit" className="w-full" disabled={uploading || !newPost.content.trim() || !newPost.location.trim()}>
-              {uploading ? 'Uploading…' : selectedFile ? 'Post with image' : 'Post'}
-            </Button>
-          </form>
-        </Card>
+			<div className="mt-6">
+				{!user ? (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8">
+						<p className="text-charcoal/70">Sign in to see personalized buddy suggestions.</p>
+						<div className="mt-4 flex items-center gap-2">
+							<Button as={Link} to="/login" variant="primary" size="sm">
+								Sign in
+							</Button>
+							<Button as={Link} to="/register" variant="outline" size="sm">
+								Create account
+							</Button>
+						</div>
+					</div>
+				) : loadingBuddies ? (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6">
+						<Loader label="Finding companions…" />
+					</div>
+				) : buddyError ? (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-6 text-charcoal/70">
+						<div className="text-sm">{buddyError}</div>
+						<div className="mt-3">
+							<Button variant="outline" size="sm" onClick={loadBuddySuggestions}>
+								Try again
+							</Button>
+						</div>
+					</div>
+				) : (Array.isArray(buddySuggestions) ? buddySuggestions : []).length ? (
+					<HorizontalScroller
+						items={buddySuggestions.slice(0, 12)}
+						speed={10}
+						ariaLabel="Buddy suggestions"
+						className="-mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10"
+						renderItem={(u) => <BuddyProfileCard user={u} />}
+					/>
+				) : (
+					<div className="rounded-[26px] border border-soft/80 bg-white/55 p-8 text-charcoal/70">
+						No suggestions right now. Add your buddy profile to improve matching.
+						<div className="mt-4">
+							<Button as={Link} to="/buddy" variant="outline" size="sm">
+								Open buddy finder
+							</Button>
+						</div>
+					</div>
+				)}
+			</div>
+		</section>
 
-        <div className="mt-10">
-          <SectionHeader title="Recent Stories" subtitle="What the community is sharing right now." />
-        </div>
+		{/* Optional: Create a post (kept functional; calmer styling) */}
+		{user ? (
+			<section className="px-4 sm:px-6 lg:px-10 pb-16 border-t border-soft/70 lux-fade-up">
+				<div className="pt-14">
+					<HomeSectionHeader
+						title="Share a moment"
+						subtitle="A short note from your latest journey."
+					/>
+				</div>
 
-        <div className="space-y-6">
-          {loadingPosts && (
-            <Card className="p-6">
-              <div className="space-y-3">
-                <Skeleton className="h-6 w-2/3" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
-              <Loader label="Loading stories…" />
-            </Card>
-          )}
+				<div className="mt-6 max-w-3xl">
+					<Card className="p-6 bg-white/55 border border-soft/80 shadow-none">
+						<form onSubmit={handleCreatePost} className="space-y-4">
+							<Textarea
+								label="Story"
+								aria-label="Trip story"
+								value={newPost.content}
+								onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+								className="min-h-28"
+							/>
+							<Input
+								label="Location"
+								aria-label="Trip location"
+								value={newPost.location}
+								onChange={(e) => setNewPost({ ...newPost, location: e.target.value })}
+							/>
 
-          {(Array.isArray(posts) ? posts : []).map((post) => (
-            <Card key={post._id} className="p-6 bg-white/70 dark:bg-[#0F1F1A]/70 backdrop-blur-md">
-              <div className="flex justify-between items-start mb-2 gap-3">
-                    <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                        {(() => {
-                          const author = post?.user || post?.author;
-                          const id = author?._id ? String(author._id) : '';
-                          const username = author?.username ? String(author.username) : '';
-                          const name = author?.name ? String(author.name) : '';
-                          const label = username ? `Post from ${username}` : name || 'Unknown user';
+							<div className="space-y-2">
+								<label className="block text-xs tracking-wide text-charcoal/70">Image (optional)</label>
+								<input
+									type="file"
+									accept="image/*"
+									onChange={handleFileChange}
+									disabled={uploading}
+									className="block w-full text-sm text-charcoal/70 file:mr-3 file:rounded-xl file:border file:border-soft file:bg-sand file:px-4 file:py-2 file:text-charcoal/80 file:font-medium hover:file:bg-white/70"
+								/>
+								{previewUrl ? (
+									<div className="mt-2">
+										<img
+											src={previewUrl}
+											alt="Post image preview"
+											className="w-full h-56 rounded-2xl object-cover"
+										/>
+										<div className="mt-2 flex justify-end">
+											<Button type="button" size="sm" variant="outline" onClick={clearSelectedImage}>
+												Remove image
+											</Button>
+										</div>
+									</div>
+								) : null}
+							</div>
 
-                          const content = (
-                            <div className="flex items-center gap-2 min-w-0">
-                              <div className="h-9 w-9 rounded-full overflow-hidden border border-soft dark:border-white/10 bg-soft/60 dark:bg-white/10 shrink-0">
-                                <SafeImage
-                                  src={author?.avatar || ''}
-                                  alt={name || username || 'User avatar'}
-                                  fallback="/avatar-placeholder.png"
-                                  className="h-full w-full object-cover hover:opacity-90 transition-opacity"
-                                />
-                            </div>
-                              <div className="text-sm font-semibold text-mountain dark:text-sand truncate cursor-pointer hover:underline hover:text-adventure dark:hover:text-adventure transition-colors">
-                              {label}
-                            </div>
-                          </div>
-                          );
-
-                          if (!id) return <div className="min-w-0">{content}</div>;
-                          return (
-                            <Link
-                              to={`/users/${id}`}
-                              className="min-w-0"
-                              aria-label={`View profile: ${name || username || 'user'}`}
-                            >
-                              {content}
-                            </Link>
-                          );
-                        })()}
-
-                    {(post?.user?.role || post?.author?.role) === 'creator' && (
-                      <span className="text-[11px] px-2 py-0.5 rounded-full bg-trail/15 text-mountain dark:text-sand border border-trail/25">
-                        Creator
-                      </span>
-                    )}
-                  </div>
-
-                    <h2 className="text-xl font-heading font-bold tracking-tight text-mountain dark:text-sand mt-1">
-                    {post.title || String(post.content || '').slice(0, 48) || 'Post'}
-                  </h2>
-                </div>
-                  {(() => {
-                    const author = post?.user || post?.author;
-                    const id = author?._id ? String(author._id) : '';
-                    if (!id) return null;
-                    const isOpen = openMenuPostId === String(post._id);
-                    return (
-                      <div className="relative shrink-0">
-                        <button
-                          type="button"
-                          aria-haspopup="menu"
-                          aria-expanded={isOpen}
-                          className="p-2 rounded-xl hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuPostId((prev) => (prev === String(post._id) ? null : String(post._id)));
-                          }}
-                        >
-                          <MoreVertical className="h-4 w-4 text-charcoal/70 dark:text-sand/80" />
-                          <span className="sr-only">Open post menu</span>
-                        </button>
-
-                        {isOpen && (
-                          <div
-                            role="menu"
-                            className="absolute right-0 mt-2 w-44 rounded-xl border border-white/10 bg-[#0B1512] text-sand shadow-lg z-10 overflow-hidden"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Link
-                            role="menuitem"
-                            to={`/users/${id}`}
-                            className="block px-3 py-2 text-sm hover:bg-white/10 transition-colors"
-                            onClick={() => setOpenMenuPostId(null)}
-                          >
-                            View profile
-                          </Link>
-                        </div>
-                      )}
-                    </div>
-                    );
-                  })()}
-                <span className="bg-adventure/10 text-adventure text-xs px-2 py-1 rounded-full shrink-0">
-                  📍 {post.location}
-                </span>
-              </div>
-              {post.imageUrl ? (
-                <div className="mb-3">
-                  <LuxImage src={post.imageUrl} alt={post.title || 'Post image'} className="w-full h-64 rounded-2xl" transform="w-1100,h-850" />
-                </div>
-              ) : null}
-              <p className="text-charcoal/80 dark:text-sand/80 leading-relaxed">{post.content}</p>
-            </Card>
-          ))}
-
-          {!loadingPosts && posts.length === 0 && (
-            <Card className="p-8 text-center">
-              <div className="text-charcoal/70 dark:text-sand/70">No posts yet. Start the trend!</div>
-            </Card>
-          )}
-        </div>
-      </div>
-    ) : (
-      <div className="container-app pb-12">
-        <Card className="p-8 text-center">
-          <div className="text-charcoal/70 dark:text-sand/70">
-            Sign in to share stories and save your trips.
-          </div>
-          <div className="mt-4 flex flex-col sm:flex-row gap-3 justify-center">
-            <Button as={Link} to="/register" size="sm">Create account</Button>
-            <Button as={Link} to="/login" variant="outline" size="sm">Sign in</Button>
-          </div>
-        </Card>
-      </div>
-    )}
+							<Button
+								type="submit"
+								className="w-full"
+								disabled={uploading || !newPost.content.trim() || !newPost.location.trim()}
+							>
+								{uploading ? 'Uploading…' : selectedFile ? 'Post with image' : 'Post'}
+							</Button>
+						</form>
+					</Card>
+				</div>
+			</section>
+		) : null}
     </div>
   );
 };

@@ -68,8 +68,8 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 	const tags = Array.isArray(post?.tags) ? post.tags.filter(Boolean) : [];
 
 				const header = (
-					<div className="flex items-center gap-2 min-w-0">
-						<div className="h-8 w-8 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
+					<div className="flex items-center gap-3 min-w-0">
+						<div className="h-10 w-10 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
 							<SafeImage
 								src={author?.avatar || ''}
 								alt={handle}
@@ -78,8 +78,8 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 							/>
 						</div>
 						<div className="min-w-0">
-							<div className="text-[16px] font-semibold tracking-wide text-charcoal/85 truncate">{handle}</div>
-							<div className="text-[13px] tracking-wide text-charcoal/55 truncate">{location}</div>
+							<div className="text-[18px] font-semibold tracking-wide text-charcoal/85 truncate">{handle}</div>
+							<div className="text-[15px] tracking-wide text-charcoal/55 truncate">{location}</div>
 						</div>
 					</div>
 				);
@@ -89,7 +89,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 			ref={revealRef}
 			data-reveal
 			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
-			className="w-[85vw] sm:w-[400px] md:w-[520px] lg:w-[640px] aspect-square"
+			className="w-[90vw] sm:w-[420px] md:w-[560px] lg:w-[660px] aspect-square"
 		>
 			<MotionDiv
 				{...hoverLuxury}

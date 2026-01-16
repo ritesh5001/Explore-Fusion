@@ -5,6 +5,8 @@ import LuxImage from '../ui/LuxImage';
 import { useReveal } from '../../hooks/useReveal';
 import { hoverLuxury } from '../../theme/variants';
 
+const MotionDiv = motion.div;
+
 const getAuthor = (post) => post?.user || post?.author;
 
 export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
@@ -43,7 +45,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
 			className="w-[78vw] sm:w-[520px] lg:w-[560px]"
 		>
-			<motion.div
+			<MotionDiv
 				{...hoverLuxury}
 				className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)]"
 			>
@@ -80,7 +82,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 						</div>
 					</div>
 				</div>
-			</motion.div>
+			</MotionDiv>
 		</article>
 	);
 }

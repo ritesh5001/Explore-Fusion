@@ -11,6 +11,8 @@ import { hoverLuxury } from '../../theme/variants';
 
 const getId = (u) => u?._id || u?.id || u?.userId;
 
+const MotionDiv = motion.div;
+
 export default function BuddyProfileCard({ user, revealDelayMs = 0 }) {
 	const cardRevealRef = useReveal();
 	const followRevealRef = useReveal();
@@ -63,7 +65,7 @@ export default function BuddyProfileCard({ user, revealDelayMs = 0 }) {
 			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
 			className="w-[72vw] sm:w-[360px] lg:w-[380px]"
 		>
-			<motion.div
+			<MotionDiv
 				{...hoverLuxury}
 				className="rounded-[26px] border border-border bg-card overflow-hidden p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]"
 			>
@@ -113,7 +115,7 @@ export default function BuddyProfileCard({ user, revealDelayMs = 0 }) {
 				<div className="mt-5 text-[11px] tracking-[0.18em] uppercase text-muted">
 					Suggested companion
 				</div>
-			</motion.div>
+			</MotionDiv>
 		</article>
 	);
 }

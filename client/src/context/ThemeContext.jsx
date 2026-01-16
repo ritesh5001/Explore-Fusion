@@ -6,25 +6,21 @@ const STORAGE_KEY = 'fusion:theme';
 
 const applyThemeClass = (mode) => {
 	const root = document.documentElement;
-	const isDark = mode === 'dark';
-	root.classList.toggle('dark', isDark);
-	root.dataset.theme = mode;
+	// Luxury UI is intentionally light-only.
+	root.classList.remove('dark');
+	root.dataset.theme = 'light';
 };
 
 export const ThemeProvider = ({ children }) => {
-	// Default: dark mode (per requirement)
-	const [theme, setTheme] = useState(() => {
-		const saved = localStorage.getItem(STORAGE_KEY);
-		return saved === 'light' || saved === 'dark' ? saved : 'dark';
-	});
+	const [theme, setTheme] = useState(() => 'light');
 
 	useEffect(() => {
 		applyThemeClass(theme);
-		localStorage.setItem(STORAGE_KEY, theme);
+		localStorage.setItem(STORAGE_KEY, 'light');
 	}, [theme]);
 
 	const toggleTheme = useCallback(() => {
-		setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
+		setTheme('light');
 	}, []);
 
 	const value = useMemo(() => ({ theme, setTheme, toggleTheme }), [theme, toggleTheme]);

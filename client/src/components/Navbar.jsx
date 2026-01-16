@@ -26,6 +26,7 @@ const Navbar = () => {
   const [isVisible, setIsVisible] = useState(true);
   const lastScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
   const rafId = useRef(null);
+  const hideTimeout = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
@@ -97,18 +98,30 @@ const Navbar = () => {
   const avatarAlt = user?.name ? `${user.name} avatar` : 'Profile avatar';
 
   useEffect(() => {
+    const HIDE_DELAY = 150; // milliseconds
     const handle = () => {
       if (rafId.current) return;
       rafId.current = window.requestAnimationFrame(() => {
         const currentY = window.scrollY || 0;
         const lastY = lastScrollY.current || 0;
-        // If scrolling down and past threshold, hide
+
+        // Scrolling down and past threshold -> schedule hide
         if (currentY > lastY && currentY > 120) {
-          setIsVisible(false);
+          if (hideTimeout.current == null) {
+            hideTimeout.current = window.setTimeout(() => {
+              setIsVisible(false);
+              hideTimeout.current = null;
+            }, HIDE_DELAY);
+          }
         } else if (currentY < lastY) {
-          // Scrolling up -> show
+          // Scrolling up -> cancel any scheduled hide and show immediately
+          if (hideTimeout.current != null) {
+            clearTimeout(hideTimeout.current);
+            hideTimeout.current = null;
+          }
           setIsVisible(true);
         }
+
         lastScrollY.current = currentY;
         rafId.current = null;
       });
@@ -118,6 +131,7 @@ const Navbar = () => {
     return () => {
       window.removeEventListener('scroll', handle);
       if (rafId.current) window.cancelAnimationFrame(rafId.current);
+      if (hideTimeout.current != null) clearTimeout(hideTimeout.current);
     };
   }, []);
 

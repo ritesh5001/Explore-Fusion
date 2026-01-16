@@ -97,9 +97,10 @@ export default function CircularMenuOverlay({
 	}, [open, onClose, menuButtonRef]);
 
 	// Animation config
-	const EASE = [0.22, 1, 0.36, 1];
-	const OPEN_DURATION = 0.28;
-	const CLOSE_DURATION = 0.22;
+	const OPEN_EASE = [0.22, 1, 0.36, 1];
+	const CLOSE_EASE = [0.4, 0, 1, 1];
+	const OPEN_DURATION = 0.32;
+	const CLOSE_DURATION = 0.24;
 	const STAGGER = 0.06;
 
 	// Panel position: below button, centered horizontally
@@ -108,16 +109,17 @@ export default function CircularMenuOverlay({
 		return {
 			position: 'absolute',
 			left: left + width / 2 - 160, // 320px/2
-			top: top + height + 12, // 12px below button
+			top: top + height + 8, // 8px below button, tight to navbar
 			zIndex: 40,
 			width: 320,
-			maxWidth: '90vw',
+			maxWidth: '92vw',
 			borderRadius: '1.25rem',
 			boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
 			background: 'rgba(246,243,239,0.96)',
 			backdropFilter: 'blur(16px)',
 			overflow: 'hidden',
 			pointerEvents: open ? 'auto' : 'none',
+			border: '1px solid rgba(30,30,30,0.07)',
 		};
 	}, [menuRect, open]);
 
@@ -129,20 +131,20 @@ export default function CircularMenuOverlay({
 		open: {
 			opacity: 1,
 			scale: 1,
-			clipPath: `circle(400px at ${originX}px ${originY}px)`,
-			transition: { duration: OPEN_DURATION, ease: EASE },
+			clipPath: `circle(420px at ${originX}px ${originY}px)`,
+			transition: { duration: OPEN_DURATION, ease: OPEN_EASE },
 		},
 		closed: {
 			opacity: 0,
 			scale: 0.98,
 			clipPath: `circle(24px at ${originX}px ${originY}px)`,
-			transition: { duration: CLOSE_DURATION, ease: EASE },
+			transition: { duration: CLOSE_DURATION, ease: CLOSE_EASE },
 		},
 	};
 
 	const menuVariants = {
 		open: {
-			transition: { staggerChildren: STAGGER, delayChildren: 0.08 },
+			transition: { staggerChildren: STAGGER, delayChildren: 0.10 },
 		},
 		closed: {
 			transition: { staggerChildren: STAGGER, staggerDirection: -1 },
@@ -150,8 +152,8 @@ export default function CircularMenuOverlay({
 	};
 
 	const itemVariants = {
-		open: { y: 0, opacity: 1, transition: { duration: 0.18, ease: EASE } },
-		closed: { y: 32, opacity: 0, transition: { duration: 0.16, ease: EASE } },
+		open: { y: 0, opacity: 1, transition: { duration: 0.22, ease: OPEN_EASE } },
+		closed: { y: 32, opacity: 0, transition: { duration: 0.16, ease: CLOSE_EASE } },
 	};
 
 	if (typeof window === 'undefined') return null;
@@ -169,13 +171,13 @@ export default function CircularMenuOverlay({
 					variants={panelVariants}
 				>
 					<MotionDiv
-						className="flex flex-col gap-2 p-4"
+						className="flex flex-col gap-0 py-2"
 						initial="closed"
 						animate="open"
 						exit="closed"
 						variants={menuVariants}
 					>
-						{(links || []).map((l) => (
+						{(links || []).map((l, idx) => (
 							<MotionDiv
 								key={l.to}
 								initial="closed"
@@ -186,15 +188,16 @@ export default function CircularMenuOverlay({
 								<Link
 									to={l.to}
 									onClick={onClose}
-									className="rounded-2xl px-3 py-2 font-medium text-[#1c1c1c]/85 hover:bg-black/5 transition"
+									className="block text-left px-6 py-[1.15rem] leading-[48px] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
+									style={{ fontWeight: 500, fontSize: '1.08rem' }}
 								>
 									{l.label}
 								</Link>
 							</MotionDiv>
 						))}
-						<div className="h-px bg-black/10 my-3" />
+						<div className="h-px bg-black/10 my-2 mx-4" />
 						{!isAuthenticated ? (
-							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="grid grid-cols-2 gap-2">
+							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="grid grid-cols-2 gap-2 px-4 pb-2">
 								<Button as={Link} to="/login" variant="secondary" size="sm" className="w-full" onClick={onClose}>
 									Sign in
 								</Button>
@@ -203,7 +206,7 @@ export default function CircularMenuOverlay({
 								</Button>
 							</MotionDiv>
 						) : (
-							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="flex items-center justify-between gap-3">
+							<MotionDiv initial="closed" animate="open" exit="closed" variants={itemVariants} className="flex items-center justify-between gap-3 px-6 pb-2">
 								<span className="text-[#1c1c1c] font-medium truncate">{userName || 'User'}</span>
 								<Button variant="danger" size="sm" onClick={onLogout}>
 									Logout

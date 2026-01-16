@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import useVerticalToHorizontalScroll from '../../hooks/useVerticalToHorizontalScroll';
 
 const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
@@ -91,6 +92,8 @@ export default function HorizontalScroller({
 		};
 	}, []);
 
+	useVerticalToHorizontalScroll(scrollerRef);
+
 	useEffect(() => {
 		const el = scrollerRef.current;
 		if (!el) return;
@@ -159,6 +162,7 @@ export default function HorizontalScroller({
 		<div
 			ref={scrollerRef}
 			aria-label={ariaLabel}
+			data-scroll="horizontal"
 			className={
 				'no-scrollbar overflow-x-auto overflow-y-hidden whitespace-nowrap select-none ' +
 				'[-webkit-overflow-scrolling:touch] ' +

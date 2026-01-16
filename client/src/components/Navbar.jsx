@@ -2,7 +2,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import useAuth from '../auth/useAuth';
 import API from '../api';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Bell, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
 import GlassNavbarContainer from './header/GlassNavbarContainer';
@@ -22,6 +22,7 @@ const getIsRead = (n) => Boolean(n?.read ?? n?.isRead ?? n?.seen);
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const prefersReducedMotion = useReducedMotion();
   const { user, isAuthenticated, logout } = useAuth();
   const initialScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
   const [isVisible, setIsVisible] = useState(true);
@@ -159,6 +160,35 @@ const Navbar = () => {
     },
   };
 
+  const luxuryEase = [0.22, 0.61, 0.36, 1];
+  const basePadding = 8;
+  const paddingBoost = prefersReducedMotion ? 2 : 4;
+  const navHoverVariants = {
+    rest: {
+      paddingTop: basePadding,
+      paddingBottom: basePadding,
+      transition: { duration: 0.35, ease: luxuryEase },
+    },
+    hover: {
+      paddingTop: basePadding + paddingBoost,
+      paddingBottom: basePadding + paddingBoost,
+      transition: { duration: 0.45, ease: luxuryEase },
+    },
+  };
+
+  const contentScaleVariants = {
+    rest: {
+      scale: 1,
+      transition: { duration: 0.35, ease: luxuryEase },
+    },
+    hover: {
+      scale: prefersReducedMotion ? 1 : 1.03,
+      transition: { duration: 0.45, ease: luxuryEase },
+    },
+  };
+
+  const [isNavbarHovered, setIsNavbarHovered] = useState(false);
+
   return (
     <motion.header
       variants={navVariants}
@@ -169,16 +199,29 @@ const Navbar = () => {
     >
       <MotionDiv variants={fadeLift} initial={false} animate={isScrolled ? 'scrolled' : 'rest'}>
       <div className="container-app pt-2 pb-2">
-        <GlassNavbarContainer
-          variants={glassShift}
-          initial={false}
-          animate={isScrolled ? 'scrolled' : 'rest'}
-          className={
-            'relative px-3 py-2 transition-[box-shadow] ease-soft-out duration-400 ' +
-            (isScrolled ? 'shadow-[0_6px_12px_rgba(0,0,0,0.06)]' : 'shadow-[0_4px_10px_rgba(0,0,0,0.04)]')
-          }
+        <MotionDiv
+          variants={navHoverVariants}
+          initial="rest"
+          whileHover="hover"
+          animate="rest"
+          onHoverStart={() => setIsNavbarHovered(true)}
+          onHoverEnd={() => setIsNavbarHovered(false)}
         >
-          <div className="relative flex items-center gap-2">
+          <GlassNavbarContainer
+            variants={glassShift}
+            initial={false}
+            animate={isScrolled ? 'scrolled' : 'rest'}
+            className={
+              'relative px-3 py-2 transition-[box-shadow] ease-soft-out duration-400 ' +
+              (isScrolled ? 'shadow-[0_6px_12px_rgba(0,0,0,0.06)]' : 'shadow-[0_4px_10px_rgba(0,0,0,0.04)]')
+            }
+          >
+            <MotionDiv
+              variants={contentScaleVariants}
+              initial="rest"
+              animate={isNavbarHovered ? 'hover' : 'rest'}
+              className="relative flex items-center gap-2"
+            >
             <button
               ref={menuButtonRef}
               type="button"
@@ -250,7 +293,9 @@ const Navbar = () => {
               </Link>
             </div>
           </div>
-        </GlassNavbarContainer>
+            </MotionDiv>
+          </GlassNavbarContainer>
+        </MotionDiv>
       </div>
       </MotionDiv>
 

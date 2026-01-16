@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import * as motion from 'motion/react-client';
-import { AnimatePresence, stagger, useReducedMotion } from 'motion/react';
+import { AnimatePresence } from 'motion/react';
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
@@ -57,7 +57,6 @@ export default function CircularMenuOverlay({
 	userName,
 	onLogout,
 }) {
-	const reduceMotion = useReducedMotion();
 	const [menuRect, setMenuRect] = useState({ left: 0, top: 0, width: 0, height: 0 });
 	const panelRef = useRef(null);
 
@@ -104,6 +103,19 @@ export default function CircularMenuOverlay({
 	const STAGGER = 0.06;
 
 	// Panel position: below button, centered horizontally
+	const [panelHeight, setPanelHeight] = useState(0);
+	useEffect(() => {
+		if (!open) return;
+		if (!panelRef.current) return;
+		const updateHeight = () => {
+			setPanelHeight(panelRef.current.offsetHeight);
+		};
+		updateHeight();
+		// Listen for resize/scroll in case content changes
+		window.addEventListener('resize', updateHeight);
+		return () => window.removeEventListener('resize', updateHeight);
+	}, [open, links]);
+
 	const panelStyle = useMemo(() => {
 		const { left, top, width, height } = menuRect;
 		return {
@@ -118,21 +130,24 @@ export default function CircularMenuOverlay({
 			background: 'rgba(246,243,239,0.96)',
 			backdropFilter: 'blur(16px)',
 			overflow: 'auto',
-			maxHeight: '70vh',
+			maxHeight: '88vh',
 			pointerEvents: open ? 'auto' : 'none',
 			border: '1px solid rgba(30,30,30,0.07)',
+			minHeight: 'fit-content',
 		};
 	}, [menuRect, open]);
 
 	// Clip-path origin: center top of panel (matches button)
 	const originX = menuRect.left + menuRect.width / 2 - (panelStyle.left ?? 0);
 	const originY = 0;
+	const minRadius = 260;
+	const openRadius = Math.max(panelHeight / 2 + 40, minRadius);
 
 	const panelVariants = {
 		open: {
 			opacity: 1,
 			scale: 1,
-			clipPath: `circle(420px at ${originX}px ${originY}px)`,
+			clipPath: `circle(${openRadius}px at ${originX}px ${originY}px)`,
 			transition: { duration: OPEN_DURATION, ease: OPEN_EASE },
 		},
 		closed: {
@@ -178,7 +193,7 @@ export default function CircularMenuOverlay({
 						exit="closed"
 						variants={menuVariants}
 					>
-						{(links || []).map((l, idx) => (
+						{(links || []).map((l) => (
 							<MotionDiv
 								key={l.to}
 								initial="closed"
@@ -189,7 +204,7 @@ export default function CircularMenuOverlay({
 								<Link
 									to={l.to}
 									onClick={onClose}
-									className="block text-left px-6 py-2 leading-[1.4] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
+									className="block text-left px-5 py-1.5 leading-[1.4] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
 									style={{ fontWeight: 500, fontSize: '1.08rem', marginBottom: '8px' }}
 								>
 									{l.label}

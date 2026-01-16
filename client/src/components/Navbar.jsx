@@ -1,22 +1,34 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useAuth from '../auth/useAuth';
-import Button from './ui/Button';
-import { AnimatePresence, motion } from 'framer-motion';
+import API from '../api';
+import { motion } from 'framer-motion';
+import { Bell, Menu, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
+import GlassLogoContainer from './header/GlassLogoContainer';
+import MobileMenuDrawer from './header/MobileMenuDrawer';
 
 const MotionDiv = motion.div;
-const MotionButton = motion.button;
+
+const asArray = (v) => (Array.isArray(v) ? v : []);
+
+const normalizeNotifications = (body) => {
+	const data = body?.data ?? body;
+	return asArray(data?.notifications ?? data?.items ?? data);
+};
+
+const getIsRead = (n) => Boolean(n?.read ?? n?.isRead ?? n?.seen);
 
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 
   const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
 
   const handleLogout = () => {
-    setIsMobileOpen(false);
+	setIsMenuOpen(false);
     logout();
     navigate('/login', { replace: true });
   };
@@ -46,126 +58,122 @@ const Navbar = () => {
     return authed;
   }, [isAuthenticated, user?.role]);
 
+  useEffect(() => {
+    let alive = true;
+    if (!isAuthenticated) return undefined;
+
+    (async () => {
+      try {
+        const res = await API.get('/notifications/my');
+        const items = normalizeNotifications(res?.data);
+        const unread = asArray(items).some((n) => !getIsRead(n));
+        if (alive) setHasUnreadNotifications(Boolean(unread));
+      } catch {
+        if (alive) setHasUnreadNotifications(false);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [isAuthenticated]);
+
+  const avatarSrc = user?.avatar || '';
+  const avatarAlt = user?.name ? `${user.name} avatar` : 'Profile avatar';
+
   return (
-    <nav className="sticky top-0 z-50 border-b border-border bg-sand/80 backdrop-blur-sm">
-      <div className="container-app py-3 flex items-center justify-between gap-3">
-        <Link
-          to="/"
-          className="flex items-center gap-2 text-xl font-heading font-medium tracking-[0.04em] text-charcoal hover:text-gold transition"
-        >
-      <SafeImage
-        src={LOGO_URL}
-        fallback="/images/placeholder.svg"
-        alt="Explore Fusion"
-        className="h-8 w-8 rounded-xl object-contain bg-white"
-        loading="eager"
-        decoding="async"
-      />
-          Explore <span className="text-gold">Fusion</span>
-        </Link>
-
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="md:hidden inline-flex items-center justify-center rounded-2xl border border-border bg-white px-3 py-2 text-charcoal"
-            aria-label="Open menu"
-            aria-expanded={isMobileOpen}
-            onClick={() => setIsMobileOpen((v) => !v)}
-          >
-            <span className="text-lg leading-none">☰</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="hidden md:block">
-        <div className="container-app pb-3 flex items-center justify-end gap-4">
-          {links.map((l) => (
-            <Link key={l.to} to={l.to} className="text-charcoal/70 hover:text-gold transition font-medium">
-              {l.label}
-            </Link>
-          ))}
-
-          {!isAuthenticated ? (
-            <Button as={Link} to="/register" size="sm">
-              Register
-            </Button>
-          ) : (
-            <>
-              <span className="text-charcoal font-medium">{user?.name || 'User'}</span>
-              <button onClick={handleLogout} className="text-red-700 hover:text-red-900 font-medium transition">
-                Logout
+  <MotionDiv
+    initial={{ opacity: 0, y: -6 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+  >
+    <header className="sticky top-0 z-50">
+      <div className="border-b border-border bg-sand/70 backdrop-blur-md">
+        <div className="container-app py-3">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-white/60 backdrop-blur-sm text-charcoal hover:bg-white/70 transition"
+                aria-label="Open menu"
+                aria-expanded={isMenuOpen}
+                onClick={() => setIsMenuOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
               </button>
-            </>
-          )}
+            </div>
+
+            <div className="justify-self-center pt-1">
+              <GlassLogoContainer>
+                <Link to="/" aria-label="Go to home" className="inline-flex items-center gap-2">
+                  <SafeImage
+                    src={LOGO_URL}
+                    fallback="/images/placeholder.svg"
+                    alt="Explore Fusion"
+                    className="h-7 w-7 rounded-xl object-contain bg-white"
+                    loading="eager"
+                    decoding="async"
+                  />
+                  <span className="text-lg font-heading font-medium tracking-[0.06em] text-charcoal">
+                    Explore <span className="text-gold">Fusion</span>
+                  </span>
+                </Link>
+              </GlassLogoContainer>
+            </div>
+
+            <div className="flex items-center justify-end gap-2">
+              {isAuthenticated ? (
+                <Link
+                  to="/profile"
+                  aria-label="Open profile"
+                  className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/70 backdrop-blur-sm hover:bg-white/80 transition"
+                >
+                  <SafeImage
+                    src={avatarSrc}
+                    alt={avatarAlt}
+                    fallback="/avatar-placeholder.png"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
+                </Link>
+              ) : (
+                <div className="h-10 w-10 rounded-full border border-border bg-white/60 backdrop-blur-sm" aria-hidden="true" />
+              )}
+
+              <Link
+                to="/notifications"
+                aria-label="Open notifications"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white/60 backdrop-blur-sm text-charcoal hover:bg-white/70 transition"
+              >
+                <Bell className="h-5 w-5" />
+                {hasUnreadNotifications && (
+                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold" />
+                )}
+              </Link>
+
+              <Link
+                to="/chat"
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-charcoal font-medium shadow-[0_10px_20px_rgba(0,0,0,0.06)] transition hover:bg-[#b89250] hover:-translate-y-[1px] active:translate-y-0"
+                aria-label="Open chat"
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm">Chat</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
 
-      <AnimatePresence>
-        {isMobileOpen && (
-          <>
-            <MotionButton
-              type="button"
-              aria-label="Close menu"
-              className="fixed inset-0 z-40 bg-black/15"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
-              onClick={() => setIsMobileOpen(false)}
-            />
-            <MotionDiv
-              className="md:hidden fixed top-0 right-0 z-50 h-dvh w-[86vw] max-w-sm border-l border-border bg-paper/90 backdrop-blur-xl"
-              initial={{ x: 40, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 40, opacity: 0 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="p-4 flex items-center justify-between">
-                <div className="font-heading font-medium tracking-[0.04em] text-charcoal">Menu</div>
-                <Button variant="ghost" size="sm" onClick={() => setIsMobileOpen(false)} aria-label="Close">
-                  ✕
-                </Button>
-              </div>
-
-              <div className="px-4 pb-4">
-                <div className="flex flex-col gap-1">
-                  {links.map((l) => (
-                    <Link
-                      key={l.to}
-                      to={l.to}
-                      onClick={() => setIsMobileOpen(false)}
-                      className="rounded-2xl px-3 py-2 font-medium text-charcoal/85 hover:bg-black/5 transition"
-                    >
-                      {l.label}
-                    </Link>
-                  ))}
-                </div>
-
-                <div className="h-px bg-border my-4" />
-
-                {!isAuthenticated ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button as={Link} to="/login" variant="secondary" size="sm" className="w-full" onClick={() => setIsMobileOpen(false)}>
-                      Sign in
-                    </Button>
-                    <Button as={Link} to="/register" size="sm" className="w-full" onClick={() => setIsMobileOpen(false)}>
-                      Register
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between gap-3">
-                  <span className="text-charcoal font-medium truncate">{user?.name || 'User'}</span>
-                    <Button variant="danger" size="sm" onClick={handleLogout}>
-                      Logout
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </MotionDiv>
-          </>
-        )}
-      </AnimatePresence>
-    </nav>
+      <MobileMenuDrawer
+        open={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        links={links}
+        isAuthenticated={isAuthenticated}
+        userName={user?.name || ''}
+        onLogout={handleLogout}
+      />
+    </header>
+  </MotionDiv>
   );
 };
 

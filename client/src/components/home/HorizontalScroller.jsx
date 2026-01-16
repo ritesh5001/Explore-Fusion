@@ -169,7 +169,7 @@ export default function HorizontalScroller({
 			<div className="flex items-stretch gap-6 py-2 pr-6">
 				{loopItems.map((item, idx) => (
 					<div key={idx} className={itemClassName}>
-						{renderItem(item, idx)}
+						{renderItem(item, idx % baseItems.length)}
 					</div>
 				))}
 			</div>

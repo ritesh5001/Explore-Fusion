@@ -7,6 +7,8 @@ import { Bell, Menu, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
 import GlassNavbarContainer from './header/GlassNavbarContainer';
 import MobileMenuDrawer from './header/MobileMenuDrawer';
+import { fadeLift, glassShift } from '../theme/variants';
+import { motionDuration, motionEasing } from '../theme/motion';
 
 const MotionDiv = motion.div;
 
@@ -24,6 +26,7 @@ const Navbar = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+	const [isScrolled, setIsScrolled] = useState(false);
 
   const LOGO_URL = import.meta.env.VITE_BRAND_LOGO_URL || '/branding/logo.png';
 
@@ -78,22 +81,35 @@ const Navbar = () => {
     };
   }, [isAuthenticated]);
 
+  useEffect(() => {
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 8);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   const avatarSrc = user?.avatar || '';
   const avatarAlt = user?.name ? `${user.name} avatar` : 'Profile avatar';
 
   return (
-  <MotionDiv
-    initial={{ opacity: 0, y: -6 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-  >
+  <MotionDiv variants={fadeLift} initial="hidden" animate="show">
     <header className="sticky top-0 z-50">
       <div className="container-app pt-4 pb-3">
-        <GlassNavbarContainer className="relative px-3 py-3">
+        <GlassNavbarContainer
+          variants={glassShift}
+          initial={false}
+          animate={isScrolled ? 'scrolled' : 'rest'}
+          className={
+            'relative px-3 py-3 transition-[box-shadow] ease-soft-out duration-400 ' +
+            (isScrolled ? 'shadow-[0_16px_36px_rgba(0,0,0,0.08)]' : 'shadow-[0_12px_28px_rgba(0,0,0,0.06)]')
+          }
+        >
           <div className="relative flex items-center gap-2">
             <button
               type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen(true)}
@@ -105,7 +121,7 @@ const Navbar = () => {
               <Link
                 to="/profile"
                 aria-label="Open profile"
-                className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition"
+                className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
               >
                 <SafeImage
                   src={avatarSrc}
@@ -119,14 +135,14 @@ const Navbar = () => {
               <Link
                 to="/login"
                 aria-label="Sign in"
-                className="h-10 w-10 rounded-full border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition"
+                className="h-10 w-10 rounded-full border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
               />
             )}
 
             <Link
               to="/"
               aria-label="Go to home"
-              className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-charcoal"
+              className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-charcoal transition-[opacity,transform] ease-standard duration-200 hover:opacity-95"
             >
               <SafeImage
                 src={LOGO_URL}
@@ -145,7 +161,7 @@ const Navbar = () => {
               <Link
                 to="/notifications"
                 aria-label="Open notifications"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
               >
                 <Bell className="h-5 w-5" />
                 {hasUnreadNotifications && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold" />}
@@ -153,7 +169,7 @@ const Navbar = () => {
 
               <Link
                 to="/chat"
-                className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-charcoal font-medium shadow-[0_10px_20px_rgba(0,0,0,0.06)] transition hover:bg-[#b89250] hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(0,0,0,0.08)] active:translate-y-0"
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-charcoal font-medium shadow-[0_10px_20px_rgba(0,0,0,0.06)] transition-[background-color,transform,box-shadow] ease-standard duration-200 hover:bg-[#b89250] hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(0,0,0,0.08)] active:scale-[0.98] active:duration-120"
                 aria-label="Open chat"
               >
                 <MessageCircle className="h-4 w-4" />

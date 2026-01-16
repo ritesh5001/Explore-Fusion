@@ -9,6 +9,7 @@ import Loader, { Skeleton } from '../components/ui/Loader';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import { uploadPostImage } from '../utils/imagekit';
+import { useReveal } from '../hooks/useReveal';
 import {
   BuddyProfileCard,
   HomeSectionHeader,
@@ -18,6 +19,9 @@ import {
 
 
 const Home = () => {
+	const heroRevealRef = useReveal();
+	const buddyRevealRef = useReveal();
+	const postFormRevealRef = useReveal();
   const [posts, setPosts] = useState([]);
   const [loadingPosts, setLoadingPosts] = useState(true);
   const [newPost, setNewPost] = useState({ content: '', location: '', imageUrl: '' });
@@ -167,7 +171,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
 		{/* HERO: Recent posts (visual-first) */}
-		<section className="px-4 sm:px-6 lg:px-10 pt-12 pb-16 lux-fade-up">
+		<section ref={heroRevealRef} data-reveal className="px-4 sm:px-6 lg:px-10 pt-12 pb-16">
 			<div className="flex items-start justify-between gap-8">
 				<div className="min-w-0">
 					<h1 className="text-[34px] sm:text-[46px] leading-[1.05] font-heading font-normal tracking-[0.02em] text-charcoal">
@@ -178,17 +182,23 @@ const Home = () => {
 					</p>
 				</div>
 				<div className="hidden sm:flex items-center gap-2 shrink-0">
-						<Button as={Link} to="/packages" variant="outline" size="sm">
-						Explore trips
-					</Button>
+						<div style={{ ['--reveal-delay']: '80ms' }}>
+							<Button as={Link} to="/packages" variant="outline" size="sm">
+								Explore trips
+							</Button>
+						</div>
 					{user ? (
-							<Button as={Link} to="/dashboard" variant="primary" size="sm">
-							Dashboard
-						</Button>
+							<div style={{ ['--reveal-delay']: '160ms' }}>
+								<Button as={Link} to="/dashboard" variant="primary" size="sm">
+									Dashboard
+								</Button>
+							</div>
 					) : (
-							<Button as={Link} to="/login" variant="primary" size="sm">
-							Sign in
-						</Button>
+							<div style={{ ['--reveal-delay']: '160ms' }}>
+								<Button as={Link} to="/login" variant="primary" size="sm">
+									Sign in
+								</Button>
+							</div>
 					)}
 				</div>
 			</div>
@@ -222,7 +232,12 @@ const Home = () => {
 						speed={12}
 						ariaLabel="Recent posts"
 						className="-mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10"
-						renderItem={(post) => <LuxuryPostCard post={post} />}
+						renderItem={(post, idx) => (
+							<LuxuryPostCard
+								post={post}
+								revealDelayMs={(idx + 1) * 80}
+							/>
+						)}
 					/>
 				) : (
 					<div className="rounded-[26px] border border-border bg-card p-8 text-muted shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
@@ -233,7 +248,7 @@ const Home = () => {
 		</section>
 
 		{/* Buddy match finder */}
-		<section className="px-4 sm:px-6 lg:px-10 py-16 border-t border-border bg-paper lux-fade-up">
+		<section ref={buddyRevealRef} data-reveal className="px-4 sm:px-6 lg:px-10 py-16 border-t border-border bg-paper">
 			<HomeSectionHeader
 				title="Buddy match finder"
 				subtitle="People you might genuinely enjoy traveling with."
@@ -279,10 +294,10 @@ const Home = () => {
 				) : (Array.isArray(buddySuggestions) ? buddySuggestions : []).length ? (
 					<HorizontalScroller
 						items={buddySuggestions.slice(0, 12)}
-						speed={10}
+						speed={8}
 						ariaLabel="Buddy suggestions"
 						className="-mx-4 sm:-mx-6 lg:-mx-10 px-4 sm:px-6 lg:px-10"
-						renderItem={(u) => <BuddyProfileCard user={u} />}
+						renderItem={(u, idx) => <BuddyProfileCard user={u} revealDelayMs={(idx + 1) * 80} />}
 					/>
 				) : (
 					<div className="rounded-[26px] border border-border bg-card p-8 text-muted shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
@@ -299,7 +314,7 @@ const Home = () => {
 
 		{/* Optional: Create a post (kept functional; calmer styling) */}
 		{user ? (
-			<section className="px-4 sm:px-6 lg:px-10 pb-16 border-t border-soft/70 lux-fade-up">
+			<section ref={postFormRevealRef} data-reveal className="px-4 sm:px-6 lg:px-10 pb-16 border-t border-border">
 				<div className="pt-14">
 					<HomeSectionHeader
 						title="Share a moment"

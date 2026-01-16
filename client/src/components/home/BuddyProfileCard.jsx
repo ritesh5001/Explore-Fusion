@@ -1,14 +1,19 @@
 import { useMemo, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import SafeImage from '../common/SafeImage';
 import Button from '../ui/Button';
 import { followUser, unfollowUser } from '../../api/follow';
 import useAuth from '../../auth/useAuth';
 import { useToast } from '../ToastProvider';
+import { useReveal } from '../../hooks/useReveal';
+import { hoverLuxury } from '../../theme/variants';
 
 const getId = (u) => u?._id || u?.id || u?.userId;
 
-export default function BuddyProfileCard({ user }) {
+export default function BuddyProfileCard({ user, revealDelayMs = 0 }) {
+	const cardRevealRef = useReveal();
+	const followRevealRef = useReveal();
 	const { user: me } = useAuth();
 	const { showToast } = useToast();
 	const id = getId(user) ? String(getId(user)) : '';
@@ -52,8 +57,16 @@ export default function BuddyProfileCard({ user }) {
 	};
 
 	return (
-		<article className="w-[72vw] sm:w-[360px] lg:w-[380px]">
-			<div className="rounded-[26px] border border-border bg-card overflow-hidden p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
+		<article
+			ref={cardRevealRef}
+			data-reveal
+			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
+			className="w-[72vw] sm:w-[360px] lg:w-[380px]"
+		>
+			<motion.div
+				{...hoverLuxury}
+				className="rounded-[26px] border border-border bg-card overflow-hidden p-6 shadow-[0_18px_48px_rgba(0,0,0,0.06)]"
+			>
 				<div className="flex items-start justify-between gap-4">
 					<Link to={id ? `/users/${id}` : '#'} className="flex items-start gap-3 min-w-0" aria-label={`View profile: ${handle}`}>
 						<div className="h-16 w-16 rounded-full overflow-hidden border border-border bg-paper shrink-0">
@@ -71,15 +84,23 @@ export default function BuddyProfileCard({ user }) {
 					</Link>
 
 					{me ? (
-						<Button
-							onClick={toggleFollow}
-							disabled={loading || isSelf || !id}
-							variant="outline"
-							size="sm"
-							className={isFollowing ? 'bg-paper' : ''}
+						<div
+							ref={followRevealRef}
+							data-reveal
+							style={{
+								['--reveal-delay']: `${Math.max(0, (Number(revealDelayMs) || 0) + 100)}ms`,
+							}}
 						>
-							{loading ? '…' : isSelf ? 'You' : isFollowing ? 'Following' : 'Follow'}
-						</Button>
+							<Button
+								onClick={toggleFollow}
+								disabled={loading || isSelf || !id}
+								variant="outline"
+								size="sm"
+								className={isFollowing ? 'bg-paper' : ''}
+							>
+								{loading ? '…' : isSelf ? 'You' : isFollowing ? 'Following' : 'Follow'}
+							</Button>
+						</div>
 					) : null}
 				</div>
 
@@ -92,7 +113,7 @@ export default function BuddyProfileCard({ user }) {
 				<div className="mt-5 text-[11px] tracking-[0.18em] uppercase text-muted">
 					Suggested companion
 				</div>
-			</div>
+			</motion.div>
 		</article>
 	);
 }

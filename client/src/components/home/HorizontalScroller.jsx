@@ -92,7 +92,7 @@ export default function HorizontalScroller({
 		};
 	}, []);
 
-	useVerticalToHorizontalScroll(scrollerRef, { multiplier: 1.25 });
+	useVerticalToHorizontalScroll(scrollerRef, { multiplier: 1.5 });
 
 	useEffect(() => {
 		const el = scrollerRef.current;

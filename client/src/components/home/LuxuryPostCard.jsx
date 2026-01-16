@@ -43,22 +43,22 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 			ref={revealRef}
 			data-reveal
 			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
-			className="w-[85vw] sm:w-[360px] md:w-[52px] lg:w-[640px]"
+			className="w-[85vw] sm:w-[360px] md:w-[400px] lg:w-[440px] aspect-square"
 		>
 			<MotionDiv
 				{...hoverLuxury}
-				className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)]"
+			className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)] h-full" 
 			>
-				<div className="relative">
+			<div className="relative w-full h-full">
 					{imageUrl ? (
 						<LuxImage
 							src={imageUrl}
 							alt={post?.title || 'Post image'}
-							className="w-full h-[340px] sm:h-[380px] lg:h-[420px]"
+						className="w-full h-full object-cover"
 							transform="w-1400,h-1050"
 						/>
 					) : (
-						<div className="w-full h-[340px] sm:h-[380px] lg:h-[420px] bg-soft/50" />
+					<div className="w-full h-full bg-soft/50" />
 					)}
 
 					<div className="absolute inset-x-0 bottom-0 p-4">

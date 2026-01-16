@@ -35,7 +35,7 @@ export default function LuxImage({
 		return (
 			<div
 				className={cn(
-					'flex items-center justify-center rounded-2xl bg-soft/60 text-charcoal/60 dark:bg-white/10 dark:text-sand/60',
+					'flex items-center justify-center rounded-2xl bg-black/5 text-muted',
 					className
 				)}
 			>
@@ -50,7 +50,7 @@ export default function LuxImage({
 				<div
 					aria-hidden="true"
 					className={cn(
-						'absolute inset-0 h-full w-full rounded-2xl bg-soft/60 dark:bg-white/10',
+						'absolute inset-0 h-full w-full rounded-2xl bg-black/5',
 						'animate-pulse'
 					)}
 				/>

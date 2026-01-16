@@ -4,7 +4,7 @@ const ThemeContext = createContext(null);
 
 const STORAGE_KEY = 'fusion:theme';
 
-const applyThemeClass = (mode) => {
+const applyThemeClass = () => {
 	const root = document.documentElement;
 	// Luxury UI is intentionally light-only.
 	root.classList.remove('dark');

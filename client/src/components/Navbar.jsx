@@ -1,12 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import useAuth from '../auth/useAuth';
 import API from '../api';
 import { motion } from 'framer-motion';
 import { Bell, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
 import GlassNavbarContainer from './header/GlassNavbarContainer';
-import AnimatedDrawer, { DrawerToggleIcon } from './header/AnimatedDrawer';
+import CircularMenuOverlay, { CircularMenuToggleIcon } from './header/CircularMenuOverlay';
 import { fadeLift, glassShift } from '../theme/variants';
 
 const MotionDiv = motion.div;
@@ -24,6 +24,7 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
 	const [isScrolled, setIsScrolled] = useState(false);
 
@@ -107,13 +108,14 @@ const Navbar = () => {
         >
           <div className="relative flex items-center gap-2">
             <button
+              ref={menuButtonRef}
               type="button"
               className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={isMenuOpen}
               onClick={() => setIsMenuOpen((v) => !v)}
             >
-              <DrawerToggleIcon open={isMenuOpen} />
+              <CircularMenuToggleIcon open={isMenuOpen} />
             </button>
 
             {isAuthenticated ? (
@@ -179,9 +181,10 @@ const Navbar = () => {
         </GlassNavbarContainer>
       </div>
 
-      <AnimatedDrawer
+      <CircularMenuOverlay
         open={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
+        menuButtonRef={menuButtonRef}
         links={links}
         isAuthenticated={isAuthenticated}
         userName={user?.name || ''}

@@ -35,10 +35,16 @@ const mediaVariants = {
 };
 
 const detailVariants = {
-	rest: { opacity: 0, y: 12, transition: { duration: 0.28, ease: [0.22, 0.61, 0.36, 1] } },
+	rest: {
+		opacity: 0,
+		y: 12,
+		maxHeight: 0,
+		transition: { duration: 0.28, ease: [0.22, 0.61, 0.36, 1] },
+	},
 	hover: {
 		opacity: 1,
 		y: 0,
+		maxHeight: 400,
 		transition: { duration: 0.38, ease: [0.22, 0.61, 0.36, 1], delay: 0.1 },
 	},
 };
@@ -138,7 +144,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 								variants={detailVariants}
 								initial="rest"
 								animate={isHovered ? 'hover' : 'rest'}
-								className="flex-1 flex flex-col gap-2 text-charcoal"
+								className="overflow-hidden flex flex-col gap-2 text-charcoal"
 							>
 								<div className="text-[15px] font-semibold tracking-tight">
 									{title}

@@ -50,29 +50,29 @@ export const ToastProvider = ({ children }) => {
 							animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
 							exit={{ opacity: 0, y: -10, filter: 'blur(6px)' }}
 							transition={{ duration: motionDuration.sm / 1000, ease: motionEasing.softOut }}
-							className={`min-w-[240px] max-w-sm rounded-2xl shadow border px-4 py-3 bg-white/80 backdrop-blur-md dark:bg-white/10 ${
+							className={`min-w-[240px] max-w-sm rounded-2xl shadow border px-4 py-3 bg-white/80 backdrop-blur-md ${
 								t.type === 'success'
 									? 'border-emerald-300/50'
 									: t.type === 'error'
 										? 'border-red-300/50'
-										: 'border-soft/80 dark:border-white/10'
+										: 'border-soft/80'
 							}`}
 						>
 							<div className="flex items-start justify-between gap-3">
 								<div
 									className={`text-sm ${
 										t.type === 'success'
-											? 'text-emerald-700 dark:text-emerald-300'
+											? 'text-emerald-700'
 										: t.type === 'error'
-											? 'text-red-700 dark:text-red-300'
-										: 'text-charcoal/80 dark:text-sand/80'
+											? 'text-red-700'
+											: 'text-charcoal/80'
 									}`}
 								>
 									{t.message}
 								</div>
 								<button
 									onClick={() => removeToast(t.id)}
-									className="text-charcoal/40 hover:text-charcoal/70 dark:text-sand/40 dark:hover:text-sand/80"
+									className="text-charcoal/40 hover:text-charcoal/70"
 									aria-label="Dismiss"
 								>
 									×

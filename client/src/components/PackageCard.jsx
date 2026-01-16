@@ -53,7 +53,7 @@ function PackageCard({ id, title, price, image, destination, duration, revealDel
 				</div>
 				<div className="mt-2 flex flex-wrap items-center gap-2 text-sm">
 					{!!destination && (
-						<span className="text-charcoal/70 dark:text-sand/70 line-clamp-1">📍 {destination}</span>
+						<span className="text-charcoal/70 line-clamp-1">📍 {destination}</span>
 					)}
 					{!!duration && (
 						<Badge>{`⏳ ${duration}`}</Badge>

@@ -33,11 +33,11 @@ export default function Dashboard() {
 				<Card className="mt-6 p-6 overflow-hidden">
 				<div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
 					<div className="min-w-0">
-						<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">WELCOME</div>
-						<div className="mt-1 text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-mountain dark:text-sand">
+							<div className="text-xs font-semibold tracking-wide text-charcoal/60">WELCOME</div>
+							<div className="mt-1 text-2xl md:text-3xl font-heading font-extrabold tracking-tight text-mountain">
 							{user ? `Hi, ${user?.name || 'Traveler'}` : 'Hi there'}
 						</div>
-						<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70 max-w-2xl">
+							<div className="mt-2 text-sm text-charcoal/70 max-w-2xl">
 							Build a premium trip plan, book creator experiences, and match with buddies.
 						</div>
 						<div className="mt-3 flex flex-wrap items-center gap-2">
@@ -60,15 +60,15 @@ export default function Dashboard() {
 			<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
 				<div ref={accountRevealRef} data-reveal style={{ ['--reveal-delay']: '160ms' }}>
 					<Card className="p-6">
-					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">ACCOUNT</div>
-					<div className="mt-2 text-sm text-charcoal/80 dark:text-sand/80">
+						<div className="text-xs font-semibold tracking-wide text-charcoal/60">ACCOUNT</div>
+						<div className="mt-2 text-sm text-charcoal/80">
 						<div className="flex items-center justify-between">
 							<span className="font-semibold">Role</span>
 							<Badge tone="accent">{user?.role || 'user'}</Badge>
 						</div>
 						<div className="mt-2 flex items-center justify-between">
 							<span className="font-semibold">Email</span>
-							<span className="text-charcoal/70 dark:text-sand/70 truncate max-w-[55%]">{user?.email || '—'}</span>
+								<span className="text-charcoal/70 truncate max-w-[55%]">{user?.email || '—'}</span>
 						</div>
 					</div>
 					<div className="mt-4">
@@ -79,9 +79,9 @@ export default function Dashboard() {
 
 				<div ref={nextRevealRef} data-reveal style={{ ['--reveal-delay']: '240ms' }}>
 					<Card className="p-6">
-					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">NEXT</div>
-					<div className="mt-2 text-lg font-heading font-bold text-mountain dark:text-sand">Create your buddy profile</div>
-					<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70">Better matches come from better preferences.</div>
+						<div className="text-xs font-semibold tracking-wide text-charcoal/60">NEXT</div>
+						<div className="mt-2 text-lg font-heading font-bold text-mountain">Create your buddy profile</div>
+						<div className="mt-2 text-sm text-charcoal/70">Better matches come from better preferences.</div>
 					<div className="mt-4">
 						<Button as={Link} to="/buddy/profile" size="sm">Update buddy profile</Button>
 					</div>
@@ -90,9 +90,9 @@ export default function Dashboard() {
 
 				<div ref={discoverRevealRef} data-reveal style={{ ['--reveal-delay']: '320ms' }}>
 					<Card className="p-6">
-					<div className="text-xs font-semibold tracking-wide text-charcoal/60 dark:text-sand/60">DISCOVER</div>
-					<div className="mt-2 text-lg font-heading font-bold text-mountain dark:text-sand">Premium packages</div>
-					<div className="mt-2 text-sm text-charcoal/70 dark:text-sand/70">Hand-picked creator trips with clean booking flow.</div>
+						<div className="text-xs font-semibold tracking-wide text-charcoal/60">DISCOVER</div>
+						<div className="mt-2 text-lg font-heading font-bold text-mountain">Premium packages</div>
+						<div className="mt-2 text-sm text-charcoal/70">Hand-picked creator trips with clean booking flow.</div>
 					<div className="mt-4">
 						<Button as={Link} to="/packages" variant="secondary" size="sm">Explore packages</Button>
 					</div>

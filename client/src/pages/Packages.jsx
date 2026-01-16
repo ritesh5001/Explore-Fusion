@@ -75,8 +75,8 @@ const Packages = () => {
 					</div>
 				) : error ? (
 					<Card className="mt-6 p-6">
-						<div className="text-red-600 dark:text-red-300 font-semibold">Failed to load packages</div>
-						<div className="text-sm mt-1 text-charcoal/70 dark:text-sand/70">{error}</div>
+						<div className="text-red-600 font-semibold">Failed to load packages</div>
+						<div className="text-sm mt-1 text-charcoal/70">{error}</div>
 					</Card>
 				) : (
 					<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -96,7 +96,7 @@ const Packages = () => {
 						{packages.length === 0 && (
 							<div className="md:col-span-3">
 								<Card className="p-10 text-center">
-									<p className="text-charcoal/70 dark:text-sand/70 text-lg">No packages found.</p>
+									<p className="text-charcoal/70 text-lg">No packages found.</p>
 									{canCreate && (
 										<div className="mt-3">
 											<Button as={Link} to="/create-package" variant="outline">

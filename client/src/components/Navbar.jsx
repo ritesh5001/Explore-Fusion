@@ -5,7 +5,7 @@ import API from '../api';
 import { motion } from 'framer-motion';
 import { Bell, Menu, MessageCircle } from 'lucide-react';
 import SafeImage from './common/SafeImage';
-import GlassLogoContainer from './header/GlassLogoContainer';
+import GlassNavbarContainer from './header/GlassNavbarContainer';
 import MobileMenuDrawer from './header/MobileMenuDrawer';
 
 const MotionDiv = motion.div;
@@ -88,72 +88,72 @@ const Navbar = () => {
     transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
   >
     <header className="sticky top-0 z-50">
-      <div className="border-b border-border bg-sand/70 backdrop-blur-md">
-        <div className="container-app py-3">
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-border bg-white/60 backdrop-blur-sm text-charcoal hover:bg-white/70 transition"
-                aria-label="Open menu"
-                aria-expanded={isMenuOpen}
-                onClick={() => setIsMenuOpen(true)}
+      <div className="container-app pt-4 pb-3">
+        <GlassNavbarContainer className="relative px-3 py-3">
+          <div className="relative flex items-center gap-2">
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition"
+              aria-label="Open menu"
+              aria-expanded={isMenuOpen}
+              onClick={() => setIsMenuOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+
+            {isAuthenticated ? (
+              <Link
+                to="/profile"
+                aria-label="Open profile"
+                className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition"
               >
-                <Menu className="h-5 w-5" />
-              </button>
-            </div>
+                <SafeImage
+                  src={avatarSrc}
+                  alt={avatarAlt}
+                  fallback="/avatar-placeholder.png"
+                  className="h-full w-full object-cover"
+                  loading="eager"
+                />
+              </Link>
+            ) : (
+              <Link
+                to="/login"
+                aria-label="Sign in"
+                className="h-10 w-10 rounded-full border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition"
+              />
+            )}
 
-            <div className="justify-self-center pt-1">
-              <GlassLogoContainer>
-                <Link to="/" aria-label="Go to home" className="inline-flex items-center gap-2">
-                  <SafeImage
-                    src={LOGO_URL}
-                    fallback="/images/placeholder.svg"
-                    alt="Explore Fusion"
-                    className="h-7 w-7 rounded-xl object-contain bg-white"
-                    loading="eager"
-                    decoding="async"
-                  />
-                  <span className="text-lg font-heading font-medium tracking-[0.06em] text-charcoal">
-                    Explore <span className="text-gold">Fusion</span>
-                  </span>
-                </Link>
-              </GlassLogoContainer>
-            </div>
+            <Link
+              to="/"
+              aria-label="Go to home"
+              className="absolute left-1/2 -translate-x-1/2 inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-charcoal"
+            >
+              <SafeImage
+                src={LOGO_URL}
+                fallback="/images/placeholder.svg"
+                alt="Explore Fusion"
+                className="h-7 w-7 rounded-xl object-contain bg-white"
+                loading="eager"
+                decoding="async"
+              />
+              <span className="hidden sm:inline text-lg font-heading font-medium tracking-[0.06em]">
+                Explore <span className="text-gold">Fusion</span>
+              </span>
+            </Link>
 
-            <div className="flex items-center justify-end gap-2">
-              {isAuthenticated ? (
-                <Link
-                  to="/profile"
-                  aria-label="Open profile"
-                  className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/70 backdrop-blur-sm hover:bg-white/80 transition"
-                >
-                  <SafeImage
-                    src={avatarSrc}
-                    alt={avatarAlt}
-                    fallback="/avatar-placeholder.png"
-                    className="h-full w-full object-cover"
-                    loading="eager"
-                  />
-                </Link>
-              ) : (
-                <div className="h-10 w-10 rounded-full border border-border bg-white/60 backdrop-blur-sm" aria-hidden="true" />
-              )}
-
+            <div className="ml-auto flex items-center gap-2">
               <Link
                 to="/notifications"
                 aria-label="Open notifications"
-                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-white/60 backdrop-blur-sm text-charcoal hover:bg-white/70 transition"
+                className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition"
               >
                 <Bell className="h-5 w-5" />
-                {hasUnreadNotifications && (
-                  <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold" />
-                )}
+                {hasUnreadNotifications && <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-gold" />}
               </Link>
 
               <Link
                 to="/chat"
-                className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-charcoal font-medium shadow-[0_10px_20px_rgba(0,0,0,0.06)] transition hover:bg-[#b89250] hover:-translate-y-[1px] active:translate-y-0"
+                className="inline-flex items-center gap-2 rounded-full bg-gold px-4 py-2 text-charcoal font-medium shadow-[0_10px_20px_rgba(0,0,0,0.06)] transition hover:bg-[#b89250] hover:-translate-y-[1px] hover:shadow-[0_14px_28px_rgba(0,0,0,0.08)] active:translate-y-0"
                 aria-label="Open chat"
               >
                 <MessageCircle className="h-4 w-4" />
@@ -161,7 +161,7 @@ const Navbar = () => {
               </Link>
             </div>
           </div>
-        </div>
+        </GlassNavbarContainer>
       </div>
 
       <MobileMenuDrawer

@@ -10,6 +10,9 @@ const MotionButton = motion.button;
 const MotionSvg = motion.svg;
 const MotionPath = motion.path;
 
+const PANEL_WIDTH = 360;
+const PANEL_RADIUS = PANEL_WIDTH / 2;
+
 function getMenuButtonRect(ref) {
   if (!ref.current) return { left: 0, top: 0, width: 0, height: 0 };
   return ref.current.getBoundingClientRect();
@@ -120,24 +123,26 @@ export default function CircularMenuOverlay({
 		const { left, top, width, height } = menuRect;
 		return {
 			position: 'absolute',
-			left: left + width / 2 - 160, // 320px/2
+			left: left + width / 2 - PANEL_RADIUS,
 			top: top + height + 8, // 8px below button, tight to navbar
 			zIndex: 40,
-			width: 320,
+			width: PANEL_WIDTH,
 			maxWidth: '92vw',
+			minWidth: 280,
 			borderRadius: '1.25rem',
 			boxShadow: '0 8px 32px rgba(0,0,0,0.10)',
 			background: 'rgba(246,243,239,0.96)',
 			backdropFilter: 'blur(16px)',
 			overflow: 'auto',
 			maxHeight: '70vh',
+			padding: '0.85rem 0.25rem',
 			pointerEvents: open ? 'auto' : 'none',
 			border: '1px solid rgba(30,30,30,0.07)',
 		};
 	}, [menuRect, open]);
 
 	// Clip-path origin: center top of panel (matches button)
-	const originX = menuRect.left + menuRect.width / 2 - (panelStyle.left ?? 0);
+	const originX = PANEL_RADIUS;
 	const originY = 0;
 	const minRadius = 120;
 	const openRadius = Math.max(Math.min(panelHeight / 2 + 40, 320), minRadius);
@@ -201,8 +206,8 @@ export default function CircularMenuOverlay({
 								<Link
 									to={l.to}
 									onClick={onClose}
-									className="block text-left px-5 py-1.5 leading-[1.4] font-medium text-[#1c1c1c]/90 hover:bg-black/5 transition rounded-xl"
-									style={{ fontWeight: 500, fontSize: '1.08rem', marginBottom: '8px' }}
+									className="block text-left px-6 py-2 leading-[1.4] font-medium text-[#1c1c1c]/95 hover:bg-black/5 transition rounded-xl whitespace-nowrap"
+									style={{ fontWeight: 500, fontSize: '1.05rem' }}
 								>
 									{l.label}
 								</Link>

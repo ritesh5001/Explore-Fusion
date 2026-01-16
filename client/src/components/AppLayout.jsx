@@ -14,7 +14,7 @@ export default function AppLayout({ children }) {
 	return (
 		<div className="min-h-screen bg-sand text-charcoal font-sans flex flex-col">
 			<Navbar />
-			<main className="flex-1">
+			<main className="flex-1 pt-[5.25rem] md:pt-[5.5rem]">
 				<div className="min-h-[60vh]">{children}</div>
 			</main>
 

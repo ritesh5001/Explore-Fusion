@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Button from '../ui/Button';
+import { motionDuration, motionEasing } from '../../theme/motion';
 
 const MotionDiv = motion.div;
 const MotionButton = motion.button;
@@ -24,7 +25,7 @@ export default function MobileMenuDrawer({
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}
-						transition={{ duration: 0.18 }}
+						transition={{ duration: motionDuration.xs / 1000, ease: motionEasing.standard }}
 						onClick={onClose}
 					/>
 
@@ -33,7 +34,7 @@ export default function MobileMenuDrawer({
 						initial={{ x: -40, opacity: 0 }}
 						animate={{ x: 0, opacity: 1 }}
 						exit={{ x: -40, opacity: 0 }}
-						transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+						transition={{ duration: motionDuration.md / 1000, ease: motionEasing.softOut }}
 						role="dialog"
 						aria-modal="true"
 						aria-label="Navigation menu"

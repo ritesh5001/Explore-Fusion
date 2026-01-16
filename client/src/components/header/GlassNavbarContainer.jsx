@@ -1,8 +1,9 @@
 import { cn } from '../../utils/cn';
+import { motion } from 'framer-motion';
 
-export default function GlassNavbarContainer({ children, className = '' }) {
+export default function GlassNavbarContainer({ children, className = '', ...props }) {
 	return (
-		<div
+		<motion.div
 			className={cn(
 				'rounded-2xl',
 				'bg-[rgba(255,255,255,0.35)]',
@@ -11,8 +12,9 @@ export default function GlassNavbarContainer({ children, className = '' }) {
 				'shadow-[0_12px_28px_rgba(0,0,0,0.06)]',
 				className
 			)}
+			{...props}
 		>
 			{children}
-		</div>
+		</motion.div>
 	);
 }

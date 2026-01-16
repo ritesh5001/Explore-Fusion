@@ -1,5 +1,6 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
+import { AnimatePresence } from 'framer-motion';
 
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -16,6 +17,7 @@ import Reviews from '../pages/Reviews';
 import Notifications from '../pages/Notifications';
 
 import PageLoader from '../components/ui/PageLoader';
+import PageTransition from '../components/motion/PageTransition';
 
 const ChatRooms = lazy(() => import('../pages/chat/ChatRooms'));
 const ChatRoom = lazy(() => import('../pages/chat/ChatRoom'));
@@ -47,291 +49,348 @@ const S = ({ children, label }) => (
 );
 
 const AppRoutes = () => {
+	const location = useLocation();
+	const wrap = (node) => <PageTransition>{node}</PageTransition>;
+
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={wrap(<Home />)} />
+        <Route path="/login" element={wrap(<Login />)} />
+        <Route path="/register" element={wrap(<Register />)} />
 
       <Route
         path="/profile"
         element={
-          <ProtectedRoute>
-            <Profile />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <Profile />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/users/:id"
         element={
-          <ProtectedRoute>
-            <UserProfile />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <UserProfile />
+            </ProtectedRoute>
+          )
         }
       />
 
-      <Route path="/packages" element={<Packages />} />
-      <Route path="/packages/:id" element={<PackageDetails />} />
+      <Route path="/packages" element={wrap(<Packages />)} />
+      <Route path="/packages/:id" element={wrap(<PackageDetails />)} />
       <Route
         path="/create-package"
         element={
-          <ProtectedRoute roles={['creator', 'admin', 'superadmin']}>
-            <CreatePackage />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute roles={['creator', 'admin', 'superadmin']}>
+              <CreatePackage />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/bookings"
         element={
-          <ProtectedRoute>
-            <Navigate to="/my-bookings" replace />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <Navigate to="/my-bookings" replace />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/my-bookings"
         element={
-          <ProtectedRoute>
-            <MyBookings />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <MyBookings />
+            </ProtectedRoute>
+          )
         }
       />
 
-      <Route path="/plan-trip" element={<Itinerary />} />
-      <Route path="/itinerary" element={<Navigate to="/plan-trip" replace />} />
+      <Route path="/plan-trip" element={wrap(<Itinerary />)} />
+      <Route path="/itinerary" element={wrap(<Navigate to="/plan-trip" replace />)} />
 
       <Route
         path="/buddy"
         element={
-          <ProtectedRoute>
-            <Navigate to="/buddy/profile" replace />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <Navigate to="/buddy/profile" replace />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/buddy/profile"
         element={
-          <ProtectedRoute>
-            <BuddyProfile />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <BuddyProfile />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/buddy/suggestions"
         element={
-          <ProtectedRoute>
-            <BuddySuggestions />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <BuddySuggestions />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/buddy/requests"
         element={
-          <ProtectedRoute>
-            <BuddyRequests />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <BuddyRequests />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/buddy/my"
         element={
-          <ProtectedRoute>
-            <MyBuddies />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <MyBuddies />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/chat"
         element={
-          <ProtectedRoute>
-            <S label="Loading chat…">
-              <ChatRooms />
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <S label="Loading chat…">
+                <ChatRooms />
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/chat/:roomId"
         element={
-          <ProtectedRoute>
-            <S label="Loading room…">
-              <ChatRoom />
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <S label="Loading room…">
+                <ChatRoom />
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/creator"
         element={
-          <ProtectedRoute roles={['creator', 'admin', 'superadmin']}>
-            <CreatorDashboard />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute roles={['creator', 'admin', 'superadmin']}>
+              <CreatorDashboard />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <Navigate to="/admin/dashboard" replace />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <Navigate to="/admin/dashboard" replace />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/dashboard"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <S label="Loading admin…">
-              <AdminLayout>
-                <AdminDashboard />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <S label="Loading admin…">
+                <AdminLayout>
+                  <AdminDashboard />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/users"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <S label="Loading users…">
-              <AdminLayout>
-                <UsersAdmin />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <S label="Loading users…">
+                <AdminLayout>
+                  <UsersAdmin />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/creators"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <S label="Loading creators…">
-              <AdminLayout>
-                <CreatorsAdmin />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <S label="Loading creators…">
+                <AdminLayout>
+                  <CreatorsAdmin />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/bookings"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <S label="Loading bookings…">
-              <AdminLayout>
-                <BookingsAdmin />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <S label="Loading bookings…">
+                <AdminLayout>
+                  <BookingsAdmin />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/analytics"
         element={
-          <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
-            <S label="Loading analytics…">
-              <AdminLayout>
-                <AdminAnalytics />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="admin" redirectTo="/dashboard">
+              <S label="Loading analytics…">
+                <AdminLayout>
+                  <AdminAnalytics />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/reports"
         element={
-          <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
-            <S label="Loading reports…">
-              <AdminLayout>
-                <AdminReports />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
+              <S label="Loading reports…">
+                <AdminLayout>
+                  <AdminReports />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/admin/system"
         element={
-          <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
-            <S label="Loading system…">
-              <AdminLayout>
-                <AdminSystem />
-              </AdminLayout>
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute requiredRole="superadmin" redirectTo="/dashboard">
+              <S label="Loading system…">
+                <AdminLayout>
+                  <AdminSystem />
+                </AdminLayout>
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/reviews"
         element={
-          <ProtectedRoute>
-            <Reviews />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <Reviews />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/notifications"
         element={
-          <ProtectedRoute>
-            <Notifications />
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <Notifications />
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/ai/chat"
         element={
-          <ProtectedRoute>
-            <S label="Loading AI chat…">
-              <AiChat />
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <S label="Loading AI chat…">
+                <AiChat />
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/ai/itinerary"
         element={
-          <ProtectedRoute>
-            <S label="Loading itinerary…">
-              <AiItinerary />
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <S label="Loading itinerary…">
+                <AiItinerary />
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
       <Route
         path="/my-itineraries"
         element={
-          <ProtectedRoute>
-            <S label="Loading itineraries…">
-              <MyItineraries />
-            </S>
-          </ProtectedRoute>
+          wrap(
+            <ProtectedRoute>
+              <S label="Loading itineraries…">
+                <MyItineraries />
+              </S>
+            </ProtectedRoute>
+          )
         }
       />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      <Route path="*" element={wrap(<Navigate to="/" replace />)} />
+      </Routes>
+    </AnimatePresence>
   );
 };
 

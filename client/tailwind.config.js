@@ -42,6 +42,17 @@ export default {
         'fade-in': 'fade-in 260ms ease-out',
 			shimmer: 'shimmer 1.2s infinite',
       },
+    transitionTimingFunction: {
+      'soft-out': 'cubic-bezier(0.22,1,0.36,1)',
+      standard: 'cubic-bezier(0.4,0,0.2,1)',
+    },
+    transitionDuration: {
+      120: '120ms',
+      200: '200ms',
+      400: '400ms',
+      600: '600ms',
+      800: '800ms',
+    },
     },
   },
   plugins: [],

@@ -1,10 +1,14 @@
+import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import SafeImage from '../common/SafeImage';
 import LuxImage from '../ui/LuxImage';
+import { useReveal } from '../../hooks/useReveal';
+import { hoverLuxury } from '../../theme/variants';
 
 const getAuthor = (post) => post?.user || post?.author;
 
-export default function LuxuryPostCard({ post }) {
+export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
+	const revealRef = useReveal();
 	const author = getAuthor(post);
 	const authorId = author?._id ? String(author._id) : '';
 	const username = author?.username ? String(author.username) : '';
@@ -33,8 +37,16 @@ export default function LuxuryPostCard({ post }) {
 	);
 
 	return (
-		<article className="w-[78vw] sm:w-[520px] lg:w-[560px]">
-			<div className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)]">
+		<article
+			ref={revealRef}
+			data-reveal
+			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
+			className="w-[78vw] sm:w-[520px] lg:w-[560px]"
+		>
+			<motion.div
+				{...hoverLuxury}
+				className="rounded-[26px] border border-border bg-card overflow-hidden shadow-[0_18px_48px_rgba(0,0,0,0.06)]"
+			>
 				<div className="relative">
 					{imageUrl ? (
 						<LuxImage
@@ -53,7 +65,7 @@ export default function LuxuryPostCard({ post }) {
 								{authorId ? (
 									<Link
 										to={`/users/${authorId}`}
-										className="min-w-0 hover:opacity-90 transition-opacity"
+										className="min-w-0 hover:opacity-90 transition-opacity duration-200 ease-standard"
 										aria-label={`View profile: ${handle}`}
 									>
 										{header}
@@ -68,7 +80,7 @@ export default function LuxuryPostCard({ post }) {
 						</div>
 					</div>
 				</div>
-			</div>
+			</motion.div>
 		</article>
 	);
 }

@@ -43,7 +43,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 			ref={revealRef}
 			data-reveal
 			style={{ ['--reveal-delay']: `${Math.max(0, Number(revealDelayMs) || 0)}ms` }}
-			className="w-[85vw] sm:w-[300px] md:w-[360px] lg:w-[400px]"
+			className="w-[85vw] sm:w-[360px] md:w-[52px] lg:w-[640px]"
 		>
 			<MotionDiv
 				{...hoverLuxury}

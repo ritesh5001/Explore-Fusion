@@ -2,20 +2,20 @@ import { createElement } from 'react';
 import { cn } from '../../utils/cn';
 
 const base =
-	'inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed';
+	'inline-flex items-center justify-center gap-2 rounded-2xl font-medium transition focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed duration-200 ease-standard active:duration-120 active:ease-standard active:scale-[0.98]';
 
 const variants = {
 	primary:
-		'text-white bg-charcoal shadow-[0_18px_48px_rgba(0,0,0,0.10)] hover:shadow-[0_22px_60px_rgba(0,0,0,0.12)] active:translate-y-px',
+		'text-white bg-charcoal shadow-[0_18px_48px_rgba(0,0,0,0.10)] hover:bg-charcoal/95 hover:shadow-[0_22px_60px_rgba(0,0,0,0.12)]',
 	secondary:
-		'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20',
+		'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20 hover:bg-white/80',
 	ghost:
 		'text-charcoal hover:bg-black/5',
 	danger:
-		'text-white bg-red-600 hover:bg-red-700 shadow-[0_14px_40px_rgba(239,68,68,0.25)] active:scale-[0.99]',
+		'text-white bg-red-600 hover:bg-red-700 shadow-[0_14px_40px_rgba(239,68,68,0.25)]',
 	link: 'text-charcoal hover:text-gold hover:underline',
 	// Back-compat
-	outline: 'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20',
+	outline: 'border border-border bg-white/70 text-charcoal backdrop-blur-sm hover:border-charcoal/20 hover:bg-white/80',
 };
 
 const sizes = {

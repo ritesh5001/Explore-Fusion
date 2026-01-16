@@ -23,6 +23,9 @@ const getIsRead = (n) => Boolean(n?.read ?? n?.isRead ?? n?.seen);
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const [isVisible, setIsVisible] = useState(true);
+  const lastScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
+  const rafId = useRef(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
@@ -93,9 +96,45 @@ const Navbar = () => {
   const avatarSrc = user?.avatar || '';
   const avatarAlt = user?.name ? `${user.name} avatar` : 'Profile avatar';
 
+  useEffect(() => {
+    const handle = () => {
+      if (rafId.current) return;
+      rafId.current = window.requestAnimationFrame(() => {
+        const currentY = window.scrollY || 0;
+        const lastY = lastScrollY.current || 0;
+        // If scrolling down and past threshold, hide
+        if (currentY > lastY && currentY > 120) {
+          setIsVisible(false);
+        } else if (currentY < lastY) {
+          // Scrolling up -> show
+          setIsVisible(true);
+        }
+        lastScrollY.current = currentY;
+        rafId.current = null;
+      });
+    };
+
+    window.addEventListener('scroll', handle, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handle);
+      if (rafId.current) window.cancelAnimationFrame(rafId.current);
+    };
+  }, []);
+
+  const navVariants = {
+    visible: { y: '0%', opacity: 1, transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1], type: 'tween' } },
+    hidden: { y: '-110%', opacity: 0, transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1], type: 'tween' } },
+  };
+
   return (
-  <MotionDiv variants={fadeLift} initial="hidden" animate="show">
-    <header className="sticky top-0 z-50">
+    <motion.header
+      variants={navVariants}
+      initial="visible"
+      animate={isVisible ? 'visible' : 'hidden'}
+      className="fixed left-0 right-0 top-4 z-[60] pointer-events-auto"
+      style={{ willChange: 'transform, opacity' }}
+    >
+      <MotionDiv variants={fadeLift} initial={false} animate={isScrolled ? 'scrolled' : 'rest'}>
       <div className="container-app pt-4 pb-3">
         <GlassNavbarContainer
           variants={glassShift}
@@ -180,6 +219,7 @@ const Navbar = () => {
           </div>
         </GlassNavbarContainer>
       </div>
+      </MotionDiv>
 
       <CircularMenuOverlay
         open={isMenuOpen}
@@ -190,8 +230,7 @@ const Navbar = () => {
         userName={user?.name || ''}
         onLogout={handleLogout}
       />
-    </header>
-  </MotionDiv>
+    </motion.header>
   );
 };
 

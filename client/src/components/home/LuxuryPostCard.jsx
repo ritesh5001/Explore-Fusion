@@ -123,7 +123,11 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 						initial="rest"
 						animate={isHovered ? 'hover' : 'rest'}
 					>
-						<div className="h-full rounded-2xl bg-white/85 backdrop-blur-sm border border-border px-4 py-3 flex flex-col justify-center overflow-hidden">
+						<div
+							className={`h-full rounded-2xl bg-white/85 backdrop-blur-sm border border-border px-4 py-3 flex flex-col overflow-hidden ${
+								isHovered ? 'justify-between' : 'justify-center'
+							}`}
+						>
 							<div className="flex items-center justify-between gap-4">
 								{authorId ? (
 									<Link

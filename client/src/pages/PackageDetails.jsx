@@ -7,8 +7,12 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
 import LuxImage from '../components/ui/LuxImage';
+import { useReveal } from '../hooks/useReveal';
 
 const PackageDetails = () => {
+	const topRevealRef = useReveal();
+	const heroRevealRef = useReveal();
+	const detailsRevealRef = useReveal();
 	const { id } = useParams();
 	const [pkg, setPkg] = useState(null);
 	const [loading, setLoading] = useState(true);
@@ -67,14 +71,15 @@ const PackageDetails = () => {
 
 	return (
 		<div className="max-w-5xl mx-auto px-4 py-10 pb-28 md:pb-10">
-			<div className="mb-6 flex items-center justify-between gap-4">
+			<div ref={topRevealRef} data-reveal className="mb-6 flex items-center justify-between gap-4">
 				<Button as={Link} to="/packages" variant="ghost" size="sm">
 					← Back
 				</Button>
 			</div>
 
 			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-				<Card className="overflow-hidden">
+				<div ref={heroRevealRef} data-reveal style={{ ['--reveal-delay']: '80ms' }}>
+					<Card className="overflow-hidden">
 					{pkg?.images?.[0] ? (
 						<LuxImage
 							src={pkg.images[0]}
@@ -121,23 +126,25 @@ const PackageDetails = () => {
 							<BookPackageButton packageId={id} />
 						</div>
 					</div>
-				</Card>
+					</Card>
+				</div>
 
-				<Card className="p-6 h-fit">
-					<SectionHeader title="Details" />
-					<div className="mt-3 text-sm text-charcoal/80 dark:text-sand/80 space-y-2">
-						<div>
-							<span className="font-semibold">Destination:</span> {pkg.destination}
+				<div ref={detailsRevealRef} data-reveal style={{ ['--reveal-delay']: '160ms' }}>
+					<Card className="p-6 h-fit">
+						<SectionHeader title="Details" />
+						<div className="mt-3 text-sm text-charcoal/80 dark:text-sand/80 space-y-2">
+							<div>
+								<span className="font-semibold">Destination:</span> {pkg.destination}
+							</div>
+							<div>
+								<span className="font-semibold">Duration:</span> {pkg.duration}
+							</div>
+							<div>
+								<span className="font-semibold">Price:</span> ${pkg.price}
+							</div>
 						</div>
-						<div>
-							<span className="font-semibold">Duration:</span> {pkg.duration}
-						</div>
-						<div>
-							<span className="font-semibold">Price:</span> ${pkg.price}
-						</div>
-					</div>
 
-					<div className="mt-6 md:mt-6 md:static md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0 fixed bottom-4 left-0 right-0 z-40 px-4">
+						<div className="mt-6 md:mt-6 md:static md:bottom-auto md:left-auto md:right-auto md:z-auto md:px-0 fixed bottom-4 left-0 right-0 z-40 px-4">
 						<div className="md:max-w-none max-w-5xl mx-auto">
 							<div className="md:p-0 md:border-0 md:bg-transparent md:shadow-none rounded-2xl shadow-xl border border-soft dark:border-white/10 bg-white/90 dark:bg-[#0F1F1A]/90 backdrop-blur-md p-4">
 								<div className="md:hidden text-xs font-semibold text-charcoal/70 dark:text-sand/70 mb-2">Ready to book?</div>
@@ -145,7 +152,8 @@ const PackageDetails = () => {
 							</div>
 						</div>
 					</div>
-				</Card>
+					</Card>
+				</div>
 			</div>
 		</div>
 	);

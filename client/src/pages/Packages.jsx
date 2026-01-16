@@ -7,8 +7,10 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import SectionHeader from '../components/ui/SectionHeader';
 import { Skeleton } from '../components/ui/Loader';
+import { useReveal } from '../hooks/useReveal';
 
 const Packages = () => {
+	const headerRevealRef = useReveal();
 	const { user } = useAuth();
 	const [packages, setPackages] = useState([]);
 	const [loading, setLoading] = useState(true);
@@ -44,17 +46,19 @@ const Packages = () => {
 	return (
 		<div className="min-h-screen">
 			<div className="container-app page-section">
-				<SectionHeader
-					title="Travel Packages"
-					subtitle="Hand-picked experiences, creator trips, and community adventures."
-					right={
-						canCreate ? (
-							<Button as={Link} to="/create-package" size="sm">
-								+ Create Package
-							</Button>
-						) : null
-					}
-				/>
+				<div ref={headerRevealRef} data-reveal>
+					<SectionHeader
+						title="Travel Packages"
+						subtitle="Hand-picked experiences, creator trips, and community adventures."
+						right={
+							canCreate ? (
+								<Button as={Link} to="/create-package" size="sm">
+									+ Create Package
+								</Button>
+							) : null
+						}
+					/>
+				</div>
 
 				{loading ? (
 					<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -76,7 +80,7 @@ const Packages = () => {
 					</Card>
 				) : (
 					<div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-						{packages.map((pkg) => (
+						{packages.map((pkg, idx) => (
 							<PackageCard
 								key={pkg?._id}
 								id={pkg?._id}
@@ -85,6 +89,7 @@ const Packages = () => {
 								destination={pkg?.destination}
 								duration={pkg?.duration}
 								image={pkg?.images?.[0]}
+								revealDelayMs={(idx + 1) * 80}
 							/>
 						))}
 

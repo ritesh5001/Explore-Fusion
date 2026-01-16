@@ -12,6 +12,18 @@ export const fadeLift = {
 	},
 };
 
+export const fadeLiftFast = {
+	hidden: { opacity: 0, y: 6 },
+	show: {
+		opacity: 1,
+		y: 0,
+		transition: {
+			duration: motionDuration.sm / 1000,
+			ease: motionEasing.softOut,
+		},
+	},
+};
+
 export const hoverLuxury = {
 	whileHover: {
 		scale: 1.02,

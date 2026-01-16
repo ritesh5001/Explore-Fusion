@@ -9,10 +9,14 @@ import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import Button from '../components/ui/Button';
 import LuxImage from '../components/ui/LuxImage';
+import { useReveal } from '../hooks/useReveal';
 
 const CreatePackage = () => {
   const navigate = useNavigate();
 	const { showToast } = useToast();
+
+  const headerRevealRef = useReveal();
+  const formRevealRef = useReveal();
   const [formData, setFormData] = useState({
     title: '',
     price: '',
@@ -80,13 +84,16 @@ const CreatePackage = () => {
   return (
     <div className="min-h-screen">
       <div className="container-app page-section max-w-2xl">
+    <div ref={headerRevealRef} data-reveal>
       <SectionHeader
         title="Create Influencer Trip"
         subtitle="Publish a premium experience for travelers."
       />
+    </div>
 
       <form onSubmit={handleSubmit}>
-        <Card className="p-6 space-y-4">
+    <div ref={formRevealRef} data-reveal style={{ ['--reveal-delay']: '80ms' }}>
+      <Card className="p-6 space-y-4">
           <Input
             label="Trip Title"
             required
@@ -169,7 +176,8 @@ const CreatePackage = () => {
           <Button className="w-full" disabled={uploading || submitting}>
             {submitting ? 'Publishing…' : 'Launch Trip'}
           </Button>
-        </Card>
+    			</Card>
+    		</div>
       </form>
       </div>
     </div>

@@ -1,12 +1,17 @@
 import { motion } from 'framer-motion';
-import { fadeInUp } from '../ui/motion';
+import { fadeLiftFast } from '../../theme/variants';
 
 const MotionDiv = motion.div;
 
 export default function ChatBubble({ role, text, time }) {
 	const isUser = role === 'user';
 	return (
-		<MotionDiv {...fadeInUp} className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+		<MotionDiv
+			variants={fadeLiftFast}
+			initial="hidden"
+			animate="show"
+			className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+		>
 			<div
 				className={
 					`max-w-[85%] rounded-2xl px-4 py-3 border backdrop-blur-md ` +

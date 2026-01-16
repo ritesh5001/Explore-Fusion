@@ -2,11 +2,7 @@ import Navbar from './Navbar';
 import Footer from './Footer';
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { AnimatePresence, motion } from 'framer-motion';
-import { pageTransition } from './ui/motion';
 import Button from './ui/Button';
-
-const MotionDiv = motion.div;
 
 export default function AppLayout({ children }) {
 	const location = useLocation();
@@ -16,14 +12,10 @@ export default function AppLayout({ children }) {
 	}, [location.pathname]);
 
 	return (
-		<div className="min-h-screen bg-sand dark:bg-charcoal text-charcoal dark:text-sand font-sans flex flex-col">
+		<div className="min-h-screen bg-sand text-charcoal font-sans flex flex-col">
 			<Navbar />
 			<main className="flex-1">
-				<AnimatePresence mode="wait" initial={false}>
-					<MotionDiv key={location.pathname} {...pageTransition} className="min-h-[60vh]">
-						{children}
-					</MotionDiv>
-				</AnimatePresence>
+				<div className="min-h-[60vh]">{children}</div>
 			</main>
 
 			{/* Mobile floating CTA */}

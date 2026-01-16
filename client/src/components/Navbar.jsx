@@ -23,10 +23,15 @@ const getIsRead = (n) => Boolean(n?.read ?? n?.isRead ?? n?.seen);
 const Navbar = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const initialScrollY = typeof window !== 'undefined' ? window.scrollY : 0;
   const [isVisible, setIsVisible] = useState(true);
-  const lastScrollY = useRef(typeof window !== 'undefined' ? window.scrollY : 0);
+  const lastScrollY = useRef(initialScrollY);
+  const lastRevealY = useRef(initialScrollY);
   const rafId = useRef(null);
-  const hideTimeout = useRef(null);
+  const [hideThreshold, setHideThreshold] = useState(() =>
+    typeof window !== 'undefined' ? window.innerHeight * 0.35 : 0
+  );
+  const isVisibleRef = useRef(isVisible);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuButtonRef = useRef(null);
   const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
@@ -98,28 +103,34 @@ const Navbar = () => {
   const avatarAlt = user?.name ? `${user.name} avatar` : 'Profile avatar';
 
   useEffect(() => {
-    const HIDE_DELAY = 150; // milliseconds
+    isVisibleRef.current = isVisible;
+  }, [isVisible]);
+
+  useEffect(() => {
+    const updateThreshold = () => {
+      setHideThreshold(window.innerHeight * 0.35);
+    };
+
+    // keep threshold current on resize
+    updateThreshold();
+    window.addEventListener('resize', updateThreshold);
+
     const handle = () => {
       if (rafId.current) return;
       rafId.current = window.requestAnimationFrame(() => {
         const currentY = window.scrollY || 0;
-        const lastY = lastScrollY.current || 0;
+        const isScrollingDown = currentY > lastScrollY.current;
 
-        // Scrolling down and past threshold -> schedule hide
-        if (currentY > lastY && currentY > 120) {
-          if (hideTimeout.current == null) {
-            hideTimeout.current = window.setTimeout(() => {
-              setIsVisible(false);
-              hideTimeout.current = null;
-            }, HIDE_DELAY);
+        if (isScrollingDown) {
+          const scrollDistance = currentY - lastRevealY.current;
+          if (scrollDistance > hideThreshold && isVisibleRef.current) {
+            setIsVisible(false);
           }
-        } else if (currentY < lastY) {
-          // Scrolling up -> cancel any scheduled hide and show immediately
-          if (hideTimeout.current != null) {
-            clearTimeout(hideTimeout.current);
-            hideTimeout.current = null;
+        } else if (currentY < lastScrollY.current) {
+          if (!isVisibleRef.current) {
+            setIsVisible(true);
           }
-          setIsVisible(true);
+          lastRevealY.current = currentY;
         }
 
         lastScrollY.current = currentY;
@@ -130,14 +141,22 @@ const Navbar = () => {
     window.addEventListener('scroll', handle, { passive: true });
     return () => {
       window.removeEventListener('scroll', handle);
+      window.removeEventListener('resize', updateThreshold);
       if (rafId.current) window.cancelAnimationFrame(rafId.current);
-      if (hideTimeout.current != null) clearTimeout(hideTimeout.current);
     };
-  }, []);
+  }, [hideThreshold]);
 
   const navVariants = {
-    visible: { y: '0%', opacity: 1, transition: { duration: 0.36, ease: [0.22, 1, 0.36, 1], type: 'tween' } },
-    hidden: { y: '-110%', opacity: 0, transition: { duration: 0.42, ease: [0.22, 1, 0.36, 1], type: 'tween' } },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1], type: 'tween' },
+    },
+    hidden: {
+      y: -24,
+      opacity: 0,
+      transition: { duration: 0.55, ease: [0.4, 0, 0.2, 1], type: 'tween' },
+    },
   };
 
   return (

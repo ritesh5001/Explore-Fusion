@@ -69,7 +69,7 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 
 				const header = (
 					<div className="flex items-center gap-3 min-w-0">
-						<div className="h-10 w-10 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
+						<div className="h-9 w-9 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
 							<SafeImage
 								src={author?.avatar || ''}
 								alt={handle}
@@ -78,8 +78,8 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 							/>
 						</div>
 						<div className="min-w-0">
-							<div className="text-[18px] font-semibold tracking-wide text-charcoal/85 truncate">{handle}</div>
-							<div className="text-[15px] tracking-wide text-charcoal/55 truncate">{location}</div>
+							<div className="text-[16px] font-semibold tracking-wide text-charcoal/85 truncate">{handle}</div>
+							<div className="text-[13px] tracking-wide text-charcoal/55 truncate">{location}</div>
 						</div>
 					</div>
 				);
@@ -150,10 +150,10 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 								animate={isHovered ? 'hover' : 'rest'}
 								className="overflow-hidden flex flex-col gap-2 text-charcoal"
 							>
-								<div className="text-[18px] font-semibold tracking-tight">
+								<div className="text-[17px] font-semibold tracking-tight">
 									{title}
 								</div>
-								<div className="text-[17px] leading-snug text-charcoal/70">
+								<div className="text-[15px] leading-snug text-charcoal/70">
 									{caption}
 								</div>
 								{post?.location ? (

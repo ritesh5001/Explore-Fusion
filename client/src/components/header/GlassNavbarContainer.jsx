@@ -6,14 +6,14 @@ const MotionDiv = motion.div;
 export default function GlassNavbarContainer({ children, className = '', ...props }) {
 	return (
 		<MotionDiv
-			className={cn(
-				'rounded-2xl',
-				'bg-[rgba(255,255,255,0.35)]',
-				'backdrop-blur-[12px]',
-				'border border-[rgba(255,255,255,0.4)]',
-				'shadow-[0_12px_28px_rgba(0,0,0,0.06)]',
-				className
-			)}
+				className={cn(
+					'rounded-2xl',
+					'bg-[rgba(255,255,255,0.28)]',
+					'backdrop-blur-[8px]',
+					'border border-[rgba(255,255,255,0.32)]',
+					'shadow-[0_6px_12px_rgba(0,0,0,0.04)]',
+					className
+				)}
 			{...props}
 		>
 			{children}

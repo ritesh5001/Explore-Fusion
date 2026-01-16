@@ -67,22 +67,22 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 	const caption = post?.caption || post?.description || 'A quiet moment along the road.';
 	const tags = Array.isArray(post?.tags) ? post.tags.filter(Boolean) : [];
 
-	const header = (
-		<div className="flex items-center gap-2 min-w-0">
-			<div className="h-7 w-7 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
-				<SafeImage
-					src={author?.avatar || ''}
-					alt={handle}
-					fallback="/avatar-placeholder.png"
-					className="h-full w-full object-cover"
-				/>
-			</div>
-			<div className="min-w-0">
-				<div className="text-[12px] tracking-wide text-charcoal/85 truncate">{handle}</div>
-				<div className="text-[11px] tracking-wide text-charcoal/55 truncate">{location}</div>
-			</div>
-		</div>
-	);
+				const header = (
+					<div className="flex items-center gap-2 min-w-0">
+						<div className="h-8 w-8 rounded-full overflow-hidden border border-soft/70 bg-soft/40 shrink-0">
+							<SafeImage
+								src={author?.avatar || ''}
+								alt={handle}
+								fallback="/avatar-placeholder.png"
+								className="h-full w-full object-cover"
+							/>
+						</div>
+						<div className="min-w-0">
+							<div className="text-[16px] font-semibold tracking-wide text-charcoal/85 truncate">{handle}</div>
+							<div className="text-[13px] tracking-wide text-charcoal/55 truncate">{location}</div>
+						</div>
+					</div>
+				);
 
 	return (
 		<article
@@ -150,10 +150,10 @@ export default function LuxuryPostCard({ post, revealDelayMs = 0 }) {
 								animate={isHovered ? 'hover' : 'rest'}
 								className="overflow-hidden flex flex-col gap-2 text-charcoal"
 							>
-								<div className="text-[15px] font-semibold tracking-tight">
+								<div className="text-[18px] font-semibold tracking-tight">
 									{title}
 								</div>
-								<div className="text-sm leading-snug text-charcoal/70">
+								<div className="text-[17px] leading-snug text-charcoal/70">
 									{caption}
 								</div>
 								{post?.location ? (

@@ -8,7 +8,6 @@ import SafeImage from './common/SafeImage';
 import GlassNavbarContainer from './header/GlassNavbarContainer';
 import MobileMenuDrawer from './header/MobileMenuDrawer';
 import { fadeLift, glassShift } from '../theme/variants';
-import { motionDuration, motionEasing } from '../theme/motion';
 
 const MotionDiv = motion.div;
 

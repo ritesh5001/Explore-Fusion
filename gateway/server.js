@@ -200,12 +200,10 @@ app.use(
   '/api/v1/posts',
   coreServiceGuard('post', POST_SERVICE_URL) ||
     createProxyMiddleware({
-      target: POST_SERVICE_URL,
+      target: 'http://post-service:5050',
       changeOrigin: true,
+      secure: false,
       onProxyReq: proxyJsonBody,
-      pathRewrite: {
-        '^/api/v1/posts': '',
-      },
     })
 );
 
@@ -282,10 +280,10 @@ app.use(
   '/api/v1/matches',
   MATCHES_SERVICE_URL
     ? createProxyMiddleware({
-        target: MATCHES_SERVICE_URL,
+        target: 'http://matches-service:5050',
         changeOrigin: true,
+        secure: false,
         onProxyReq: proxyJsonBody,
-        pathRewrite: (path) => `/api/v1/matches${path}`,
       })
     : disabledRoute('matches')
 );
@@ -294,10 +292,10 @@ app.use(
   '/api/v1/notifications',
   NOTIFICATION_SERVICE_URL
     ? createProxyMiddleware({
-        target: NOTIFICATION_SERVICE_URL,
+        target: 'http://notification-service:5050',
         changeOrigin: true,
+        secure: false,
         onProxyReq: proxyJsonBody,
-        pathRewrite: (path) => `/api/v1/notifications${path}`,
       })
     : disabledRoute('notification')
 );

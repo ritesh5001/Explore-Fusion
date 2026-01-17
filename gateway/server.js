@@ -116,12 +116,11 @@ app.use(
   '/api/v1/auth',
   coreServiceGuard('auth', AUTH_SERVICE_URL) ||
     createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
+      target: 'http://auth-service:5050',
       changeOrigin: true,
+      secure: false,
+      logLevel: 'debug',
       onProxyReq: proxyJsonBody,
-      pathRewrite: {
-        '^/api/v1/auth': '',
-      },
     })
 );
 

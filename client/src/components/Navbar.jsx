@@ -222,93 +222,92 @@ const Navbar = () => {
               animate={isNavbarHovered ? 'hover' : 'rest'}
               className="relative flex items-center gap-2"
             >
-            <button
-              ref={menuButtonRef}
-              type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
-              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
-              aria-expanded={isMenuOpen}
-              onClick={() => setIsMenuOpen((v) => !v)}
-            >
-              <CircularMenuToggleIcon open={isMenuOpen} />
-            </button>
+              <button
+                ref={menuButtonRef}
+                type="button"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[rgba(255,255,255,0.4)] bg-white/20 text-charcoal hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
+                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMenuOpen}
+                onClick={() => setIsMenuOpen((v) => !v)}
+              >
+                <CircularMenuToggleIcon open={isMenuOpen} />
+              </button>
 
-            {isAuthenticated ? (
+              {isAuthenticated ? (
+                <Link
+                  to="/profile"
+                  aria-label="Open profile"
+                  className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
+                >
+                  <SafeImage
+                    src={avatarSrc}
+                    alt={avatarAlt}
+                    fallback="/avatar-placeholder.png"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                  />
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  aria-label="Sign in"
+                  className="h-10 w-10 rounded-full border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
+                />
+              )}
+
               <Link
-                to="/profile"
-                aria-label="Open profile"
-                className="relative h-10 w-10 rounded-full overflow-hidden border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
+                to="/"
+                aria-label="Go to home"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-charcoal transition-[opacity,transform] ease-standard duration-200 hover:opacity-95"
               >
                 <SafeImage
-                  src={avatarSrc}
-                  alt={avatarAlt}
-                  fallback="/avatar-placeholder.png"
-                  className="h-full w-full object-cover"
+                  src={LOGO_URL}
+                  fallback="/images/placeholder.svg"
+                  alt="Explore Fusion"
+                  className="h-7 w-7 rounded-xl object-contain"
                   loading="eager"
+                  decoding="async"
                 />
-              </Link>
-            ) : (
-              <Link
-                to="/login"
-                aria-label="Sign in"
-                className="h-10 w-10 rounded-full border-[2px] border-black/[0.08] bg-white/20 hover:bg-white/30 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
-              />
-            )}
-
-            <Link
-              to="/"
-              aria-label="Go to home"
-              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 inline-flex items-center gap-2 rounded-2xl px-2 py-1 text-charcoal transition-[opacity,transform] ease-standard duration-200 hover:opacity-95"
-            >
-              <SafeImage
-                src={LOGO_URL}
-                fallback="/images/placeholder.svg"
-                alt="Explore Fusion"
-                className="h-7 w-7 rounded-xl object-contain"
-                loading="eager"
-                decoding="async"
-              />
-              <span className="hidden sm:inline text-lg font-heading font-medium tracking-[0.06em]">
-                Explore <span className="text-gold">Fusion</span>
-              </span>
-            </Link>
-
-            <div className="ml-auto flex items-center gap-2">
-              <Link
-                to="/notifications"
-                aria-label="Open notifications"
-                className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.36)] bg-white/18 text-charcoal hover:bg-white/26 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
-              >
-                <Bell className="h-4 w-4" />
-                {hasUnreadNotifications && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gold" />}
+                <span className="hidden sm:inline text-lg font-heading font-medium tracking-[0.06em]">
+                  Explore <span className="text-gold">Fusion</span>
+                </span>
               </Link>
 
-              <Link
-                to="/chat"
-                className="inline-flex items-center gap-2 rounded-full bg-gold px-3 py-1.5 text-charcoal font-medium shadow-[0_6px_12px_rgba(0,0,0,0.04)] transition-[background-color,transform,box-shadow] ease-standard duration-200 hover:bg-[#b89250] hover:-translate-y-[1px] hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)] active:scale-[0.98] active:duration-120"
-                aria-label="Open chat"
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-sm">Chat</span>
-              </Link>
-            </div>
-          </div>
+              <div className="ml-auto flex items-center gap-2">
+                <Link
+                  to="/notifications"
+                  aria-label="Open notifications"
+                  className="relative inline-flex h-9 w-9 items-center justify-center rounded-full border border-[rgba(255,255,255,0.36)] bg-white/18 text-charcoal hover:bg-white/26 transition-[background-color,transform,opacity] ease-standard duration-200 active:scale-[0.98] active:duration-120"
+                >
+                  <Bell className="h-4 w-4" />
+                  {hasUnreadNotifications && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-gold" />}
+                </Link>
+
+                <Link
+                  to="/chat"
+                  className="inline-flex items-center gap-2 rounded-full bg-gold px-3 py-1.5 text-charcoal font-medium shadow-[0_6px_12px_rgba(0,0,0,0.04)] transition-[background-color,transform,box-shadow] ease-standard duration-200 hover:bg-[#b89250] hover:-translate-y-[1px] hover:shadow-[0_8px_16px_rgba(0,0,0,0.06)] active:scale-[0.98] active:duration-120"
+                  aria-label="Open chat"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-sm">Chat</span>
+                </Link>
+              </div>
             </MotionDiv>
           </GlassNavbarContainer>
         </MotionDiv>
       </div>
-      </MotionDiv>
+    </MotionDiv>
 
-      <CircularMenuOverlay
-        open={isMenuOpen}
-        onClose={() => setIsMenuOpen(false)}
-        menuButtonRef={menuButtonRef}
-        links={links}
-        isAuthenticated={isAuthenticated}
-        userName={user?.name || ''}
-        onLogout={handleLogout}
-      />
-    </motion.header>
+    <CircularMenuOverlay
+      open={isMenuOpen}
+      onClose={() => setIsMenuOpen(false)}
+      menuButtonRef={menuButtonRef}
+      links={links}
+      isAuthenticated={isAuthenticated}
+      userName={user?.name || ''}
+      onLogout={handleLogout}
+    />
+  </motion.header>
   );
 };
 

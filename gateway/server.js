@@ -116,7 +116,7 @@ app.use(
   '/api/v1/auth',
   coreServiceGuard('auth', AUTH_SERVICE_URL) ||
     createProxyMiddleware({
-      target: 'http://auth-service:5050',
+      target: AUTH_SERVICE_URL,
       changeOrigin: true,
       secure: false,
       logLevel: 'debug',
@@ -200,7 +200,7 @@ app.use(
   '/api/v1/posts',
   coreServiceGuard('post', POST_SERVICE_URL) ||
     createProxyMiddleware({
-      target: 'http://post-service:5050',
+      target: POST_SERVICE_URL,
       changeOrigin: true,
       secure: false,
       onProxyReq: proxyJsonBody,
@@ -280,7 +280,7 @@ app.use(
   '/api/v1/matches',
   MATCHES_SERVICE_URL
     ? createProxyMiddleware({
-        target: 'http://matches-service:5050',
+        target: MATCHES_SERVICE_URL,
         changeOrigin: true,
         secure: false,
         onProxyReq: proxyJsonBody,
@@ -292,7 +292,7 @@ app.use(
   '/api/v1/notifications',
   NOTIFICATION_SERVICE_URL
     ? createProxyMiddleware({
-        target: 'http://notification-service:5050',
+        target: NOTIFICATION_SERVICE_URL,
         changeOrigin: true,
         secure: false,
         onProxyReq: proxyJsonBody,

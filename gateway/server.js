@@ -59,6 +59,17 @@ const proxyJsonBody = (proxyReq, req) => {
   proxyReq.write(bodyData);
 };
 
+const forwardAuthHeaders = (proxyReq, req) => {
+  if (req.headers.authorization) {
+    proxyReq.setHeader('authorization', req.headers.authorization);
+  }
+};
+
+const proxyJsonBodyWithAuth = (proxyReq, req) => {
+  proxyJsonBody(proxyReq, req);
+  forwardAuthHeaders(proxyReq, req);
+};
+
 const defaultCorsOrigins = ['http://localhost:5173', 'https://explore-fusion.vercel.app'];
 const corsOrigins = String(process.env.CORS_ORIGINS || '')
   .split(',')
@@ -109,7 +120,7 @@ if (ADMIN_SERVICE_URL) {
     createProxyMiddleware({
       target: ADMIN_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
     })
   );
 } else {
@@ -123,7 +134,7 @@ app.use(
       changeOrigin: true,
       secure: false,
       logLevel: 'debug',
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
     })
 );
 
@@ -186,7 +197,7 @@ app.use(
     createProxyMiddleware({
       target: AUTH_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
     })
 );
 
@@ -196,7 +207,7 @@ app.use(
     createProxyMiddleware({
       target: AUTH_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
     })
 );
 app.use(
@@ -206,7 +217,7 @@ app.use(
       target: POST_SERVICE_URL,
       changeOrigin: true,
       secure: false,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
     })
 );
 
@@ -220,7 +231,7 @@ const aiProxy =
   createProxyMiddleware({
     target: AI_SERVICE_URL,
     changeOrigin: true,
-    onProxyReq: proxyJsonBody,
+    onProxyReq: proxyJsonBodyWithAuth,
     pathRewrite: {
       '^/api/v1/ai': '',
     },
@@ -241,7 +252,7 @@ app.use(
     createProxyMiddleware({
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
       pathRewrite: (path) => `/api/v1/itineraries${path}`,
     })
 );
@@ -252,7 +263,7 @@ app.use(
     createProxyMiddleware({
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
       pathRewrite: (path) => `/api/v1/packages${path}`,
     })
 );
@@ -263,7 +274,7 @@ app.use(
     createProxyMiddleware({
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
       pathRewrite: (path) => `/api/v1/bookings${path}`,
     })
 );
@@ -274,7 +285,7 @@ app.use(
     createProxyMiddleware({
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
-      onProxyReq: proxyJsonBody,
+      onProxyReq: proxyJsonBodyWithAuth,
       pathRewrite: (path) => `/api/v1/reviews${path}`,
     })
 );
@@ -286,7 +297,7 @@ app.use(
         target: MATCHES_SERVICE_URL,
         changeOrigin: true,
         secure: false,
-        onProxyReq: proxyJsonBody,
+        onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('matches')
 );
@@ -298,7 +309,7 @@ app.use(
         target: NOTIFICATION_SERVICE_URL,
         changeOrigin: true,
         secure: false,
-        onProxyReq: proxyJsonBody,
+        onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('notification')
 );
@@ -314,7 +325,7 @@ app.use(
     ? createProxyMiddleware({
         target: SOCIAL_SERVICE_URL,
         changeOrigin: true,
-        onProxyReq: proxyJsonBody,
+        onProxyReq: proxyJsonBodyWithAuth,
         pathRewrite: (path, req) => {
           const method = String(req?.method || 'GET').toUpperCase();
           // Express strips the mount path, so `path` is typically like '/:id' or '/followers/:id'.
@@ -340,6 +351,7 @@ app.use(
     ? createProxyMiddleware({
         target: UPLOAD_SERVICE_URL,
         changeOrigin: true,
+        onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('upload')
 );
@@ -350,6 +362,7 @@ app.use(
     ? createProxyMiddleware({
         target: UPLOAD_SERVICE_URL,
         changeOrigin: true,
+        onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('upload')
 );
@@ -363,6 +376,7 @@ app.use(
         ws: true,
         proxyTimeout: 30_000,
         timeout: 30_000,
+        onProxyReq: proxyJsonBodyWithAuth,
         onError: (err, req, res) => {
           console.error('Socket.IO proxy error:', err?.message || err);
           if (res && !res.headersSent) {

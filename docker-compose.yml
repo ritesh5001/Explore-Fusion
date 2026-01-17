@@ -2,54 +2,202 @@ version: "3.9"
 
 services:
   mongo:
-    image: mongo:7
-    container_name: mongo
+    image: mongo:6
+    restart: unless-stopped
     volumes:
       - mongo_data:/data/db
-    restart: always
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - fusion-net
+
+  auth-service:
+    build: ./services/auth-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5001/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  post-service:
+    build: ./services/post-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5002/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  booking-service:
+    build: ./services/booking-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5003/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  ai-service:
+    build: ./services/ai-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5004/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  upload-service:
+    build: ./services/upload-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5005/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  notification-service:
+    build: ./services/notification-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5008/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  matches-service:
+    build: ./services/matches-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5009/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
+
+  admin-service:
+    build: ./services/admin-service
+    env_file: .env.production
+    restart: on-failure
+    depends_on:
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5007/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
 
   gateway:
     build: ./gateway
     env_file: .env.production
     ports:
       - "5050:5050"
+    restart: unless-stopped
     depends_on:
-      - auth-service
-      - ai-service
-    restart: always
-
-  auth-service:
-    build: ./services/auth-service
-    env_file: .env.production
-    restart: always
-
-  ai-service:
-    build: ./services/ai-service
-    env_file: .env.production
-    restart: always
-
-  booking-service:
-    build: ./services/booking-service
-    env_file: .env.production
-    restart: always
-
-  post-service:
-    build: ./services/post-service
-    env_file: .env.production
-    restart: always
-
-  upload-service:
-    build: ./services/upload-service
-    env_file: .env.production
-    restart: always
+      auth-service:
+        condition: service_started
+      booking-service:
+        condition: service_started
+      post-service:
+        condition: service_started
+      ai-service:
+        condition: service_started
+      upload-service:
+        condition: service_started
+      notification-service:
+        condition: service_started
+      matches-service:
+        condition: service_started
+      admin-service:
+        condition: service_started
+      mongo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5050/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - fusion-net
 
   frontend:
-    build: ./client
+    build:
+      context: ./client
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://gateway:5050/api/v1}
+        VITE_IMAGEKIT_PUBLIC_KEY: ${VITE_IMAGEKIT_PUBLIC_KEY}
+        VITE_IMAGEKIT_URL_ENDPOINT: ${VITE_IMAGEKIT_URL_ENDPOINT}
+        VITE_IMAGEKIT_AUTH_ENDPOINT: ${VITE_IMAGEKIT_AUTH_ENDPOINT:-http://gateway:5050/imagekit-auth}
+        VITE_BRAND_LOGO_URL: ${VITE_BRAND_LOGO_URL}
     ports:
       - "80:80"
+    restart: unless-stopped
     depends_on:
-      - gateway
-    restart: always
+      gateway:
+        condition: service_healthy
+    networks:
+      - fusion-net
 
 volumes:
   mongo_data:
+
+networks:
+  fusion-net:
+    driver: bridge

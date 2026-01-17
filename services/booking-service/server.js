@@ -20,7 +20,12 @@ app.use(express.json());
 app.use(cors());
 
 
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ef_booking_db')
+const mongoUri =
+  process.env.BOOKING_MONGO_URI ||
+  process.env.MONGO_URI ||
+  'mongodb://localhost:27017/ef_booking_db';
+
+mongoose.connect(mongoUri)
   .then(() => console.log('✅ Booking DB Connected'))
   .catch(err => console.error('DB Error:', err));
 

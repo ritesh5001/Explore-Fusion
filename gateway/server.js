@@ -20,11 +20,11 @@ const getFetch = () => {
   };
 };
 
-const serviceUrl = (envKey, devFallback) => {
+const serviceUrl = (envKey, devFallback, prodFallback) => {
   const value = process.env[envKey];
   if (value) return value;
-  if (!isProd) return devFallback;
-  return null;
+  if (isProd) return prodFallback || null;
+  return devFallback || null;
 };
 
 const disabledRoute = (service) => (req, res) => {
@@ -82,18 +82,18 @@ app.get('/', (req, res) => {
 });
 
 // Core services (required in prod)
-const AUTH_SERVICE_URL = serviceUrl('AUTH_SERVICE_URL', 'http://localhost:5001');
-const POST_SERVICE_URL = serviceUrl('POST_SERVICE_URL', 'http://localhost:5002');
-const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:5003');
+const AUTH_SERVICE_URL = serviceUrl('AUTH_SERVICE_URL', 'http://localhost:5001', 'http://auth-service:5050');
+const POST_SERVICE_URL = serviceUrl('POST_SERVICE_URL', 'http://localhost:5002', 'http://post-service:5050');
+const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:5003', 'http://booking-service:5050');
 
 // Optional services (allow gateway to boot even if not deployed yet)
-const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007');
-const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004');
-const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005');
-const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006');
-const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008');
-const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009');
-const SOCIAL_SERVICE_URL = serviceUrl('SOCIAL_SERVICE_URL', 'http://localhost:5010');
+const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007', 'http://admin-service:5050');
+const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004', 'http://ai-service:5050');
+const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005', 'http://upload-service:5050');
+const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006', 'http://chat-service:5050');
+const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008', 'http://notification-service:5050');
+const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009', 'http://matches-service:5050');
+const SOCIAL_SERVICE_URL = serviceUrl('SOCIAL_SERVICE_URL', 'http://localhost:5010', 'http://social-service:5050');
 
 const coreServiceGuard = (name, url) => {
   if (url) return null;

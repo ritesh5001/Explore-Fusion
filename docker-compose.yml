@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: mongo
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  gateway:
+    build: ./gateway
+    env_file: .env.production
+    ports:
+      - "5050:5050"
+    depends_on:
+      - auth-service
+      - ai-service
+    restart: always
+
+  auth-service:
+    build: ./services/auth-service
+    env_file: .env.production
+    restart: always
+
+  ai-service:
+    build: ./services/ai-service
+    env_file: .env.production
+    restart: always
+
+  booking-service:
+    build: ./services/booking-service
+    env_file: .env.production
+    restart: always
+
+  post-service:
+    build: ./services/post-service
+    env_file: .env.production
+    restart: always
+
+  upload-service:
+    build: ./services/upload-service
+    env_file: .env.production
+    restart: always
+
+  frontend:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - gateway
+    restart: always
+
+volumes:
+  mongo_data:

@@ -49,7 +49,10 @@ app.use((req, res) => {
 
 const PORT = Number(process.env.PORT) || 5009;
 
-const mongoUri = process.env.MONGO_URI || (!isProd ? 'mongodb://localhost:27017/ef_matches_db' : null);
+const mongoUri =
+  process.env.MATCHES_MONGO_URI ||
+  process.env.MONGO_URI ||
+  (!isProd ? 'mongodb://localhost:27017/ef_matches_db' : null);
 if (!mongoUri) {
   console.error('Matches service misconfigured: MONGO_URI is required in production');
   process.exit(1);

@@ -46,11 +46,14 @@ const proxyJsonBody = (proxyReq, req) => {
   const method = String(req.method || '').toUpperCase();
   if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
 
-  const contentType = String(req.headers['content-type'] || '').toLowerCase();
-  if (!contentType.includes('application/json')) return;
   if (!req.body || typeof req.body !== 'object') return;
 
+  const contentType = String(req.headers['content-type'] || '').toLowerCase();
+  if (!contentType.includes('application/json')) return;
+
   const bodyData = JSON.stringify(req.body);
+  if (!bodyData || bodyData === '{}') return;
+
   proxyReq.setHeader('Content-Type', 'application/json');
   proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
   proxyReq.write(bodyData);

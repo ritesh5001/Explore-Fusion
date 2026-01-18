@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const mongoose = require('mongoose');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const isProd = process.env.NODE_ENV === 'production';
 
@@ -47,7 +48,7 @@ app.use((req, res) => {
   });
 });
 
-const PORT = Number(process.env.PORT) || 5009;
+const PORT = Number(process.env.MATCHES_PORT) || Number(process.env.PORT) || 5009;
 
 const mongoUri =
   process.env.MATCHES_MONGO_URI ||

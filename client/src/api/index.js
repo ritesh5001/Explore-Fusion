@@ -1,11 +1,9 @@
 import axios from 'axios';
 
-const normalizeApiBaseUrl = (raw) => {
-  if (!raw) return raw;
-  const base = String(raw).replace(/\/$/, '');
-  if (base === '/api/v1' || base.endsWith('/api/v1')) return base;
-  return `${base}/api/v1`;
-};
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+if (!baseUrl) {
+  throw new Error('❌ VITE_API_BASE_URL is missing');
+}
 
 const toast = (message, type = 'info', timeoutMs) => {
   try {
@@ -16,11 +14,8 @@ const toast = (message, type = 'info', timeoutMs) => {
 };
 
 const API = axios.create({
-  // In production, never default to localhost. Prefer env override; otherwise use same-origin.
-  baseURL:
-    normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL) ||
-    (import.meta.env.DEV ? 'http://localhost:5050/api/v1' : '/api/v1'),
-  withCredentials: false,
+  baseURL: baseUrl,
+  withCredentials: true,
 });
 
 API.interceptors.request.use((req) => {

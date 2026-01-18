@@ -1,8 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 
@@ -65,7 +66,7 @@ app.use((req, res) => {
   });
 });
 
-const PORT = Number(process.env.PORT) || 5008;
+const PORT = Number(process.env.NOTIFICATION_PORT) || Number(process.env.PORT) || 5008;
 app.listen(PORT, () => {
   console.log(`Notification Service running on port ${PORT}`);
 });

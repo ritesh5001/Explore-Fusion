@@ -32,26 +32,30 @@ app.get('/', (req, res) => {
   res.send('Notification Service is running');
 });
 
+const notificationsRouter = express.Router();
+
 // Notifications routes
-app.get('/api/v1/notifications', (req, res) => {
+notificationsRouter.get('/', (req, res) => {
   res.json({ success: true, message: 'Get notifications', notifications: [] });
 });
 
-app.post('/api/v1/notifications', (req, res) => {
+notificationsRouter.post('/', (req, res) => {
   res.json({ success: true, message: 'Notification created' });
 });
 
-app.get('/api/v1/notifications/:id', (req, res) => {
+notificationsRouter.get('/:id', (req, res) => {
   res.json({ success: true, message: 'Get notification', notification: {} });
 });
 
-app.put('/api/v1/notifications/:id', (req, res) => {
+notificationsRouter.put('/:id', (req, res) => {
   res.json({ success: true, message: 'Notification updated' });
 });
 
-app.delete('/api/v1/notifications/:id', (req, res) => {
+notificationsRouter.delete('/:id', (req, res) => {
   res.json({ success: true, message: 'Notification deleted' });
 });
+
+app.use('/api/v1/notifications', notificationsRouter);
 
 // 404 handler
 app.use((req, res) => {

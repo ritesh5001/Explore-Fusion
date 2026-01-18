@@ -23,11 +23,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5001/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -39,11 +39,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5002/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -55,11 +55,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5003/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -71,11 +71,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5004/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -87,11 +87,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5005/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -103,11 +103,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5008/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -119,11 +119,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5009/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -135,11 +135,11 @@ services:
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5007/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
-      interval: 15s
-      timeout: 5s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
+      interval: 30s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 30s
     networks:
       - fusion-net
 
@@ -150,26 +150,10 @@ services:
       - "5050:5050"
     restart: unless-stopped
     depends_on:
-      auth-service:
-        condition: service_started
-      booking-service:
-        condition: service_started
-      post-service:
-        condition: service_started
-      ai-service:
-        condition: service_started
-      upload-service:
-        condition: service_started
-      notification-service:
-        condition: service_started
-      matches-service:
-        condition: service_started
-      admin-service:
-        condition: service_started
       mongo:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "node", "-e", "const http=require('http'); const req=http.get('http://localhost:5050/health', (res)=>{ res.resume(); res.on('end', ()=>process.exit(res.statusCode===200?0:1)); }); req.on('error', ()=>process.exit(1));"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5050/health"]
       interval: 15s
       timeout: 5s
       retries: 5

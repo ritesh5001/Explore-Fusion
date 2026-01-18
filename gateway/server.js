@@ -299,7 +299,7 @@ app.use(
         secure: false,
         onProxyReq: proxyJsonBodyWithAuth,
         pathRewrite: {
-          '^/api/v1': '',
+          '^/api/v1/matches': '',
         },
       })
     : disabledRoute('matches')
@@ -314,7 +314,7 @@ app.use(
         secure: false,
         onProxyReq: proxyJsonBodyWithAuth,
         pathRewrite: {
-          '^/api/v1': '',
+          '^/api/v1/notifications': '',
         },
       })
     : disabledRoute('notification')

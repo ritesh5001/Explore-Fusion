@@ -298,6 +298,9 @@ app.use(
         changeOrigin: true,
         secure: false,
         onProxyReq: proxyJsonBodyWithAuth,
+        pathRewrite: {
+          '^/api/v1': '',
+        },
       })
     : disabledRoute('matches')
 );
@@ -310,6 +313,9 @@ app.use(
         changeOrigin: true,
         secure: false,
         onProxyReq: proxyJsonBodyWithAuth,
+        pathRewrite: {
+          '^/api/v1': '',
+        },
       })
     : disabledRoute('notification')
 );

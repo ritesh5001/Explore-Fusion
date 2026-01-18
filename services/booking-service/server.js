@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 
 const packageRoutes = require('./routes/packages');
@@ -11,7 +12,7 @@ const reviewRoutes = require('./routes/reviewRoutes');
 const buddyRoutes = require('./routes/buddyRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 
@@ -60,5 +61,5 @@ app.use((req, res) => {
 });
 
 
-const PORT = process.env.PORT || 5003;
+const PORT = Number(process.env.BOOKING_PORT) || Number(process.env.PORT) || 5003;
 app.listen(PORT, () => console.log(`📅 Booking Service running on port ${PORT}`));

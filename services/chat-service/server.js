@@ -3,8 +3,9 @@ const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 app.use(cors());
@@ -51,5 +52,15 @@ io.on('connection', (socket) => {
   });
 });
 
-const CHAT_PORT = Number(process.env.CHAT_PORT) || 5006;
+const CHAT_PORT = Number(process.env.CHAT_PORT) || Number(process.env.PORT) || 5006;
+
+server.on('error', (error) => {
+  if (error.code === 'EADDRINUSE') {
+    console.error(`Chat Service port ${CHAT_PORT} already in use. Stop the conflicting process or set CHAT_PORT to another port.`);
+    process.exit(1);
+  }
+  console.error('Chat Service failed to start', error);
+  process.exit(1);
+});
+
 server.listen(CHAT_PORT, () => console.log(`Chat Service running on port ${CHAT_PORT}`));

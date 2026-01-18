@@ -3,17 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail -n client,gateway,admin,ai,auth,booking,chat,post,upload -c cyan,magenta,green,yellow,blue,white,red,gray,cyan \"npm --prefix client run dev\" \"npm --prefix gateway run dev\" \"npm --prefix services/admin-service run dev\" \"npm --prefix services/ai-service run dev\" \"npm --prefix services/auth-service run dev\" \"npm --prefix services/booking-service run dev\" \"npm --prefix services/chat-service run dev\" \"npm --prefix services/post-service run dev\" \"npm --prefix services/upload-service run dev\"",
-    "start": "concurrently --kill-others-on-fail -n gateway,admin,ai,auth,booking,chat,post,upload -c magenta,green,yellow,blue,white,red,gray,cyan \"npm --prefix gateway run start\" \"npm --prefix services/admin-service run start\" \"npm --prefix services/ai-service run start\" \"npm --prefix services/auth-service run start\" \"npm --prefix services/booking-service run start\" \"npm --prefix services/chat-service run start\" \"npm --prefix services/post-service run start\" \"npm --prefix services/upload-service run start\"",
     "install:all": "npm --prefix client install && npm --prefix gateway install && npm --prefix services/admin-service install && npm --prefix services/ai-service install && npm --prefix services/auth-service install && npm --prefix services/booking-service install && npm --prefix services/chat-service install && npm --prefix services/post-service install && npm --prefix services/upload-service install",
-    "dev:client": "npm --prefix client run dev",
-    "dev:gateway": "npm --prefix gateway run dev",
-    "dev:services": "concurrently --kill-others-on-fail -n admin,ai,auth,booking,chat,post,upload -c green,yellow,blue,white,red,gray,cyan \"npm --prefix services/admin-service run dev\" \"npm --prefix services/ai-service run dev\" \"npm --prefix services/auth-service run dev\" \"npm --prefix services/booking-service run dev\" \"npm --prefix services/chat-service run dev\" \"npm --prefix services/post-service run dev\" \"npm --prefix services/upload-service run dev\"",
+    "dev:frontend": "npm --prefix client run dev",
+    "dev:gateway": "node gateway/server.js",
+    "dev:services": "concurrently --kill-others-on-fail -n admin,ai,auth,booking,chat,notification,matches,post,upload -c green,yellow,blue,white,red,gray,magenta,cyan,orange \"node services/admin-service/server.js\" \"node services/ai-service/server.js\" \"node services/auth-service/server.js\" \"node services/booking-service/server.js\" \"node services/chat-service/server.js\" \"node services/notification-service/server.js\" \"node services/matches-service/server.js\" \"node services/post-service/server.js\" \"node services/upload-service/server.js\"",
+    "dev": "concurrently --kill-others-on-fail -n frontend,gateway,services -c cyan,magenta,white \"npm run dev:frontend\" \"npm run dev:gateway\" \"npm run dev:services\"",
     "strip:comments": "node scripts/strip-comments.js",
-    "upload:branding": "node services/upload-service/scripts/uploadBrandingAssets.js"
+    "upload:branding": "node services/upload-service/scripts/uploadBrandingAssets.js",
+    "test": "cross-env NODE_ENV=test jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:auth": "jest tests/auth",
+    "test:gateway": "jest tests/gateway"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "strip-comments": "^2.0.1"
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.2.3",
+    "jest": "^30.2.0",
+    "mongodb-memory-server": "^11.0.1",
+    "strip-comments": "^2.0.1",
+    "supertest": "^7.2.2"
   }
 }

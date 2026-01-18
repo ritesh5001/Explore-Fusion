@@ -1,7 +1,8 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-dotenv.config();
+const path = require('path');
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const adminRoutes = require('./routes/adminRoutes');
 
@@ -43,7 +44,7 @@ app.use((req, res) => {
     });
 });
 
-const PORT = process.env.PORT || 5001;
+const PORT = Number(process.env.AUTH_PORT) || Number(process.env.PORT) || 5001;
 app.listen(PORT, () => {
-    console.log(`Auth Service running on port ${PORT}`);
+  console.log(`Auth Service running on port ${PORT}`);
 });

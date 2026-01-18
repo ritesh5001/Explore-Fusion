@@ -1,8 +1,25 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
+  envDir: resolve(__dirname, '..'),
   plugins: [react()],
+  server: {
+    host: true,
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5050',
+        changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:5050',
+        changeOrigin: true,
+        ws: true,
+      },
+    },
+  },
   build: {
     rollupOptions: {
       output: {

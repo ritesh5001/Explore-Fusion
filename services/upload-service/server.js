@@ -5,9 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const dotenv = require('dotenv');
 
-dotenv.config();
-// Dev-friendly fallback: reuse auth-service env (contains ImageKit keys)
-dotenv.config({ path: path.join(__dirname, '../auth-service/.env') });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const uploadRoutes = require('./routes/uploadRoutes');
 const { getUploadAuth } = require('./controllers/uploadController');
@@ -37,6 +35,8 @@ app.get('/api/v1/upload/health', (req, res) => {
 // Returns: { token, expire, signature }
 app.get('/imagekit-auth', getUploadAuth);
 app.post('/imagekit-auth', getUploadAuth);
+app.get('/api/v1/imagekit-auth', getUploadAuth);
+app.post('/api/v1/imagekit-auth', getUploadAuth);
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
@@ -74,5 +74,5 @@ app.post('/api/v1/upload', upload.single('image'), (req, res) => {
   });
 });
 
-const PORT = Number(process.env.PORT) || Number(process.env.UPLOAD_PORT) || 5005;
+const PORT = Number(process.env.UPLOAD_PORT) || Number(process.env.PORT) || 5005;
 app.listen(PORT, () => console.log(`Upload Service running on port ${PORT}`));

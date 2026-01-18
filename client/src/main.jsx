@@ -7,6 +7,8 @@ import { ToastProvider } from './components/ToastProvider.jsx';
 import { SystemProvider } from './context/SystemContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 
+console.log('API BASE:', import.meta.env.VITE_API_BASE_URL);
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
 	<ThemeProvider>

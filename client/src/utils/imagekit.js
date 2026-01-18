@@ -56,9 +56,16 @@ const extractImagekitErrorMessage = (err) => {
   return msg || 'Image upload failed';
 };
 
+const imagekitPublicKey = import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY;
+const imagekitUrlEndpoint = import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT;
+
+if (!imagekitUrlEndpoint) {
+  throw new Error('VITE_IMAGEKIT_URL_ENDPOINT is required to initialize ImageKit');
+}
+
 const imagekit = new ImageKit({
-  publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
-  urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT,
+  publicKey: imagekitPublicKey,
+  urlEndpoint: imagekitUrlEndpoint,
 });
 
 export const IMAGEKIT_FOLDERS = {

@@ -1,16 +1,15 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const securityMiddleware = require('./middleware/security');
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const app = express();
 
 app.use(securityMiddleware());
-
-const isProd = process.env.NODE_ENV === 'production';
 
 const getFetch = () => {
   if (typeof globalThis.fetch === 'function') return globalThis.fetch;
@@ -20,11 +19,11 @@ const getFetch = () => {
   };
 };
 
-const serviceUrl = (envKey, devFallback, prodFallback) => {
-  const value = process.env[envKey];
-  if (value) return value;
-  if (isProd) return prodFallback || null;
-  return devFallback || null;
+const getDefaultServiceUrl = (envKey, fallbackPort) => {
+  const fromEnv = process.env[envKey];
+  if (fromEnv) return fromEnv;
+  if (!fallbackPort) return null;
+  return `http://localhost:${fallbackPort}`;
 };
 
 const disabledRoute = (service) => (req, res) => {
@@ -96,18 +95,18 @@ app.get('/', (req, res) => {
 });
 
 // Core services (required in prod)
-const AUTH_SERVICE_URL = serviceUrl('AUTH_SERVICE_URL', 'http://localhost:5001', 'http://auth-service:5050');
-const POST_SERVICE_URL = serviceUrl('POST_SERVICE_URL', 'http://localhost:5002', 'http://post-service:5050');
-const BOOKING_SERVICE_URL = serviceUrl('BOOKING_SERVICE_URL', 'http://localhost:5003', 'http://booking-service:5050');
+const AUTH_SERVICE_URL = getDefaultServiceUrl('AUTH_SERVICE_URL', 5001);
+const POST_SERVICE_URL = getDefaultServiceUrl('POST_SERVICE_URL', 5002);
+const BOOKING_SERVICE_URL = getDefaultServiceUrl('BOOKING_SERVICE_URL', 5003);
 
 // Optional services (allow gateway to boot even if not deployed yet)
-const ADMIN_SERVICE_URL = serviceUrl('ADMIN_SERVICE_URL', 'http://localhost:5007', 'http://admin-service:5050');
-const AI_SERVICE_URL = serviceUrl('AI_SERVICE_URL', 'http://localhost:5004', 'http://ai-service:5050');
-const UPLOAD_SERVICE_URL = serviceUrl('UPLOAD_SERVICE_URL', 'http://localhost:5005', 'http://upload-service:5050');
-const CHAT_SERVICE_URL = serviceUrl('CHAT_SERVICE_URL', 'http://localhost:5006', 'http://chat-service:5050');
-const NOTIFICATION_SERVICE_URL = serviceUrl('NOTIFICATION_SERVICE_URL', 'http://localhost:5008', 'http://notification-service:5050');
-const MATCHES_SERVICE_URL = serviceUrl('MATCHES_SERVICE_URL', 'http://localhost:5009', 'http://matches-service:5050');
-const SOCIAL_SERVICE_URL = serviceUrl('SOCIAL_SERVICE_URL', 'http://localhost:5010', 'http://social-service:5050');
+const ADMIN_SERVICE_URL = getDefaultServiceUrl('ADMIN_SERVICE_URL', 5007);
+const AI_SERVICE_URL = getDefaultServiceUrl('AI_SERVICE_URL', 5004);
+const UPLOAD_SERVICE_URL = getDefaultServiceUrl('UPLOAD_SERVICE_URL', 5005);
+const CHAT_SERVICE_URL = getDefaultServiceUrl('CHAT_SERVICE_URL', 5006);
+const NOTIFICATION_SERVICE_URL = getDefaultServiceUrl('NOTIFICATION_SERVICE_URL', 5008);
+const MATCHES_SERVICE_URL = getDefaultServiceUrl('MATCHES_SERVICE_URL', 5009);
+const SOCIAL_SERVICE_URL = process.env.SOCIAL_SERVICE_URL || null;
 
 const coreServiceGuard = (name, url) => {
   if (url) return null;
@@ -221,20 +220,12 @@ app.use(
     })
 );
 
-app.use(
-  '/api/v1/ai',
-  (req, res, next) => next()
-);
-
 const aiProxy =
   AI_SERVICE_URL &&
   createProxyMiddleware({
     target: AI_SERVICE_URL,
     changeOrigin: true,
     onProxyReq: proxyJsonBodyWithAuth,
-    pathRewrite: {
-      '^/api/v1/ai': '',
-    },
   });
 
 // Explicit route required by system design.
@@ -243,7 +234,7 @@ app.post('/api/v1/ai/chat', (req, res, next) => {
   return aiProxy(req, res, next);
 });
 
-// Proxy the rest of /api/v1/ai/* to the AI service.
+// Proxy the rest of /api/v1/ai/* to the AI service without rewrites.
 app.use('/api/v1/ai', aiProxy || disabledAiRoute);
 
 app.use(
@@ -253,7 +244,6 @@ app.use(
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
       onProxyReq: proxyJsonBodyWithAuth,
-      pathRewrite: (path) => `/api/v1/itineraries${path}`,
     })
 );
 
@@ -264,7 +254,6 @@ app.use(
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
       onProxyReq: proxyJsonBodyWithAuth,
-      pathRewrite: (path) => `/api/v1/packages${path}`,
     })
 );
 
@@ -275,7 +264,6 @@ app.use(
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
       onProxyReq: proxyJsonBodyWithAuth,
-      pathRewrite: (path) => `/api/v1/bookings${path}`,
     })
 );
 
@@ -286,7 +274,6 @@ app.use(
       target: BOOKING_SERVICE_URL,
       changeOrigin: true,
       onProxyReq: proxyJsonBodyWithAuth,
-      pathRewrite: (path) => `/api/v1/reviews${path}`,
     })
 );
 
@@ -391,7 +378,7 @@ app.use(
     : disabledRoute('chat')
 );
 
-const PORT = Number(process.env.PORT) || Number(process.env.GATEWAY_PORT) || 5050;
+const PORT = Number(process.env.PORT) || 5050;
 const server = app.listen(PORT, () => {
   console.log(`Gateway running on port ${PORT}`);
 

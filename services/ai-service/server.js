@@ -1,9 +1,10 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const aiRoutes = require('./routes/aiRoutes');
 
-dotenv.config({ quiet: true });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 app.use(express.json());
@@ -19,7 +20,9 @@ app.get('/health', (req, res) => {
   });
 });
 
+const aiBasePath = '/api/v1/ai';
+app.use(aiBasePath, aiRoutes);
 app.use('/', aiRoutes);
 
-const PORT = process.env.PORT || 5004;
+const PORT = Number(process.env.AI_PORT) || Number(process.env.PORT) || 5004;
 app.listen(PORT, () => console.log(`AI Service running on port ${PORT}`));

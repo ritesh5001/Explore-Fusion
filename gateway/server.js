@@ -297,6 +297,7 @@ app.use(
         target: MATCHES_SERVICE_URL,
         changeOrigin: true,
         secure: false,
+        logLevel: 'debug',
         onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('matches')
@@ -309,6 +310,7 @@ app.use(
         target: NOTIFICATION_SERVICE_URL,
         changeOrigin: true,
         secure: false,
+        logLevel: 'debug',
         onProxyReq: proxyJsonBodyWithAuth,
       })
     : disabledRoute('notification')

@@ -35,6 +35,18 @@ app.get('/', (req, res) => {
 
 const notificationsRouter = express.Router();
 
+const requireAuthHeader = (req, res, next) => {
+  const header = String(req.headers.authorization || '');
+  if (!header.toLowerCase().startsWith('bearer ')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Not authorized, no token',
+    });
+  }
+
+  return next();
+};
+
 // Notifications routes
 notificationsRouter.get('/', (req, res) => {
   res.json({ success: true, message: 'Get notifications', notifications: [] });
@@ -42,6 +54,10 @@ notificationsRouter.get('/', (req, res) => {
 
 notificationsRouter.post('/', (req, res) => {
   res.json({ success: true, message: 'Notification created' });
+});
+
+notificationsRouter.get('/my', requireAuthHeader, (req, res) => {
+  res.json({ success: true, message: 'My notifications', notifications: [] });
 });
 
 notificationsRouter.get('/:id', (req, res) => {

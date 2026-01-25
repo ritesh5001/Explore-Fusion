@@ -5,6 +5,9 @@ import { resolve } from 'path'
 export default defineConfig({
   envDir: resolve(__dirname, '..'),
   plugins: [react()],
+  optimizeDeps: {
+    force: false, // Set to true to force re-optimization when needed
+  },
   server: {
     host: true,
     port: 5173,

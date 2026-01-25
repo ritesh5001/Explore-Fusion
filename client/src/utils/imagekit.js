@@ -1,5 +1,9 @@
 import ImageKit from "imagekit-javascript";
 import { getImagekitAuthEndpoint } from './runtimeUrls';
+import {
+  IMAGEKIT_UPLOADS_ENABLED,
+  IMAGEKIT_UPLOADS_DISABLED_MESSAGE,
+} from './featureFlags';
 
 const isDev = import.meta.env.DEV;
 
@@ -90,7 +94,14 @@ const logUploadFolder = (folder) => {
   console.info('[ImageKit] Upload folder:', folder);
 };
 
+const ensureUploadsEnabled = () => {
+  if (!IMAGEKIT_UPLOADS_ENABLED) {
+    throw new Error(IMAGEKIT_UPLOADS_DISABLED_MESSAGE);
+  }
+};
+
 const validateFile = (file) => {
+  ensureUploadsEnabled();
   if (!file) throw new Error("No file selected");
   if (!file.type || !file.type.startsWith("image/")) {
     throw new Error("Invalid format: please select an image file");

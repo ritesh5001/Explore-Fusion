@@ -368,9 +368,12 @@ const Home = () => {
 									type="file"
 									accept="image/*"
 									onChange={handleFileChange}
-									disabled={uploading}
-									className="block w-full text-sm text-charcoal/70 file:mr-3 file:rounded-xl file:border file:border-soft file:bg-sand file:px-4 file:py-2 file:text-charcoal/80 file:font-medium hover:file:bg-white/70"
+									disabled={uploading || !imageUploadsEnabled}
+									className="block w-full text-sm text-charcoal/80 file:mr-3 file:rounded-xl file:border file:border-soft file:bg-sand file:px-4 file:py-2 file:text-charcoal/80 file:font-medium hover:file:bg-white/70"
 								/>
+							{!imageUploadsEnabled && (
+								<div className="mt-2 text-sm text-red-600">{IMAGEKIT_UPLOADS_DISABLED_MESSAGE}</div>
+							)}
 								{previewUrl ? (
 									<div className="mt-2">
 										<img

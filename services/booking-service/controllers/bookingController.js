@@ -157,6 +157,11 @@ const cancelBooking = async (req, res) => {
 
 const getAllBookings = async (req, res) => {
   try {
+    const userId = req.user?._id;
+    if (!userId) {
+      return jsonError(res, 401, 'Not authorized');
+    }
+
     const role = req.user?.role;
 
     let filter = {};
@@ -164,9 +169,10 @@ const getAllBookings = async (req, res) => {
       filter = {};
     } else if (role === 'creator') {
       // Creator sales visibility: bookings for their packages
-      filter = { creatorId: req.user._id };
+      filter = { creatorId: userId };
     } else {
-      return jsonError(res, 403, 'Forbidden');
+      // Regular users should only see their own bookings
+      filter = { userId };
     }
 
     const bookings = await Booking.find(filter)

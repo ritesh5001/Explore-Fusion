@@ -9,6 +9,11 @@ import Loader, { Skeleton } from '../components/ui/Loader';
 import Input from '../components/ui/Input';
 import Textarea from '../components/ui/Textarea';
 import { uploadPostImage } from '../utils/imagekit';
+import {
+	IMAGEKIT_UPLOADS_DISABLED_MESSAGE,
+	IMAGEKIT_UPLOADS_ENABLED,
+	MATCHES_SERVICE_ENABLED,
+} from '../utils/featureFlags';
 import { useReveal } from '../hooks/useReveal';
 import {
   BuddyProfileCard,
@@ -31,6 +36,10 @@ const Home = () => {
 	const [buddySuggestions, setBuddySuggestions] = useState([]);
 	const [loadingBuddies, setLoadingBuddies] = useState(false);
 	const [buddyError, setBuddyError] = useState('');
+
+	const matchesEnabled = MATCHES_SERVICE_ENABLED;
+	const imageUploadsEnabled = IMAGEKIT_UPLOADS_ENABLED;
+	const matchesDisabledMessage = 'Buddy suggestions are temporarily disabled until the matches service is ready.';
   const { user } = useAuth();
 	const { showToast } = useToast();
 
@@ -61,33 +70,39 @@ const Home = () => {
     fetchPosts();
   }, [fetchPosts]);
 
-  const loadBuddySuggestions = useCallback(async () => {
-    if (!user) {
-      setBuddySuggestions([]);
-      return;
-    }
-    setBuddyError('');
-    setLoadingBuddies(true);
-    try {
-      const res = await API.get('/matches/suggestions');
-      const data = res?.data?.data ?? res?.data;
-      const list = Array.isArray(data?.suggestions)
-        ? data.suggestions
-        : Array.isArray(data?.users)
-          ? data.users
-          : Array.isArray(data)
-            ? data
-            : [];
-      setBuddySuggestions(list);
-    } catch (e) {
-      setBuddySuggestions([]);
-      const status = e?.response?.status;
-      const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load suggestions';
-      setBuddyError(msg + (status ? ` (HTTP ${status})` : ''));
-    } finally {
-      setLoadingBuddies(false);
-    }
-  }, [user]);
+	const loadBuddySuggestions = useCallback(async () => {
+		if (!matchesEnabled) {
+			setBuddySuggestions([]);
+			setBuddyError(matchesDisabledMessage);
+			setLoadingBuddies(false);
+			return;
+		}
+		if (!user) {
+			setBuddySuggestions([]);
+			return;
+		}
+		setBuddyError('');
+		setLoadingBuddies(true);
+		try {
+			const res = await API.get('/matches/suggestions');
+			const data = res?.data?.data ?? res?.data;
+			const list = Array.isArray(data?.suggestions)
+				? data.suggestions
+				: Array.isArray(data?.users)
+					? data.users
+					: Array.isArray(data)
+						? data
+						: [];
+			setBuddySuggestions(list);
+		} catch (e) {
+			setBuddySuggestions([]);
+			const status = e?.response?.status;
+			const msg = e?.response?.data?.message || e?.response?.data?.error || e?.message || 'Failed to load suggestions';
+			setBuddyError(msg + (status ? ` (HTTP ${status})` : ''));
+		} finally {
+			setLoadingBuddies(false);
+		}
+	}, [user, matchesEnabled]);
 
   useEffect(() => {
     loadBuddySuggestions();
@@ -117,23 +132,27 @@ const Home = () => {
     const postId = created?._id;
 
     // 2) If image selected, upload it to ImageKit under a post-specific folder, then attach it to the post
-    if (selectedFile && postId) {
-      setUploading(true);
-      try {
-        const uploaded = await uploadPostImage({
-          file: selectedFile,
-          postId,
-          postedBy: user,
-          location: newPost.location,
-        });
-        await API.put(`/posts/${postId}`, {
-          imageUrl: uploaded.url,
-          imageFileId: uploaded.fileId,
-        });
-      } finally {
-        setUploading(false);
-      }
-    }
+		if (selectedFile && postId) {
+			if (!imageUploadsEnabled) {
+				showToast(IMAGEKIT_UPLOADS_DISABLED_MESSAGE, 'error');
+			} else {
+				setUploading(true);
+				try {
+					const uploaded = await uploadPostImage({
+						file: selectedFile,
+						postId,
+						postedBy: user,
+						location: newPost.location,
+					});
+					await API.put(`/posts/${postId}`, {
+						imageUrl: uploaded.url,
+						imageFileId: uploaded.fileId,
+					});
+				} finally {
+					setUploading(false);
+				}
+			}
+		}
 
     setNewPost({ content: '', location: '', imageUrl: '' });
     setSelectedFile(null);
@@ -145,6 +164,10 @@ const Home = () => {
   };
 
   const handleFileChange = async (e) => {
+		if (!imageUploadsEnabled) {
+			showToast(IMAGEKIT_UPLOADS_DISABLED_MESSAGE, 'error');
+			return;
+		}
     const file = e.target.files?.[0];
     if (!file) return;
     setSelectedFile(file);

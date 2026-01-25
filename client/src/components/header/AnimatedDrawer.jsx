@@ -79,6 +79,9 @@ export function DrawerToggleIcon({ open }) {
 		() => ({ duration: motionDuration.sm / 1000, ease: motionEasing.softOut }),
 		[]
 	);
+	const topPath = open ? 'M 4 4 L 16 16' : 'M 3 6 L 17 6';
+	const middlePath = 'M 3 10 L 17 10';
+	const bottomPath = open ? 'M 16 4 L 4 16' : 'M 3 14 L 17 14';
 
 	return (
 		<MotionSvg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
@@ -87,7 +90,8 @@ export function DrawerToggleIcon({ open }) {
 				stroke="currentColor"
 				strokeWidth="2"
 				strokeLinecap="round"
-				animate={{ d: open ? 'M 4 4 L 16 16' : 'M 3 6 L 17 6' }}
+				d={topPath}
+				animate={{ d: topPath }}
 				transition={transition}
 			/>
 			<MotionPath
@@ -96,7 +100,7 @@ export function DrawerToggleIcon({ open }) {
 				strokeWidth="2"
 				strokeLinecap="round"
 				animate={{ opacity: open ? 0 : 1 }}
-				d="M 3 10 L 17 10"
+				d={middlePath}
 				transition={transition}
 			/>
 			<MotionPath
@@ -104,7 +108,8 @@ export function DrawerToggleIcon({ open }) {
 				stroke="currentColor"
 				strokeWidth="2"
 				strokeLinecap="round"
-				animate={{ d: open ? 'M 16 4 L 4 16' : 'M 3 14 L 17 14' }}
+				d={bottomPath}
+				animate={{ d: bottomPath }}
 				transition={transition}
 			/>
 		</MotionSvg>

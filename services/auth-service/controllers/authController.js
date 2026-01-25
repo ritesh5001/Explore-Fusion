@@ -92,6 +92,7 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
+      console.log(`Login attempt failed: User not found for email: ${normalizedEmail}`);
       return jsonError(res, 401, 'Invalid email or password');
     }
 
@@ -101,12 +102,15 @@ const loginUser = async (req, res) => {
 
     const ok = await bcrypt.compare(password, user.password);
     if (!ok) {
+      console.log(`Login attempt failed: Incorrect password for email: ${normalizedEmail}`);
       return jsonError(res, 401, 'Invalid email or password');
     }
 
     const token = signAuthToken(user.id);
+    console.log(`Login successful for email: ${normalizedEmail}`);
     return jsonSuccess(res, 200, { token, user: buildSafeUser(user) });
   } catch (error) {
+    console.error('Login error:', error);
     return jsonError(res, 500, 'Server error');
   }
 };

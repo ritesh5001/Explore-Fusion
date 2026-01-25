@@ -30,14 +30,22 @@ API.interceptors.response.use(
   (res) => res,
   (error) => {
     const status = error?.response?.status;
+    const url = error?.config?.url || '';
+    const isLoginOrRegister = url.includes('/auth/login') || url.includes('/auth/register');
+    
     if (status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.dispatchEvent(new Event('fusion:auth'));
-      toast('Session expired. Please log in again.', 'error');
-      if (window.location.pathname !== '/login') {
-        window.location.href = '/login';
+      // Only clear session and redirect if it's NOT a login/register attempt
+      // During login/register, 401 means invalid credentials, not expired session
+      if (!isLoginOrRegister) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('fusion:auth'));
+        toast('Session expired. Please log in again.', 'error');
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login';
+        }
       }
+      // For login/register, let the AuthContext handle the error message
     } else if (!status) {
       // Network / CORS / offline
       toast('Network error. Check your connection and try again.', 'error');

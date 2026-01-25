@@ -24,7 +24,17 @@ const Login = () => {
       await login(email, password);
 		navigate('/', { replace: true });
     } catch (error) {
-		showToast(error?.message || 'Login failed', 'error');
+      const errorMessage = error?.message || 'Login failed';
+      // If it's a 401, suggest registering
+      if (errorMessage.includes('401') || errorMessage.includes('Invalid email or password')) {
+        showToast(
+          'Invalid email or password. If you don\'t have an account, please register first.',
+          'error',
+          5000
+        );
+      } else {
+        showToast(errorMessage, 'error');
+      }
     } finally {
       setSubmitting(false);
     }

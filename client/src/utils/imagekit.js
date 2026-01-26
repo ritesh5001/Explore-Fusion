@@ -130,9 +130,13 @@ const fetchAuth = async () => {
     },
   });
 
+  const status = resp.status;
   const data = await resp.json().catch(() => null);
   if (!resp.ok) {
-    const msg = data?.message || "Upload auth failed";
+    const msg =
+      status === 403
+        ? 'Upload auth denied: verify ImageKit credentials on the gateway (.env) and the client (VITE_IMAGEKIT_PUBLIC_KEY/VITE_IMAGEKIT_URL_ENDPOINT).'
+        : data?.message || 'Upload auth failed';
     throw new Error(msg);
   }
 

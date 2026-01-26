@@ -1,13 +1,30 @@
 const path = require('path');
+const http = require('http');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { createProxyMiddleware } = require('http-proxy-middleware');
-const securityMiddleware = require('./middleware/security');
 
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
+const securityMiddleware = require('./middleware/security');
+const connectAuthDb = require('./auth/config/db');
+const authRoutes = require('./auth/routes/authRoutes');
+const userRoutes = require('./auth/routes/userRoutes');
+const imagekitRoutes = require('./auth/routes/imagekitRoutes');
+const { getImagekitAuth } = require('./auth/controllers/imagekitController');
+const aiRoutes = require('./ai/routes/aiRoutes');
+const { initBooking } = require('./booking');
+const { initAdmin } = require('./admin');
+const { initMatches } = require('./matches');
+const { initNotifications } = require('./notifications');
+const { initPosts } = require('./post');
+const { initSocial } = require('./social');
+const { initUpload } = require('./upload');
+const { initChat } = require('./chat');
+
 const app = express();
+const server = http.createServer(app);
+initChat(server);
 
 app.use(securityMiddleware());
 
@@ -17,56 +34,6 @@ const getFetch = () => {
     const mod = await import('node-fetch');
     return mod.default(...args);
   };
-};
-
-const getDefaultServiceUrl = (envKey, fallbackPort) => {
-  const fromEnv = process.env[envKey];
-  if (fromEnv) return fromEnv;
-  if (!fallbackPort) return null;
-  return `http://localhost:${fallbackPort}`;
-};
-
-const disabledRoute = (service) => (req, res) => {
-  res.status(503).json({
-    success: false,
-    message: 'Service not configured',
-    service,
-  });
-};
-
-const disabledAiRoute = (req, res) => {
-  res.status(503).json({
-    success: false,
-    message: 'AI service not configured',
-  });
-};
-
-const proxyJsonBody = (proxyReq, req) => {
-  const method = String(req.method || '').toUpperCase();
-  if (!['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) return;
-
-  if (!req.body || typeof req.body !== 'object') return;
-
-  const contentType = String(req.headers['content-type'] || '').toLowerCase();
-  if (!contentType.includes('application/json')) return;
-
-  const bodyData = JSON.stringify(req.body);
-  if (!bodyData || bodyData === '{}') return;
-
-  proxyReq.setHeader('Content-Type', 'application/json');
-  proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
-  proxyReq.write(bodyData);
-};
-
-const forwardAuthHeaders = (proxyReq, req) => {
-  if (req.headers.authorization) {
-    proxyReq.setHeader('authorization', req.headers.authorization);
-  }
-};
-
-const proxyJsonBodyWithAuth = (proxyReq, req) => {
-  proxyJsonBody(proxyReq, req);
-  forwardAuthHeaders(proxyReq, req);
 };
 
 const defaultCorsOrigins = ['http://localhost:5173', 'https://explore-fusion.vercel.app'];
@@ -82,350 +49,116 @@ app.use(
   })
 );
 
+app.use(express.json());
+
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
     service: 'gateway',
+    ok: true,
     env: process.env.NODE_ENV,
   });
 });
+
+app.get('/matches/health', (req, res) => {
+  res.json({ status: 'ok', service: 'matches', env: process.env.NODE_ENV });
+});
+
+app.get('/notifications/health', (req, res) => {
+  res.json({ status: 'ok', service: 'notification', env: process.env.NODE_ENV });
+});
+
+app.get('/posts/health', (req, res) => {
+  res.json({ status: 'ok', service: 'post', env: process.env.NODE_ENV });
+});
+
+app.get('/social/health', (req, res) => {
+  res.json({ status: 'ok', service: 'social', env: process.env.NODE_ENV });
+});
+
+app.get('/upload/health', (req, res) => {
+  res.json({ status: 'ok', service: 'upload', env: process.env.NODE_ENV });
+});
+
+app.get('/imagekit-auth', getImagekitAuth);
+app.get('/api/v1/imagekit-auth', getImagekitAuth);
 
 app.get('/', (req, res) => {
   res.send('Explore Fusion Gateway is running');
 });
 
-// Core services (required in prod)
-const AUTH_SERVICE_URL = getDefaultServiceUrl('AUTH_SERVICE_URL', 5001);
-const POST_SERVICE_URL = getDefaultServiceUrl('POST_SERVICE_URL', 5002);
-const BOOKING_SERVICE_URL = getDefaultServiceUrl('BOOKING_SERVICE_URL', 5003);
+app.use('/api/v1/auth', authRoutes);
+app.use('/', authRoutes);
+app.use('/auth', authRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1', imagekitRoutes);
+app.use('/', imagekitRoutes);
+app.use('/api/v1/ai', aiRoutes);
 
-// Optional services (allow gateway to boot even if not deployed yet)
-const ADMIN_SERVICE_URL = getDefaultServiceUrl('ADMIN_SERVICE_URL', 5007);
-const AI_SERVICE_URL = getDefaultServiceUrl('AI_SERVICE_URL', 5004);
-const UPLOAD_SERVICE_URL = getDefaultServiceUrl('UPLOAD_SERVICE_URL', 5005);
-const CHAT_SERVICE_URL = getDefaultServiceUrl('CHAT_SERVICE_URL', 5006);
-const NOTIFICATION_SERVICE_URL = getDefaultServiceUrl('NOTIFICATION_SERVICE_URL', 5008);
-const MATCHES_SERVICE_URL = getDefaultServiceUrl('MATCHES_SERVICE_URL', 5009);
-const SOCIAL_SERVICE_URL = process.env.SOCIAL_SERVICE_URL || null;
+const startGateway = async () => {
+  await connectAuthDb();
+  const adminRouter = await initAdmin();
+  app.use('/api/v1/admin', adminRouter);
 
-const coreServiceGuard = (name, url) => {
-  if (url) return null;
-  return disabledRoute(name);
-};
+  const bookingModule = await initBooking();
+  app.use('/api/v1/packages', bookingModule.packageRouter);
+  app.use('/api/v1/itineraries', bookingModule.itineraryRouter);
+  app.use('/api/v1/bookings', bookingModule.bookingRouter);
+  app.use('/api/v1/reviews', bookingModule.reviewRouter);
 
-if (ADMIN_SERVICE_URL) {
-  app.use(
-    '/api/v1/admin',
-    createProxyMiddleware({
-      target: ADMIN_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-  );
-} else {
-  app.use('/api/v1/admin', disabledRoute('admin'));
-}
-app.use(
-  '/api/v1/auth',
-  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
-      changeOrigin: true,
-      secure: false,
-      logLevel: 'debug',
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
+  const matchesRouter = await initMatches();
+  app.use('/api/v1/matches', matchesRouter);
 
-// ImageKit auth: Client -> Gateway -> Upload Service -> ImageKit
-// GET /api/v1/imagekit-auth
-// Proxies to: ${UPLOAD_SERVICE_URL}/imagekit-auth
-const proxyImagekitAuth = async (req, res) => {
-  if (!UPLOAD_SERVICE_URL) {
-    return res.status(503).json({
-      success: false,
-      message: 'Upload service not configured',
-    });
-  }
+  const notificationsRouter = await initNotifications();
+  app.use('/api/v1/notifications', notificationsRouter);
 
-  try {
-    const fetch = getFetch();
-    const targetUrl = `${String(UPLOAD_SERVICE_URL).replace(/\/$/, '')}/imagekit-auth`;
+  const postsRouter = await initPosts();
+  app.use('/api/v1/posts', postsRouter);
+  app.use('/posts', postsRouter);
 
-    const method = String(req.method || 'GET').toUpperCase();
-    if (method !== 'GET' && method !== 'POST') {
-      return res.status(405).json({
-        success: false,
-        message: 'Method not allowed',
-      });
-    }
+  const socialRouter = await initSocial();
+  app.use('/api/v1', socialRouter);
+  app.use('/', socialRouter);
 
-    const upstream = await fetch(targetUrl, {
-      method,
-      headers: {
-        // Forward auth if present (not required, but supported)
-        ...(req.headers.authorization ? { Authorization: req.headers.authorization } : {}),
-      },
-    });
+  const uploadModule = await initUpload();
+  app.use('/api/v1/upload', uploadModule.router);
+  app.use('/uploads', express.static(uploadModule.uploadsDir));
 
-    const payload = await upstream.json().catch(() => null);
-    if (!upstream.ok) {
-      return res.status(upstream.status).json(
-        payload || {
-          success: false,
-          message: 'Failed to generate ImageKit auth',
+  const PORT = Number(process.env.PORT) || 5050;
+  server.listen(PORT, () => {
+    console.log(`Gateway running on port ${PORT}`);
+
+    if (process.env.NODE_ENV === 'production') {
+      const keepAliveUrls = [
+        'https://explore-fusion-gateway.onrender.com/health',
+        'https://explore-fusion-auth.onrender.com/health',
+      ];
+
+      const uniqueKeepAliveUrls = [...new Set(keepAliveUrls)];
+      const fetchFn = getFetch();
+
+      const ping = async () => {
+        for (const url of uniqueKeepAliveUrls) {
+          try {
+            await fetchFn(url, { method: 'GET' });
+          } catch (_) {
+            // Ignore errors; the goal is only to wake services.
+          }
         }
-      );
+      };
+
+      const interval = setInterval(ping, 5 * 60 * 1000);
+      interval.unref?.();
+      ping();
     }
-
-    return res.json(payload);
-  } catch (error) {
-    return res.status(503).json({
-      success: false,
-      message: error?.message || 'Upload service unavailable',
-    });
-  }
-};
-
-app.get('/api/v1/imagekit-auth', proxyImagekitAuth);
-app.post('/api/v1/imagekit-auth', proxyImagekitAuth);
-
-app.use(
-  '/api/v1/users',
-  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-app.use(
-  '/auth',
-  coreServiceGuard('auth', AUTH_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: AUTH_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-app.use(
-  '/api/v1/posts',
-  coreServiceGuard('post', POST_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: POST_SERVICE_URL,
-      changeOrigin: true,
-      secure: false,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-const aiProxy =
-  AI_SERVICE_URL &&
-  createProxyMiddleware({
-    target: AI_SERVICE_URL,
-    changeOrigin: true,
-    onProxyReq: proxyJsonBodyWithAuth,
   });
-
-// Explicit route required by system design.
-app.post('/api/v1/ai/chat', (req, res, next) => {
-  if (!AI_SERVICE_URL || !aiProxy) return disabledAiRoute(req, res);
-  return aiProxy(req, res, next);
-});
-
-// Proxy the rest of /api/v1/ai/* to the AI service without rewrites.
-app.use('/api/v1/ai', aiProxy || disabledAiRoute);
-
-app.use(
-  '/api/v1/itineraries',
-  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: BOOKING_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-app.use(
-  '/api/v1/packages',
-  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: BOOKING_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-app.use(
-  '/api/v1/bookings',
-  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: BOOKING_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-app.use(
-  '/api/v1/reviews',
-  coreServiceGuard('booking', BOOKING_SERVICE_URL) ||
-    createProxyMiddleware({
-      target: BOOKING_SERVICE_URL,
-      changeOrigin: true,
-      onProxyReq: proxyJsonBodyWithAuth,
-    })
-);
-
-app.use(
-  '/api/v1/matches',
-  MATCHES_SERVICE_URL
-    ? createProxyMiddleware({
-        target: MATCHES_SERVICE_URL,
-        changeOrigin: true,
-        secure: false,
-        logLevel: 'debug',
-        onProxyReq: proxyJsonBodyWithAuth,
-      })
-    : disabledRoute('matches')
-);
-
-app.use(
-  '/api/v1/notifications',
-  NOTIFICATION_SERVICE_URL
-    ? createProxyMiddleware({
-        target: NOTIFICATION_SERVICE_URL,
-        changeOrigin: true,
-        secure: false,
-        logLevel: 'debug',
-        onProxyReq: proxyJsonBodyWithAuth,
-      })
-    : disabledRoute('notification')
-);
-
-// Follow system: expose under /api/v1/follow/*
-// - POST   /api/v1/follow/:id          -> social-service POST /api/v1/follow/:id
-// - DELETE /api/v1/follow/:id          -> social-service DELETE /api/v1/unfollow/:id
-// - GET    /api/v1/follow/followers/:id -> social-service GET /api/v1/followers/:id
-// - GET    /api/v1/follow/following/:id -> social-service GET /api/v1/following/:id
-app.use(
-  '/api/v1/follow',
-  SOCIAL_SERVICE_URL
-    ? createProxyMiddleware({
-        target: SOCIAL_SERVICE_URL,
-        changeOrigin: true,
-        onProxyReq: proxyJsonBodyWithAuth,
-        pathRewrite: (path, req) => {
-          const method = String(req?.method || 'GET').toUpperCase();
-          // Express strips the mount path, so `path` is typically like '/:id' or '/followers/:id'.
-          if (path.startsWith('/followers/') || path === '/followers') {
-            return `/api/v1${path}`;
-          }
-          if (path.startsWith('/following/') || path === '/following') {
-            return `/api/v1${path}`;
-          }
-          if (method === 'DELETE') {
-            return `/api/v1/unfollow${path}`;
-          }
-          // Default: follow
-          return `/api/v1/follow${path}`;
-        },
-      })
-    : disabledRoute('social')
-);
-
-app.use(
-  '/api/v1/upload',
-  UPLOAD_SERVICE_URL
-    ? createProxyMiddleware({
-        target: UPLOAD_SERVICE_URL,
-        changeOrigin: true,
-        onProxyReq: proxyJsonBodyWithAuth,
-      })
-    : disabledRoute('upload')
-);
-
-app.use(
-  '/uploads',
-  UPLOAD_SERVICE_URL
-    ? createProxyMiddleware({
-        target: UPLOAD_SERVICE_URL,
-        changeOrigin: true,
-        onProxyReq: proxyJsonBodyWithAuth,
-      })
-    : disabledRoute('upload')
-);
-
-app.use(
-  '/socket.io',
-  CHAT_SERVICE_URL
-    ? createProxyMiddleware({
-        target: CHAT_SERVICE_URL,
-        changeOrigin: true,
-        ws: true,
-        proxyTimeout: 30_000,
-        timeout: 30_000,
-        onProxyReq: proxyJsonBodyWithAuth,
-        onError: (err, req, res) => {
-          console.error('Socket.IO proxy error:', err?.message || err);
-          if (res && !res.headersSent) {
-            res.writeHead(504);
-          }
-          res?.end?.('Gateway Timeout');
-        },
-        pathRewrite: (path) => (path.startsWith('/socket.io') ? path : `/socket.io${path}`),
-      })
-    : disabledRoute('chat')
-);
-
-const PORT = Number(process.env.PORT) || 5050;
-const server = app.listen(PORT, () => {
-  console.log(`Gateway running on port ${PORT}`);
-
-  // Render free-tier services can spin down when idle. Ping each deployed service periodically to keep them warm.
-  // Production-only: never affects local development.
-  if (process.env.NODE_ENV === 'production') {
-    const keepAliveUrls = [
-      'https://explore-fusion-gateway.onrender.com/health',
-      'https://explore-fusion-auth.onrender.com/health',
-      'https://explore-fusion-booking.onrender.com/health',
-      'https://explore-fusion-post.onrender.com/health',
-      'https://explore-fusion-chat.onrender.com/health',
-      'https://explore-fusion-ai.onrender.com/health',
-      'https://explore-fusion-upload.onrender.com/health',
-      'https://explore-fusion-admin.onrender.com/health',
-      'https://explore-fusion-notification.onrender.com/health',
-      'https://explore-fusion-matches.onrender.com/health',
-      'https://explore-fusion-social.onrender.com/health',
-    ];
-
-    if (AI_SERVICE_URL) {
-      keepAliveUrls.push(`${String(AI_SERVICE_URL).replace(/\/$/, '')}/health`);
-    }
-
-    const uniqueKeepAliveUrls = [...new Set(keepAliveUrls)];
-
-    const fetchFn = getFetch();
-
-    const ping = async () => {
-      for (const url of uniqueKeepAliveUrls) {
-        try {
-          await fetchFn(url, { method: 'GET' });
-        } catch (_) {
-          // Ignore errors; the goal is only to wake services.
-        }
-      }
-    };
-
-    // Ping every 5 minutes
-    const interval = setInterval(ping, 5 * 60 * 1000);
-    interval.unref?.();
-
-    // Also ping once on startup
-    ping();
-  }
-});
+};
 
 server.on('error', (err) => {
   console.error('Gateway server error:', err);
+});
+
+startGateway().catch((err) => {
+  console.error('Gateway failed to start:', err);
+  process.exit(1);
 });

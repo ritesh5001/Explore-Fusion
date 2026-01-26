@@ -5,8 +5,7 @@ This project uses Jest and Supertest to exercise the gateway and selected servic
 
 ## Setup
 1. Install dependencies: `npm install` at the repo root (adds Jest, Supertest, etc.).
-2. Ensure the following processes are running in separate terminals:
-   - `npm run dev:services` (all microservices)
+2. Ensure the gateway is running (it now hosts AI, admin, booking, upload, and notification routes):
    - `npm run dev:gateway`
 3. The frontend is not required for these tests.
 
@@ -17,7 +16,7 @@ This project uses Jest and Supertest to exercise the gateway and selected servic
 - `npm run test:gateway` – run only the gateway health test.
 
 ## What the tests do
-- `tests/auth/auth.login.test.js` hits `POST http://localhost:5001/api/v1/auth/login` and tolerates either a success token or a 401 error.
+- `tests/auth/auth.login.test.js` hits `POST http://localhost:5050/api/v1/auth/login` and tolerates either a success token or a 401 error.
 - `tests/gateway/gateway.health.test.js` checks the gateway health endpoint at `/health` (expect `{ status: 'ok' }`).
 - `tests/notifications/notifications.my.test.js` logs in, then calls `/api/v1/notifications/my` via the gateway with the token to make sure protected routes behave.
 

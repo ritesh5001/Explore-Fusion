@@ -10,7 +10,6 @@ export const followUser = async (id) => {
 
 export const unfollowUser = async (id) => {
 	if (!id) throw new Error('User id is required');
-	// Gateway maps DELETE /follow/:id -> social-service DELETE /unfollow/:id
 	const res = await API.delete(`/follow/${id}`);
 	return unwrap(res);
 };

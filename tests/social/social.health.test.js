@@ -7,7 +7,7 @@ const agent = supertest(SOCIAL);
 
 describe('Social service health', () => {
   it('responds to /health with service info', async () => {
-    const response = await requestWithSkip(() => agent.get('/health'), 'social /health');
+    const response = await requestWithSkip(() => agent.get('/social/health'), 'social /health');
     if (!response) return;
 
     expectStatus(response, 200, 'social /health');

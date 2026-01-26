@@ -13,7 +13,7 @@ Examples:
 When you’re ready, use the uploader script:
 
 ```bash
-node services/upload-service/scripts/uploadBrandingAssets.js
+node scripts/uploadBrandingAssets.js
 ```
 
 It uploads everything in this folder to ImageKit under:

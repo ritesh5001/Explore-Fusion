@@ -100,6 +100,9 @@ coverage/
 .env.test.local
 .env.production.local
 
+# Gateway test helper PID file
+/.gateway-test.pid
+
 # Ignore backend and service node_modules
 backend/node_modules/
 services/*/node_modules/

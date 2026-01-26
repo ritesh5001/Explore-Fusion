@@ -52,14 +52,14 @@ describe('Gateway routes', () => {
     allowEitherStatus(response, 'gateway POST /api/v1/imagekit-auth', [200, 503]);
   });
 
-  it('returns disabled response for follow endpoints', async () => {
+  it('requires auth for follow endpoints', async () => {
     const response = await requestWithSkip(
       () => agent.post('/api/v1/follow/507f1f77bcf86cd799439011'),
       'gateway POST /api/v1/follow/:id'
     );
     if (!response) return;
 
-    expectStatus(response, 503, 'gateway POST /api/v1/follow/:id');
-    expect(response.body?.service).toBe('social');
+    expectStatus(response, 401, 'gateway POST /api/v1/follow/:id');
+    expect(response.body?.message).toMatch(/not authorized/i);
   });
 });

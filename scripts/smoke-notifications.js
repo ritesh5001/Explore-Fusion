@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 
-const authBase = process.env.AUTH_BASE || 'http://127.0.0.1:5001/api/v1/auth';
+const authBase = process.env.AUTH_BASE || 'http://127.0.0.1:5050/api/v1/auth';
 const matchesBase = process.env.MATCHES_BASE || 'http://127.0.0.1:5050/api/v1/matches';
 const notifBase = process.env.NOTIF_BASE || 'http://127.0.0.1:5050/api/v1/notifications';
 

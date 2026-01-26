@@ -1,6 +1,7 @@
 const supertest = require('supertest');
+const { AUTH } = require('../utils/urls');
 
-const agent = supertest('http://localhost:5001');
+const agent = supertest(AUTH);
 
 describe('Auth Service - login', () => {
   it('should respond with token or error when calling /api/v1/auth/login', async () => {

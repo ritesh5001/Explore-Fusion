@@ -1,13 +1,15 @@
+const BASE_GATEWAY = 'http://localhost:5050';
+
 module.exports = {
-  GATEWAY: 'http://localhost:5050',
-  AUTH: 'http://localhost:5001',
-  BOOKING: 'http://localhost:5003',
-  POST: 'http://localhost:5002',
-  AI: 'http://localhost:5004',
-  UPLOAD: 'http://localhost:5005',
-  CHAT: 'http://localhost:5006',
-  ADMIN: 'http://localhost:5007',
-  NOTIFICATION: 'http://localhost:5008',
-  MATCHES: 'http://localhost:5009',
-  SOCIAL: 'http://localhost:5010',
+  GATEWAY: BASE_GATEWAY,
+  AUTH: BASE_GATEWAY,
+  BOOKING: BASE_GATEWAY,
+  POST: BASE_GATEWAY,
+  AI: BASE_GATEWAY,
+  UPLOAD: BASE_GATEWAY,
+  CHAT: BASE_GATEWAY,
+  ADMIN: BASE_GATEWAY,
+  NOTIFICATION: BASE_GATEWAY,
+  MATCHES: BASE_GATEWAY,
+  SOCIAL: BASE_GATEWAY,
 };

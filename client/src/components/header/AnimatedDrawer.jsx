@@ -91,6 +91,7 @@ export function DrawerToggleIcon({ open }) {
 				strokeWidth="2"
 				strokeLinecap="round"
 				d={topPath}
+				initial={{ d: topPath }}
 				animate={{ d: topPath }}
 				transition={transition}
 			/>
@@ -99,8 +100,9 @@ export function DrawerToggleIcon({ open }) {
 				stroke="currentColor"
 				strokeWidth="2"
 				strokeLinecap="round"
-				animate={{ opacity: open ? 0 : 1 }}
 				d={middlePath}
+				initial={{ d: middlePath }}
+				animate={{ opacity: open ? 0 : 1 }}
 				transition={transition}
 			/>
 			<MotionPath
@@ -109,6 +111,7 @@ export function DrawerToggleIcon({ open }) {
 				strokeWidth="2"
 				strokeLinecap="round"
 				d={bottomPath}
+				initial={{ d: bottomPath }}
 				animate={{ d: bottomPath }}
 				transition={transition}
 			/>

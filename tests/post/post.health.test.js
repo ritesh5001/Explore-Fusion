@@ -4,9 +4,9 @@ const { expectStatus, expectJson } = require('../utils/assertions');
 
 const agent = supertest(POST);
 
-describe('Post service health', () => {
-  it('responds on /health with service metadata', async () => {
-    const response = await agent.get('/health');
+describe('Post API health', () => {
+  it('responds on /api/v1/posts/health with service metadata', async () => {
+    const response = await agent.get('/posts/health');
 
     expectStatus(response, 200, 'post /health');
     expectJson(response, 'post /health');

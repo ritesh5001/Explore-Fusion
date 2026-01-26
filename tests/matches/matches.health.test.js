@@ -5,11 +5,11 @@ const { expectStatus, expectJson } = require('../utils/assertions');
 const agent = supertest(MATCHES);
 
 describe('Matches service health', () => {
-  it('serves the basic /health payload', async () => {
-    const response = await agent.get('/health');
+  it('serves the legacy matches health endpoint', async () => {
+    const response = await agent.get('/matches/health');
 
-    expectStatus(response, 200, 'matches /health');
-    expectJson(response, 'matches /health');
+    expectStatus(response, 200, 'matches /matches/health');
+    expectJson(response, 'matches /matches/health');
     expect(response.body.status).toBe('ok');
     expect(response.body.service).toBe('matches');
   });

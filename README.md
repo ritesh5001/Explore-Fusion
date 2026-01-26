@@ -7,7 +7,7 @@
 ### 🤖 AI-Powered Tools (Groq Integration)
 * **AI Trip Planner:** Generates detailed, day-by-day itineraries with cost estimates based on destination, budget, and duration.
 * **Travel Buddy Matcher:** Creates a persona of an ideal travel companion based on your travel style and interests.
-* **AI Chat:** A gateway-proxied chat endpoint for trip planning, budgeting, recommendations, and summaries.
+* **AI Chat:** A Socket.IO chat endpoint served directly by the gateway at `/socket.io` for trip planning, budgeting, recommendations, and summaries.
 
 ### 💼 Marketplace & Influencer Platform
 * **Creator Dashboard:** Influencers can upload visuals and list travel packages.
@@ -38,17 +38,16 @@
 * Axios & Socket.io-client
 
 **Backend (Microservices):**
-* **API Gateway:** Node.js, Express, `http-proxy-middleware`
-* **Admin Service:** Admin APIs
+* **API Gateway:** Node.js, Express (hosts auth, admin, booking, AI, posts, matches, notifications, upload, and the Socket.IO chat server)
+* **Admin APIs:** Hosted inside the gateway at `/api/v1/admin` (no standalone service)
 * **Auth Service:** JWT, Bcrypt
-* **Post Service:** Social feed management
-* **Booking Service:** Marketplace logic & Order management
-* **AI Service:** Groq API (`groq-sdk`)
-* **Upload Service:** Legacy Multer uploads + optional ImageKit auth
-* **Chat Service:** Socket.IO (Real-time WebSocket)
-* **Notification Service:** Notifications APIs
-* **Matches Service:** Buddy matching APIs
-* **Social Service:** Follow graph APIs
+* **Post APIs:** Social feed management hosted inside the gateway at `/api/v1/posts`
+* **Booking APIs:** Packages, itineraries, and orders hosted inside the gateway at `/api/v1/bookings`
+* **AI APIs:** Groq-powered assistant hosted inside the gateway at `/api/v1/ai` (uses `groq-sdk`)
+* **Upload APIs:** File uploads, static `/uploads`, and ImageKit auth are handled by the gateway (`/api/v1/upload`, `/uploads`, `/imagekit-auth`)
+* **Notification APIs:** Hosted inside the gateway at `/api/v1/notifications`
+* **Matches APIs:** Buddy matching routes hosted inside the gateway under `/api/v1/matches`
+* **Social APIs:** Follow graph endpoints hosted inside the gateway at `/api/v1/follow`
 * **Database:** MongoDB (Mongoose)
 
 ---
@@ -59,23 +58,17 @@ The application uses an **API Gateway (Port 5050)** to route requests to indepen
 
 | Service | Port | Description |
 | :--- | :--- | :--- |
-| **Gateway** | `5050` | Unified entry point for the frontend |
-| **Admin** | `5007` | Admin APIs (cross-service DB access) |
+| **Gateway** | `5050` | Unified entry point for the frontend; hosts auth, admin, booking, AI APIs, matches (`/api/v1/matches`), and the Socket.IO chat server beneath `/api/v1`/`/socket.io` |
 | **Auth** | `5001` | Handles User Registration & Login |
-| **Post** | `5002` | Manages User Posts & Feeds |
-| **Booking** | `5003` | Handles Packages, Itineraries & Orders |
-| **AI** | `5004` | AI chat + travel tools (Groq) |
-| **Upload** | `5005` | Handles File/Image Storage |
-| **Chat** | `5006` | WebSocket Server for Real-Time Chat |
-| **Notification** | `5008` | Notification APIs |
-| **Matches** | `5009` | Buddy matching APIs |
-| **Social** | `5010` | Follow graph (follow/unfollow, followers/following) |
+| **Upload** | `5050` | Handles `/api/v1/upload`, serves `/uploads`, and exposes ImageKit auth through the gateway |
+| **Social** | `5050` | Follow graph (follow/unfollow, followers/following) hosted by the gateway at `/api/v1/follow/*` |
 | **Client** | `5173` | React Frontend |
 
 Notes:
 * The frontend should call the **Gateway** for API requests.
   * Local dev: `http://localhost:5050`
   * Production (Render): `https://explore-fusion-gateway.onrender.com`
+* Post, social, matches, and notification APIs are exposed via the gateway (`/api/v1/posts`, `/api/v1/follow`, `/api/v1/matches`, `/api/v1/notifications`).
 
 ---
 
@@ -107,46 +100,29 @@ Root `.env.example` gathers the shared configuration that every container expect
 
 Common ones used by the services:
 
-**Auth Service (services/auth-service)**
-* `PORT` (default: `5001`)
-* `MONGO_URI`
+**Authentication (handled inside the gateway)**
+* `AUTH_MONGO_URI` (falls back to `MONGO_URI` for backwards compatibility)
 * `JWT_SECRET`
 * `IMAGEKIT_PUBLIC_KEY`
 * `IMAGEKIT_PRIVATE_KEY`
 * `IMAGEKIT_URL_ENDPOINT`
 
-**Booking Service (services/booking-service)**
-* `PORT` (default: `5003`)
-* `MONGO_URI`
-* `JWT_SECRET`
-
-**Post Service (services/post-service)**
-* `PORT` (default: `5002`)
-* `MONGO_URI`
-* `JWT_SECRET`
-
-**AI Service (services/ai-service)**
-* `PORT` (default: `5004`)
-* `AI_PROVIDER` (set to `groq`)
-* `GROQ_API_KEY`
-
-**Upload Service (services/upload-service)**
-* `UPLOAD_PORT` (default: `5005`)
-* (Only needed if you use the upload-service ImageKit auth endpoint) `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_URL_ENDPOINT`
-
 **Gateway (gateway)**
 * `GATEWAY_PORT` (default: `5050`)
 * `CORS_ORIGINS` (comma-separated)
-* `AUTH_SERVICE_URL`
-* `BOOKING_SERVICE_URL`
-* `POST_SERVICE_URL`
-* `CHAT_SERVICE_URL` (optional)
-* `AI_SERVICE_URL` (optional)
-* `UPLOAD_SERVICE_URL` (optional)
-* `ADMIN_SERVICE_URL` (optional)
-* `NOTIFICATION_SERVICE_URL` (optional)
-* `MATCHES_SERVICE_URL` (optional)
-* `SOCIAL_SERVICE_URL` (optional)
+* `BOOKING_MONGO_URI`
+* `POST_MONGO_URI`
+* `SOCIAL_MONGO_URI`
+* `AI_PROVIDER` (set to `groq`)
+* `GROQ_API_KEY`
+
+AI endpoints (e.g., `/api/v1/ai/chat`) live in the gateway on port `5050`, so no separate port or service URL is required.
+
+`/api/v1/posts`, `/api/v1/follow`, `/api/v1/matches`, and `/api/v1/notifications` are handled directly by the gateway; set `POST_MONGO_URI`, `SOCIAL_MONGO_URI`, and `MATCHES_MONGO_URI` so each router connects to the right Mongo database.
+
+Socket.IO chat traffic is handled directly by the gateway at `/socket.io`, so no extra service URL is required.
+
+Admin, booking, and AI APIs now run from the gateway at `/api/v1/admin`, `/api/v1/bookings`, and `/api/v1/ai`, so no separate ADMIN_SERVICE_URL, BOOKING_SERVICE_URL, or AI_SERVICE_URL is required.
 
 **Client (client)**
 * `VITE_API_BASE_URL` (gateway base; can be either the origin or the full `/api/v1` base)
@@ -162,10 +138,7 @@ The production Docker stack relies on a single Mongo container with multiple dat
 * `BOOKING_MONGO_URI=mongodb://mongo:27017/booking`
 * `POST_MONGO_URI=mongodb://mongo:27017/post`
 * `MATCHES_MONGO_URI=mongodb://mongo:27017/matches`
-* `AI_MONGO_URI=mongodb://mongo:27017/ai`
-* `ADMIN_MONGO_URI=mongodb://mongo:27017/admin`
-* `NOTIFICATION_MONGO_URI=mongodb://mongo:27017/notification`
-* `UPLOAD_MONGO_URI=mongodb://mongo:27017/upload`
+* `SOCIAL_MONGO_URI=mongodb://mongo:27017/social`
 * (Optional) `MONGO_URI` – legacy fallback for any service still checking that variable.
 
 ---
@@ -209,15 +182,25 @@ Set these on the `explore-fusion-gateway` service:
 * `NODE_ENV=production`
 * `PORT` (Render sets this automatically)
 * `CORS_ORIGINS=https://explore-fusion.vercel.app`
-* `AUTH_SERVICE_URL=https://explore-fusion-auth.onrender.com`
-* `BOOKING_SERVICE_URL=https://explore-fusion-booking.onrender.com`
-* `POST_SERVICE_URL=https://explore-fusion-post.onrender.com`
-* `AI_SERVICE_URL=https://explore-fusion-ai.onrender.com`
-* `UPLOAD_SERVICE_URL=https://explore-fusion-upload.onrender.com`
-* `CHAT_SERVICE_URL=https://explore-fusion-chat.onrender.com`
-* `ADMIN_SERVICE_URL=https://explore-fusion-admin.onrender.com`
-* `NOTIFICATION_SERVICE_URL=https://explore-fusion-notification.onrender.com`
-* `MATCHES_SERVICE_URL=https://explore-fusion-matches.onrender.com`
+* `AUTH_MONGO_URI=mongodb://mongo:27017/auth`
+* `BOOKING_MONGO_URI=mongodb://mongo:27017/booking`
+* `POST_MONGO_URI=mongodb://mongo:27017/post`
+* `MATCHES_MONGO_URI=mongodb://mongo:27017/matches`
+* `SOCIAL_MONGO_URI=mongodb://mongo:27017/social`
+* `JWT_SECRET`
+* `IMAGEKIT_PUBLIC_KEY`
+* `IMAGEKIT_PRIVATE_KEY`
+* `IMAGEKIT_URL_ENDPOINT`
+* `AI_PROVIDER=groq`
+* `GROQ_API_KEY`
+
+Notification, matches, social, and post APIs are served from the gateway itself (`/api/v1/notifications`, `/api/v1/matches`, `/api/v1/follow`, `/api/v1/posts`), so no additional public URLs are required beyond the gateway.
+
+`/api/v1/posts`, `/api/v1/follow`, and `/api/v1/matches` are hosted by the gateway; configure `POST_MONGO_URI`, `SOCIAL_MONGO_URI`, and `MATCHES_MONGO_URI` so those routes connect to the right databases.
+
+Socket.IO chat traffic is served from the gateway itself (see `/socket.io`), so no separate `CHAT_SERVICE_URL` is needed.
+
+Admin, booking, and AI APIs are handled by the gateway itself at `/api/v1/admin`, `/api/v1/bookings`, and `/api/v1/ai`, so no extra URLs belong here.
 
 ### Render (Each Service)
 All services should be configured with:
@@ -225,21 +208,16 @@ All services should be configured with:
 * `NODE_ENV=production`
 * `PORT` (Render sets this automatically)
 
-Services that need to validate auth via the Gateway (do not call auth-service directly):
+Services that need to validate auth via the Gateway should point at its public endpoint:
 
 * `GATEWAY_URL=https://explore-fusion-gateway.onrender.com`
 
 DB/JWT (set per service as needed):
 
-* `MONGO_URI` (auth, booking, post)
-* `JWT_SECRET` (must be the same across auth + downstream services)
+* `MONGO_URI` (auth, post)
+* `JWT_SECRET` (must match the gateway's JWT secret)
 
-AI:
-
-* `AI_PROVIDER=groq`
-* `GROQ_API_KEY`
-
-Upload (ImageKit auth is handled by auth-service; upload-service only needs ImageKit keys if you also use its ImageKit endpoint):
+Upload (gateway exposes `/api/v1/upload`, `/uploads`, and `/imagekit-auth`; configure ImageKit keys so the POST `/api/v1/imagekit-auth` route can mint signed tokens):
 
 * `IMAGEKIT_PUBLIC_KEY` (optional)
 * `IMAGEKIT_PRIVATE_KEY` (optional)
@@ -258,10 +236,11 @@ After deploying, these should work:
 
 * Gateway: `GET https://explore-fusion-gateway.onrender.com/health`
 * Auth (expected 401): `GET https://explore-fusion-gateway.onrender.com/api/v1/auth/me`
-* Upload: `GET https://explore-fusion-gateway.onrender.com/api/v1/upload/health`
+* Upload: `GET https://explore-fusion-gateway.onrender.com/upload/health` (same data is available at `/api/v1/upload/health`)
 * Admin: `GET https://explore-fusion-gateway.onrender.com/api/v1/admin/health`
 * Notifications: `GET https://explore-fusion-gateway.onrender.com/api/v1/notifications/health`
 * Matches: `GET https://explore-fusion-gateway.onrender.com/api/v1/matches/health`
+* Posts: `GET https://explore-fusion-gateway.onrender.com/api/v1/posts/health`
 
 ImageKit auth (returns `{ token, expire, signature }`):
 
@@ -284,14 +263,14 @@ Expected (200 OK):
 ```
 
 ### 5. Run Everything (One Command)
-Start client + gateway + all microservices together for local development:
+Start client + gateway together for local development:
 ```bash
 npm run dev
 ```
 
-If you only want the backend processes (gateway + services):
+If you only want the backend (gateway):
 ```bash
-npm run start
+npm run dev:gateway
 ```
 
 For a production-like deployment on a VPS run the Docker stack instead. Copy `.env.example` to `.env.production`, fill in the secrets (JWT, Groq, ImageKit, Mongo URIs), and then:
@@ -305,7 +284,7 @@ That single command builds every image, wires all services onto the `fusion-net`
 The Compose stack lives at the repo root and orchestrates MongoDB plus all services:
 
 * MongoDB (`mongo:7`) stores its data in the `mongo_data` volume and exposes `/data/db` only to the network; each service connects with its own database name (`auth`, `booking`, `post`, `matches`).
-* Every Node.js service copies `.env.production`, waits for Mongo via health checks, and only exposes internal ports. Gateway, frontend, and Mongo share the `fusion-net` network so internal DNS names (`http://auth-service:5001`, etc.) are resolved automatically.
+* Every Node.js service copies `.env.production`, waits for Mongo via health checks, and only exposes internal ports. Gateway, frontend, and Mongo share the `fusion-net` network so internal DNS names (`http://gateway:5050`, etc.) are resolved automatically.
 * Gateway runs on 5050, uses `CORS_ORIGINS` from `.env.production`, proxies `/api/v1/*`, `/imagekit-auth`, `/socket.io`, and `/uploads`, and relies on the service URLs defined in the same env file.
 * The frontend is a Vite/React build served by `nginx` (`client/nginx/default.conf`) which enables gzip, SPA fallback, and proxies `/api`, `/socket.io`, `/imagekit-auth`, and `/uploads` to the gateway.
 * Only the gateway port `5050` and frontend port `80` map to the host; all other services remain internal.
@@ -321,8 +300,9 @@ The preferred flow is direct client upload to ImageKit using a protected auth en
 
 * Auth endpoint (protected): `POST /api/v1/imagekit-auth`
   * Via gateway (recommended): `http://localhost:5050/api/v1/imagekit-auth` (local) or `https://explore-fusion-gateway.onrender.com/api/v1/imagekit-auth` (prod)
-  * Direct to auth-service: `http://localhost:5001/api/v1/imagekit-auth`
+  * Direct to gateway (same path as above) when you already know the exact host.
 * The response shape must be exactly: `{ token, signature, expire }` (required by the ImageKit JS SDK).
+* Upload files with `POST /api/v1/upload` (field name `image`); successful responses include an `imageUrl` under `/uploads`.
 
 ---
 
@@ -332,4 +312,4 @@ The preferred flow is direct client upload to ImageKit using a protected auth en
   * Ensure `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_PRIVATE_KEY`, and `IMAGEKIT_URL_ENDPOINT` are set.
 
 * **Port already in use (`EADDRINUSE`)**
-  * Stop the process using the port or change `PORT` / `UPLOAD_PORT` / `GATEWAY_PORT`.
+  * Stop the process using the port or change `PORT` / `GATEWAY_PORT`.

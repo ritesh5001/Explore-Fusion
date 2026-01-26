@@ -8,7 +8,7 @@ const expectProtected = (response, label) => {
   expect(response.body?.message).toMatch(/not authorized/i);
 };
 
-describe('Post service public endpoints', () => {
+describe('Post API public endpoints', () => {
   it('lists posts with pagination', async () => {
     const response = await agent
       .get('/api/v1/posts')
@@ -43,7 +43,7 @@ describe('Post service public endpoints', () => {
   });
 });
 
-describe('Post service protected endpoints', () => {
+describe('Post API protected endpoints', () => {
   const protectedCalls = [
     { label: 'create post', method: () => agent.post('/api/v1/posts').send({}) },
     { label: 'update post', method: () => agent.put('/api/v1/posts/507f1f77bcf86cd799439011').send({}) },

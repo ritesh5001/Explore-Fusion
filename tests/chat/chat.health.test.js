@@ -11,6 +11,6 @@ describe('Chat Service health', () => {
     expectStatus(response, 200, 'chat /health');
     expectJson(response, 'chat /health');
     expect(response.body.ok).toBe(true);
-    expect(response.body.service).toBe('chat-service');
+    expect(response.body.service).toBe('gateway');
   });
 });

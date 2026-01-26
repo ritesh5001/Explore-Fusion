@@ -6,7 +6,7 @@ const agent = supertest(AI);
 
 describe('AI Service health', () => {
   it('responds to /health', async () => {
-    const response = await agent.get('/health');
+    const response = await agent.get('/api/v1/ai/health');
     expectStatus(response, 200, 'ai /health');
     expectJson(response, 'ai /health');
     expect(response.body.service).toBe('ai');

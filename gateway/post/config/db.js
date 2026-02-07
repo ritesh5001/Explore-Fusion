@@ -6,20 +6,15 @@ const connectPostsDb = async () => {
     throw new Error('Missing POST_MONGO_URI (or MONGO_URI) for post routes');
   }
 
-  const readyState = mongoose.connection.readyState;
-  if (readyState === 1) {
-    console.log('Post module reuses existing mongoose connection');
-    return mongoose.connection;
+  try {
+    const conn = mongoose.createConnection(uri);
+    await conn.asPromise();
+    console.log('Post DB connected');
+    return conn;
+  } catch (error) {
+    console.error('Post DB connection error:', error);
+    throw error;
   }
-  if (readyState === 2) {
-    await mongoose.connection.asPromise();
-    console.log('Post module waited for existing mongoose connection');
-    return mongoose.connection;
-  }
-
-  await mongoose.connect(uri);
-  console.log('Post DB connected');
-  return mongoose.connection;
 };
 
 module.exports = { connectPostsDb };

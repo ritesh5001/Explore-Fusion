@@ -158,7 +158,8 @@ const Home = () => {
     setSelectedFile(null);
     setPreviewUrl('');
     fetchPosts();
-	} catch {
+	} catch (err) {
+		console.error('[handleCreatePost] Error creating post:', err);
 		showToast('Failed to create post', 'error');
     }
   };

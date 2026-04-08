@@ -1,7 +1,7 @@
 # Testing Guide
 
 ## Overview
-This project uses Jest and Supertest to exercise the gateway and selected services locally. Tests run against `localhost` ports (no Docker) and assume the services are already running.
+This project uses Jest and Supertest to exercise the gateway and its domain modules locally. Tests run against `localhost:5050` (no Docker) and assume the gateway is already running.
 
 ## Setup
 1. Install dependencies: `npm install` at the repo root (adds Jest, Supertest, etc.).
@@ -21,11 +21,11 @@ This project uses Jest and Supertest to exercise the gateway and selected servic
 - `tests/notifications/notifications.my.test.js` logs in, then calls `/api/v1/notifications/my` via the gateway with the token to make sure protected routes behave.
 
 ## Common Failures
-- `ECONNREFUSED` → a service (gateway/auth/etc.) is not running on the expected port.
+- `ECONNREFUSED` → the gateway is not running on `http://localhost:5050`.
 - `401 Unauthorized` → login credentials (`test@example.com` / `password`) are rejected. Ensure test user exists or catch the failure as optional.
 - `Missing VITE_API_BASE_URL` → env not loaded before tests (see `tests/setup.js`).
 
 ## Extending
-- Add new files under `tests/<service>/` and use `supertest('http://localhost:<port>')` for each service.
+- Add new files under `tests/<module>/` and target gateway routes with `supertest('http://localhost:5050')`.
 - Reuse `tests/utils/auth.js` to share login logic.
 - Keep `NODE_ENV=test` for isolation (handled via `cross-env` in `npm test`).

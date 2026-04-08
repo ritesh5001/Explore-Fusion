@@ -1,9 +1,9 @@
 # Local Development Guide
 
 ## Environment
-- The root `.env` file is the single source of truth. Every service, the gateway, and Vite load it directly via `dotenv`.
-- This workflow runs the full stack locally (no Docker or Nginx) by pointing every service at its localhost port.
-- Do **not** duplicate secrets or values in individual services; if you need to change something for local dev, edit the root `.env` and restart the correlating process.
+- The root `.env` file is the single source of truth. The gateway and frontend tooling load it via `dotenv`.
+- This workflow runs the full stack locally (no Docker or Nginx) with one backend process (gateway) and one frontend process (Vite).
+- Do **not** duplicate secrets or values in per-module files; if you need to change something for local dev, edit the root `.env` and restart the affected process.
 - Frontend only needs its own `.env.local` to override the API base URL (`VITE_API_BASE_URL=http://localhost:5050/api/v1`). All other `VITE_*` values (ImageKit keys, etc.) come from the shared `.env` via Vite's `envDir` pointing to the workspace root.
 
 ## Ports
@@ -31,10 +31,9 @@ Post APIs live inside the gateway at `/api/v1/posts`, so you no longer need to s
 ## Common Errors
 - **Gateway 404 for `/api/v1/...`** → Ensure the gateway is running on `5050` and has loaded the router that owns the requested endpoint (AI, bookings, uploads, etc.).
 - **`VITE_IMAGEKIT_URL_ENDPOINT` missing** → The frontend will throw an error during ImageKit initialization if the URL endpoint is not defined. Make sure the root `.env` defines `VITE_IMAGEKIT_URL_ENDPOINT` and `VITE_IMAGEKIT_PUBLIC_KEY`.
-- **MongoDB connection issues** → Each service uses the Atlas URIs stored in the shared `.env` (e.g., `AUTH_MONGO_URI`, `BOOKING_MONGO_URI`). Verify the credentials and that your network allows connections to MongoDB Atlas. Restart the service after updating any URI.
+- **MongoDB connection issues** → The gateway uses `MONGO_URI` from the shared `.env`. Verify the URI/credentials and that your network allows connections to MongoDB Atlas. Restart the gateway after updating `MONGO_URI`.
 
 ## Tips
-- Check each service's `/health` endpoint (e.g., `http://localhost:5050/health` for the gateway) before opening the frontend.
+- Check the gateway `/health` endpoint (`http://localhost:5050/health`) before opening the frontend.
 - The gateway exposes `/health` as well, confirming it has started and loaded the `.env` values.
 - If you encounter CORS warnings, confirm that `CORS_ORIGINS` in the root `.env` includes `http://localhost:5173`.
-- You can still run an individual service via `node services/<name>/server.js` if you prefer to debug it in isolation.

@@ -95,9 +95,9 @@ npm run install:all
 
 ### 4. Environment Variables
 This repo ignores `.env` and `.env.production` files. For local development, copy `gateway/.env.example` to `gateway/.env` and fill values.
-For production deployments with Docker Compose, copy the root `.env.example` to `.env.production`, fill in the secrets, and keep that file out of git.
+For production deployments, copy the root `.env.example` to `.env.production`, fill in the secrets, and keep that file out of git.
 
-Root `.env.example` gathers the shared configuration that every container expects, including `MONGO_URI`, `JWT_SECRET`, Groq/ImageKit credentials, and Vite build-time overrides.
+Root `.env.example` gathers shared production configuration for the gateway and frontend, including `MONGO_URI`, `JWT_SECRET`, Groq/ImageKit credentials, and Vite build-time overrides.
 
 Common ones used by the services:
 
@@ -127,10 +127,10 @@ Admin, booking, and AI APIs now run from the gateway at `/api/v1/admin`, `/api/v
 * `VITE_IMAGEKIT_AUTH_ENDPOINT` (optional override; recommended to leave unset)
   * By default the client uses `${VITE_API_BASE_URL}/imagekit-auth`
 
-### Docker Compose Mongo credentials
-The production Docker stack relies on a single Mongo container and a single database connection for the gateway. Copy the root `.env.example` into `.env.production` and set:
+### Production Mongo credential
+Set one database URI for the monolith gateway:
 
-* `MONGO_URI=mongodb://mongo:27017/explore_fusion`
+* `MONGO_URI=<your production MongoDB URI>`
 
 ---
 
@@ -259,25 +259,6 @@ If you only want the backend (gateway):
 ```bash
 npm run dev:gateway
 ```
-
-For a production-like deployment on a VPS run the Docker stack instead. Copy `.env.example` to `.env.production`, fill in the secrets (JWT, Groq, ImageKit, `MONGO_URI`), and then:
-```bash
-docker compose --env-file .env.production up --build
-```
-That single command builds every image, wires all services onto the `fusion-net`, and only exposes port `5050` for the gateway plus port `80` for the frontend.
-
-## 🐳 Docker Compose (Production)
-
-The Compose stack lives at the repo root and orchestrates MongoDB plus all services:
-
-* MongoDB (`mongo:6`) stores its data in the `mongo_data` volume and exposes `/data/db` only to the network; the gateway connects with a single `MONGO_URI`.
-* Every Node.js service copies `.env.production`, waits for Mongo via health checks, and only exposes internal ports. Gateway, frontend, and Mongo share the `fusion-net` network so internal DNS names (`http://gateway:5050`, etc.) are resolved automatically.
-* Gateway runs on 5050, uses `CORS_ORIGINS` from `.env.production`, proxies `/api/v1/*`, `/imagekit-auth`, `/socket.io`, and `/uploads`, and relies on the service URLs defined in the same env file.
-* The frontend is a Vite/React build served by `nginx` (`client/nginx/default.conf`) which enables gzip, SPA fallback, and proxies `/api`, `/socket.io`, `/imagekit-auth`, and `/uploads` to the gateway.
-* Only the gateway port `5050` and frontend port `80` map to the host; all other services remain internal.
-* A single `.env.production` (copied from `.env.example`) drives every container. Keep the real values (JWT_SECRET, GROQ_API_KEY, ImageKit keys, and `MONGO_URI`) out of version control and rotate them via your deployment pipeline.
-
-After `docker compose --env-file .env.production up --build` succeeds, exercise the same smoke tests locally (replace `https://explore-fusion-gateway.onrender.com` with `http://localhost:5050`). The gateway health endpoint, AI chat, and ImageKit auth all travel through the same port, and Mongo data survives container restarts thanks to the named volume.
 
 ---
 

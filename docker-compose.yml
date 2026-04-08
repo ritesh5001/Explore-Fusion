@@ -18,6 +18,8 @@ services:
   gateway:
     build: ./gateway
     env_file: .env.production
+    environment:
+      MONGO_URI: ${MONGO_URI}
     ports:
       - "5050:5050"
     restart: unless-stopped

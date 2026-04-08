@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const http = require('http');
 const express = require('express');
 const cors = require('cors');
@@ -7,19 +8,22 @@ const dotenv = require('dotenv');
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const securityMiddleware = require('./middleware/security');
-const connectAuthDb = require('./auth/config/db');
+const connectDB = require('./config/db');
 const authRoutes = require('./auth/routes/authRoutes');
 const userRoutes = require('./auth/routes/userRoutes');
 const imagekitRoutes = require('./auth/routes/imagekitRoutes');
 const { getImagekitAuth } = require('./auth/controllers/imagekitController');
 const aiRoutes = require('./ai/routes/aiRoutes');
-const { initBooking } = require('./booking');
-const { initAdmin } = require('./admin');
-const { initMatches } = require('./matches');
-const { initNotifications } = require('./notifications');
-const { initPosts } = require('./post');
-const { initSocial } = require('./social');
-const { initUpload } = require('./upload');
+const adminRoutes = require('./admin/routes/adminRoutes');
+const bookingRoutes = require('./booking/routes/bookingRoutes');
+const packageRoutes = require('./booking/routes/packages');
+const itineraryRoutes = require('./booking/routes/itineraryRoutes');
+const reviewRoutes = require('./booking/routes/reviewRoutes');
+const matchesRoutes = require('./matches/routes/buddyRoutes');
+const notificationsRoutes = require('./notifications');
+const postsRoutes = require('./post/routes/postRoutes');
+const socialRoutes = require('./social/routes/followRoutes');
+const createUploadRoutes = require('./upload/routes/uploadRoutes');
 const { initChat } = require('./chat');
 
 const app = express();
@@ -96,33 +100,27 @@ app.use('/', imagekitRoutes);
 app.use('/api/v1/ai', aiRoutes);
 
 const startGateway = async () => {
-  await connectAuthDb();
-  const adminRouter = await initAdmin();
-  app.use('/api/v1/admin', adminRouter);
+  await connectDB();
 
-  const bookingModule = await initBooking();
-  app.use('/api/v1/packages', bookingModule.packageRouter);
-  app.use('/api/v1/itineraries', bookingModule.itineraryRouter);
-  app.use('/api/v1/bookings', bookingModule.bookingRouter);
-  app.use('/api/v1/reviews', bookingModule.reviewRouter);
+  const uploadsDir = path.join(__dirname, 'upload', 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  const uploadRoutes = createUploadRoutes(uploadsDir);
 
-  const matchesRouter = await initMatches();
-  app.use('/api/v1/matches', matchesRouter);
-
-  const notificationsRouter = await initNotifications();
-  app.use('/api/v1/notifications', notificationsRouter);
-
-  const postsRouter = await initPosts();
-  app.use('/api/v1/posts', postsRouter);
-  app.use('/posts', postsRouter);
-
-  const socialRouter = await initSocial();
-  app.use('/api/v1', socialRouter);
-  app.use('/', socialRouter);
-
-  const uploadModule = await initUpload();
-  app.use('/api/v1/upload', uploadModule.router);
-  app.use('/uploads', express.static(uploadModule.uploadsDir));
+  app.use('/api/v1/admin', adminRoutes);
+  app.use('/api/v1/packages', packageRoutes);
+  app.use('/api/v1/itineraries', itineraryRoutes);
+  app.use('/api/v1/bookings', bookingRoutes);
+  app.use('/api/v1/reviews', reviewRoutes);
+  app.use('/api/v1/matches', matchesRoutes);
+  app.use('/api/v1/notifications', notificationsRoutes);
+  app.use('/api/v1/posts', postsRoutes);
+  app.use('/posts', postsRoutes);
+  app.use('/api/v1', socialRoutes);
+  app.use('/', socialRoutes);
+  app.use('/api/v1/upload', uploadRoutes);
+  app.use('/uploads', express.static(uploadsDir));
 
   const PORT = Number(process.env.PORT) || 5050;
   server.listen(PORT, () => {

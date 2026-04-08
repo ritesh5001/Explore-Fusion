@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { TravelProfile, Match, Notification } = require('../../models');
 
 const jsonError = (res, status, message) =>
   res.status(status).json({ success: false, message });
@@ -27,12 +28,7 @@ const scoreCommon = (a = [], b = []) => {
   return count;
 };
 
-const makeBuddyController = ({ models }) => {
-  if (!models) {
-    throw new Error('Matches models missing');
-  }
-
-  const { TravelProfile, Match, Notification } = models;
+const controller = (() => {
 
   const upsertProfile = async (req, res) => {
     const userId = req.user?._id;
@@ -312,6 +308,6 @@ const makeBuddyController = ({ models }) => {
     getMyMatches,
     getIncomingRequests,
   };
-};
+})();
 
-module.exports = { makeBuddyController };
+module.exports = controller;

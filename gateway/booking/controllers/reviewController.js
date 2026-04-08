@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Review, Booking, Package, Notification } = require('../../models');
 
 const jsonSuccess = (res, status, data) => res.status(status).json({ success: true, data });
 const jsonError = (res, status, message) =>
@@ -6,10 +7,7 @@ const jsonError = (res, status, message) =>
 
 const isValidObjectId = (value) => mongoose.Types.ObjectId.isValid(value);
 
-const makeReviewController = ({ Review, Booking, Package, Notification }) => {
-  if (!Review || !Booking || !Package || !Notification) {
-    throw new Error('Review controller requires Review, Booking, Package, and Notification models');
-  }
+const controller = (() => {
 
   const createReview = async (req, res) => {
     try {
@@ -130,6 +128,6 @@ const makeReviewController = ({ Review, Booking, Package, Notification }) => {
     getReviewsByPackage,
     deleteReview,
   };
-};
+})();
 
-module.exports = { makeReviewController };
+module.exports = controller;

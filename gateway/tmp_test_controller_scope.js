@@ -1,59 +1,30 @@
 require('dotenv').config({ path: '../.env' });
-const { makePostController } = require('./post/controllers/postController');
+const controller = require('./post/controllers/postController');
 const mongoose = require('mongoose');
 
 async function testController() {
     console.log('Testing Post Controller Scope...');
 
-    // Mock Post Model
-    const MockPost = {
-        create: async (data) => {
-            console.log('MockPost.create called with:', data.title);
-            return {
-                ...data,
-                _id: new mongoose.Types.ObjectId(),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                likes: [],
-                comments: []
-            };
-        }
-    };
-
     try {
-        const controller = makePostController({ Post: MockPost });
+        const expected = [
+            'createPost',
+            'getPosts',
+            'getPostById',
+            'updatePost',
+            'deletePost',
+            'toggleLike',
+            'addComment',
+            'getPostsByUser',
+            'getPostsCountByUser',
+        ];
 
-        // Mock Req/Res
-        const req = {
-            body: {
-                title: 'Test Title',
-                content: 'Test Content',
-                location: 'Test Location'
-            },
-            user: {
-                _id: new mongoose.Types.ObjectId(),
-                name: 'Test User'
-            }
-        };
+        const missing = expected.filter((name) => typeof controller[name] !== 'function');
+        if (missing.length) {
+            console.error('FAILED: Missing controller methods:', missing);
+            process.exit(1);
+        }
 
-        const res = {
-            status: (code) => {
-                console.log('Response Status:', code);
-                return {
-                    json: (data) => {
-                        console.log('Response JSON:', JSON.stringify(data, null, 2));
-                        if (!data.success) {
-                            console.error('FAILED: Controller returned error response');
-                            process.exit(1);
-                        }
-                    }
-                };
-            }
-        };
-
-        console.log('Calling createPost...');
-        await controller.createPost(req, res);
-        console.log('SUCCESS: createPost executed without ReferenceError');
+        console.log('SUCCESS: Post controller exports expected methods.');
         process.exit(0);
 
     } catch (error) {

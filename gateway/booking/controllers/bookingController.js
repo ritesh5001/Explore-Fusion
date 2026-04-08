@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Booking, Package, Notification } = require('../../models');
 
 const jsonSuccess = (res, status, data) => res.status(status).json({ success: true, data });
 const jsonError = (res, status, message) =>
@@ -6,10 +7,7 @@ const jsonError = (res, status, message) =>
 
 const isValidId = (value) => mongoose.isValidObjectId(value);
 
-const makeBookingController = ({ Booking, Package, Notification }) => {
-  if (!Booking || !Package || !Notification) {
-    throw new Error('Booking controller requires Booking, Package, and Notification models');
-  }
+const controller = (() => {
 
   const isAdminOrSuperAdmin = (user) => {
     const role = user?.role;
@@ -238,6 +236,6 @@ const makeBookingController = ({ Booking, Package, Notification }) => {
     updateBookingStatus,
     deleteBooking,
   };
-};
+})();
 
-module.exports = { makeBookingController };
+module.exports = controller;

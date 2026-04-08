@@ -1,4 +1,4 @@
-const User = require('../models/User');
+const { User } = require('../../models');
 
 const isProd = process.env.NODE_ENV === 'production';
 let warnedMissingGatewayUrl = false;

@@ -1,5 +1,4 @@
-const Follow = require('../models/Follow');
-const User = require('../../auth/models/User');
+const { Follow, User } = require('../../models');
 
 const ROLES = ['user', 'creator', 'admin', 'superadmin'];
 const ALLOWED_FOLLOWER_ROLES = new Set(['user', 'creator', 'admin']);

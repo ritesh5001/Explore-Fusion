@@ -1,37 +1,21 @@
 const express = require('express');
+const controller = require('../controllers/postController');
+const { protect } = require('../../auth/middleware/authMiddleware');
 
-const makePostRoutes = (controller) => {
-  const router = express.Router();
+const router = express.Router();
 
-  const {
-    getPosts,
-    createPost,
-    getPostById,
-    updatePost,
-    deletePost,
-    toggleLike,
-    addComment,
-    getPostsByUser,
-    getPostsCountByUser,
-  } = controller;
+router.get('/', controller.getPosts);
+router.get('/user/:userId/count', controller.getPostsCountByUser);
+router.get('/user/:userId', controller.getPostsByUser);
+router.get('/health', (req, res) => {
+  res.json({ status: 'ok', service: 'post', env: process.env.NODE_ENV });
+});
+router.get('/:id', controller.getPostById);
 
-  const { protect } = require('../../auth/middleware/authMiddleware');
+router.post('/', protect, controller.createPost);
+router.put('/:id', protect, controller.updatePost);
+router.delete('/:id', protect, controller.deletePost);
+router.post('/:id/like', protect, controller.toggleLike);
+router.post('/:id/comment', protect, controller.addComment);
 
-  router.get('/', getPosts);
-  router.get('/user/:userId/count', getPostsCountByUser);
-  router.get('/user/:userId', getPostsByUser);
-  router.get('/health', (req, res) => {
-    res.json({ status: 'ok', service: 'post', env: process.env.NODE_ENV });
-  });
-  router.get('/:id', getPostById);
-
-  router.post('/', protect, createPost);
-  router.put('/:id', protect, updatePost);
-  router.delete('/:id', protect, deletePost);
-  router.post('/:id/like', protect, toggleLike);
-  router.post('/:id/comment', protect, addComment);
-
-  return router;
-};
-
-module.exports = makePostRoutes;
+module.exports = router;

@@ -1,23 +1,14 @@
 const express = require('express');
+const controller = require('../controllers/itineraryController');
+const { protect } = require('../../auth/middleware/authMiddleware');
 
-const makeItineraryRoutes = ({ controller, auth }) => {
-  if (!controller) {
-    throw new Error('Itinerary routes require a controller');
-  }
-  if (!auth?.protect) {
-    throw new Error('Itinerary routes require auth.protect middleware');
-  }
+const router = express.Router();
+router.use(protect);
 
-  const router = express.Router();
-  router.use(auth.protect);
+router.post('/', controller.createItinerary);
+router.get('/my', controller.getMyItineraries);
+router.get('/', controller.getAllItineraries);
+router.get('/:id', controller.getItineraryById);
+router.delete('/:id', controller.deleteItinerary);
 
-  router.post('/', controller.createItinerary);
-  router.get('/my', controller.getMyItineraries);
-  router.get('/', controller.getAllItineraries);
-  router.get('/:id', controller.getItineraryById);
-  router.delete('/:id', controller.deleteItinerary);
-
-  return router;
-};
-
-module.exports = { makeItineraryRoutes };
+module.exports = router;

@@ -1,3 +1,6 @@
+const mongoose = require('mongoose');
+const { Post } = require('../../models');
+
 const jsonSuccess = (res, status, data) =>
   res.status(status).json({
     success: true,
@@ -10,7 +13,7 @@ const jsonError = (res, status, message) =>
     message,
   });
 
-const makePostController = ({ Post }) => {
+const controller = (() => {
   const isValidId = (id) => mongoose.isValidObjectId(id);
 
   const toUserResponse = (postDoc) => {
@@ -317,6 +320,6 @@ const makePostController = ({ Post }) => {
     getPostsByUser,
     getPostsCountByUser,
   };
-};
+})();
 
-module.exports = { makePostController };
+module.exports = controller;

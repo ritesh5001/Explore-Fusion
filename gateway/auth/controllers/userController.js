@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
-const User = require('../models/User');
-const Follow = require('../models/Follow');
-const Post = require('../models/Post');
+const { User, Follow, Post } = require('../../models');
 
 const jsonSuccess = (res, status, data) => {
   return res.status(status).json({

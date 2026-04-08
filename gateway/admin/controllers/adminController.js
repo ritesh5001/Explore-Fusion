@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { User, Booking, Package, Itinerary } = require('../../models');
 
 const jsonSuccess = (res, status, data) => {
   return res.status(status).json({ success: true, data });
@@ -18,7 +19,7 @@ const toObjectId = (value) => {
 
 const safeUserProjection = { password: 0, passwordResetTokenHash: 0, passwordResetTokenExpiresAt: 0 };
 
-const makeAdminController = ({ User, Booking, Package, Itinerary }) => {
+const controller = (() => {
   const dashboard = async (req, res) => {
     try {
       const [
@@ -326,6 +327,6 @@ const makeAdminController = ({ User, Booking, Package, Itinerary }) => {
     cancelBooking,
     systemReport,
   };
-};
+})();
 
-module.exports = { makeAdminController };
+module.exports = controller;

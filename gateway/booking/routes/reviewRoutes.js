@@ -1,20 +1,11 @@
 const express = require('express');
+const controller = require('../controllers/reviewController');
+const { protect } = require('../../auth/middleware/authMiddleware');
 
-const makeReviewRoutes = ({ controller, auth }) => {
-  if (!controller) {
-    throw new Error('Review routes require a controller');
-  }
-  if (!auth?.protect) {
-    throw new Error('Review routes require auth.protect middleware');
-  }
+const router = express.Router();
 
-  const router = express.Router();
+router.get('/:packageId', controller.getReviewsByPackage);
+router.post('/', protect, controller.createReview);
+router.delete('/:id', protect, controller.deleteReview);
 
-  router.get('/:packageId', controller.getReviewsByPackage);
-  router.post('/', auth.protect, controller.createReview);
-  router.delete('/:id', auth.protect, controller.deleteReview);
-
-  return router;
-};
-
-module.exports = { makeReviewRoutes };
+module.exports = router;

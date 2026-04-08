@@ -1,3 +1,1 @@
-const { makeItineraryRoutes } = require('./itineraryRoutes');
-
-module.exports = { makeItineraryRoutes };
+module.exports = require('./itineraryRoutes');

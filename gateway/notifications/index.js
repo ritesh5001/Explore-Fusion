@@ -47,6 +47,4 @@ const makeNotificationsRouter = () => {
   return router;
 };
 
-const initNotifications = async () => makeNotificationsRouter();
-
-module.exports = { initNotifications };
+module.exports = makeNotificationsRouter();

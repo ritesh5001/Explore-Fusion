@@ -14,7 +14,7 @@ const loadEnv = (envPath) => {
 loadEnv(path.join(__dirname, '..', '.env'));
 loadEnv(path.join(__dirname, '..', 'gateway', '.env'));
 
-const { getImagekit } = require('../gateway/auth/config/imagekit');
+const { getImagekit } = require('../gateway/config/imagekit');
 
 const ROOT = path.join(__dirname, '..');
 const DEFAULT_SOURCE_DIR = path.join(ROOT, 'client', 'public', 'branding');

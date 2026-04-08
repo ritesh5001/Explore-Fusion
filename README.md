@@ -1,6 +1,6 @@
-# 🌍 Explore Fusion - AI-Powered Travel Microservices App
+# 🌍 Explore Fusion - AI-Powered Travel Monolith App
 
-**Explore Fusion** is a comprehensive travel ecosystem built on a **Microservices Architecture**. It connects travelers with influencers, provides AI-driven trip planning, facilitates a marketplace for travel packages, and enables real-time community chat.
+**Explore Fusion** is a comprehensive travel ecosystem built as a **Node.js monolith**. It connects travelers with influencers, provides AI-driven trip planning, facilitates a marketplace for travel packages, and enables real-time community chat.
 
 ## 🚀 Key Features
 
@@ -37,10 +37,9 @@
 * Tailwind CSS
 * Axios & Socket.io-client
 
-**Backend (Microservices):**
-* **API Gateway:** Node.js, Express (hosts auth, admin, booking, AI, posts, matches, notifications, upload, and the Socket.IO chat server)
-* **Admin APIs:** Hosted inside the gateway at `/api/v1/admin` (no standalone service)
-* **Auth Service:** JWT, Bcrypt
+**Backend (Monolith):**
+* **Gateway Monolith:** Node.js, Express (hosts auth, admin, booking, AI, posts, matches, notifications, upload, and the Socket.IO chat server)
+* **Auth Module:** JWT, Bcrypt
 * **Post APIs:** Social feed management hosted inside the gateway at `/api/v1/posts`
 * **Booking APIs:** Packages, itineraries, and orders hosted inside the gateway at `/api/v1/bookings`
 * **AI APIs:** Groq-powered assistant hosted inside the gateway at `/api/v1/ai` (uses `groq-sdk`)
@@ -54,15 +53,17 @@
 
 ## 🏗️ Architecture
 
-The application uses an **API Gateway (Port 5050)** to route requests to independent microservices:
+Explore Fusion runs as a **single backend process** on port `5050`.
 
-| Service | Port | Description |
+| Component | Port | Description |
 | :--- | :--- | :--- |
-| **Gateway** | `5050` | Unified entry point for the frontend; hosts auth, admin, booking, AI APIs, matches (`/api/v1/matches`), and the Socket.IO chat server beneath `/api/v1`/`/socket.io` |
-| **Auth** | `5001` | Handles User Registration & Login |
-| **Upload** | `5050` | Handles `/api/v1/upload`, serves `/uploads`, and exposes ImageKit auth through the gateway |
-| **Social** | `5050` | Follow graph (follow/unfollow, followers/following) hosted by the gateway at `/api/v1/follow/*` |
-| **Client** | `5173` | React Frontend |
+| **Gateway Monolith** | `5050` | Unified backend entry point; hosts auth, admin, booking, AI, posts, matches, notifications, upload, and Socket.IO chat (`/socket.io`) |
+| **Client** | `5173` | React frontend in local dev |
+
+Database model:
+* One shared Mongoose connection
+* One Mongo database configured by `MONGO_URI`
+* Domain modules (auth/booking/post/matches/social) remain in folders but run inside the same process
 
 Notes:
 * The frontend should call the **Gateway** for API requests.
@@ -93,32 +94,27 @@ npm run install:all
 ```
 
 ### 4. Environment Variables
-This repo ignores `.env` and `.env.production` files. For local development, copy the per-service `*.env.example` inside each folder.
+This repo ignores `.env` and `.env.production` files. For local development, copy `gateway/.env.example` to `gateway/.env` and fill values.
 For production deployments with Docker Compose, copy the root `.env.example` to `.env.production`, fill in the secrets, and keep that file out of git.
 
-Root `.env.example` gathers the shared configuration that every container expects, e.g. the public endpoints that the gateway exposes, the per-service Mongo URIs (`AUTH_MONGO_URI`, `BOOKING_MONGO_URI`, `POST_MONGO_URI`, `MATCHES_MONGO_URI`), the `JWT_SECRET`, Groq/ImageKit credentials, and the Vite build-time overrides (see the `.env.example` file for the full list).
+Root `.env.example` gathers the shared configuration that every container expects, including `MONGO_URI`, `JWT_SECRET`, Groq/ImageKit credentials, and Vite build-time overrides.
 
 Common ones used by the services:
 
-**Authentication (handled inside the gateway)**
-* `AUTH_MONGO_URI` (falls back to `MONGO_URI` for backwards compatibility)
+**Gateway (single backend process)**
+* `MONGO_URI`
 * `JWT_SECRET`
+* `PORT` / `GATEWAY_PORT` (default: `5050`)
+* `CORS_ORIGINS` (comma-separated)
 * `IMAGEKIT_PUBLIC_KEY`
 * `IMAGEKIT_PRIVATE_KEY`
 * `IMAGEKIT_URL_ENDPOINT`
-
-**Gateway (gateway)**
-* `GATEWAY_PORT` (default: `5050`)
-* `CORS_ORIGINS` (comma-separated)
-* `BOOKING_MONGO_URI`
-* `POST_MONGO_URI`
-* `SOCIAL_MONGO_URI`
 * `AI_PROVIDER` (set to `groq`)
 * `GROQ_API_KEY`
 
 AI endpoints (e.g., `/api/v1/ai/chat`) live in the gateway on port `5050`, so no separate port or service URL is required.
 
-`/api/v1/posts`, `/api/v1/follow`, `/api/v1/matches`, and `/api/v1/notifications` are handled directly by the gateway; set `POST_MONGO_URI`, `SOCIAL_MONGO_URI`, and `MATCHES_MONGO_URI` so each router connects to the right Mongo database.
+`/api/v1/posts`, `/api/v1/follow`, `/api/v1/matches`, and `/api/v1/notifications` are handled directly by the gateway and all use the same shared Mongo database from `MONGO_URI`.
 
 Socket.IO chat traffic is handled directly by the gateway at `/socket.io`, so no extra service URL is required.
 
@@ -132,14 +128,9 @@ Admin, booking, and AI APIs now run from the gateway at `/api/v1/admin`, `/api/v
   * By default the client uses `${VITE_API_BASE_URL}/imagekit-auth`
 
 ### Docker Compose Mongo credentials
-The production Docker stack relies on a single Mongo container with multiple databases. Copy the root `.env.example` into `.env.production` and fill in the following URIs so each service connects to its own database via the Docker network (`mongo` service name):
+The production Docker stack relies on a single Mongo container and a single database connection for the gateway. Copy the root `.env.example` into `.env.production` and set:
 
-* `AUTH_MONGO_URI=mongodb://mongo:27017/auth`
-* `BOOKING_MONGO_URI=mongodb://mongo:27017/booking`
-* `POST_MONGO_URI=mongodb://mongo:27017/post`
-* `MATCHES_MONGO_URI=mongodb://mongo:27017/matches`
-* `SOCIAL_MONGO_URI=mongodb://mongo:27017/social`
-* (Optional) `MONGO_URI` – legacy fallback for any service still checking that variable.
+* `MONGO_URI=mongodb://mongo:27017/explore_fusion`
 
 ---
 
@@ -182,11 +173,7 @@ Set these on the `explore-fusion-gateway` service:
 * `NODE_ENV=production`
 * `PORT` (Render sets this automatically)
 * `CORS_ORIGINS=https://explore-fusion.vercel.app`
-* `AUTH_MONGO_URI=mongodb://mongo:27017/auth`
-* `BOOKING_MONGO_URI=mongodb://mongo:27017/booking`
-* `POST_MONGO_URI=mongodb://mongo:27017/post`
-* `MATCHES_MONGO_URI=mongodb://mongo:27017/matches`
-* `SOCIAL_MONGO_URI=mongodb://mongo:27017/social`
+* `MONGO_URI=mongodb://<host>:27017/explore_fusion`
 * `JWT_SECRET`
 * `IMAGEKIT_PUBLIC_KEY`
 * `IMAGEKIT_PRIVATE_KEY`
@@ -196,14 +183,14 @@ Set these on the `explore-fusion-gateway` service:
 
 Notification, matches, social, and post APIs are served from the gateway itself (`/api/v1/notifications`, `/api/v1/matches`, `/api/v1/follow`, `/api/v1/posts`), so no additional public URLs are required beyond the gateway.
 
-`/api/v1/posts`, `/api/v1/follow`, and `/api/v1/matches` are hosted by the gateway; configure `POST_MONGO_URI`, `SOCIAL_MONGO_URI`, and `MATCHES_MONGO_URI` so those routes connect to the right databases.
+`/api/v1/posts`, `/api/v1/follow`, and `/api/v1/matches` are hosted by the gateway and all use the same Mongo database from `MONGO_URI`.
 
 Socket.IO chat traffic is served from the gateway itself (see `/socket.io`), so no separate `CHAT_SERVICE_URL` is needed.
 
 Admin, booking, and AI APIs are handled by the gateway itself at `/api/v1/admin`, `/api/v1/bookings`, and `/api/v1/ai`, so no extra URLs belong here.
 
-### Render (Each Service)
-All services should be configured with:
+### Render (Other Consumers)
+Any other consumer that needs to validate auth via the gateway should be configured with:
 
 * `NODE_ENV=production`
 * `PORT` (Render sets this automatically)
@@ -212,9 +199,9 @@ Services that need to validate auth via the Gateway should point at its public e
 
 * `GATEWAY_URL=https://explore-fusion-gateway.onrender.com`
 
-DB/JWT (set per service as needed):
+DB/JWT (set as needed):
 
-* `MONGO_URI` (auth, post)
+* `MONGO_URI`
 * `JWT_SECRET` (must match the gateway's JWT secret)
 
 Upload (gateway exposes `/api/v1/upload`, `/uploads`, and `/imagekit-auth`; configure ImageKit keys so the POST `/api/v1/imagekit-auth` route can mint signed tokens):
@@ -273,7 +260,7 @@ If you only want the backend (gateway):
 npm run dev:gateway
 ```
 
-For a production-like deployment on a VPS run the Docker stack instead. Copy `.env.example` to `.env.production`, fill in the secrets (JWT, Groq, ImageKit, Mongo URIs), and then:
+For a production-like deployment on a VPS run the Docker stack instead. Copy `.env.example` to `.env.production`, fill in the secrets (JWT, Groq, ImageKit, `MONGO_URI`), and then:
 ```bash
 docker compose --env-file .env.production up --build
 ```
@@ -283,12 +270,12 @@ That single command builds every image, wires all services onto the `fusion-net`
 
 The Compose stack lives at the repo root and orchestrates MongoDB plus all services:
 
-* MongoDB (`mongo:7`) stores its data in the `mongo_data` volume and exposes `/data/db` only to the network; each service connects with its own database name (`auth`, `booking`, `post`, `matches`).
+* MongoDB (`mongo:6`) stores its data in the `mongo_data` volume and exposes `/data/db` only to the network; the gateway connects with a single `MONGO_URI`.
 * Every Node.js service copies `.env.production`, waits for Mongo via health checks, and only exposes internal ports. Gateway, frontend, and Mongo share the `fusion-net` network so internal DNS names (`http://gateway:5050`, etc.) are resolved automatically.
 * Gateway runs on 5050, uses `CORS_ORIGINS` from `.env.production`, proxies `/api/v1/*`, `/imagekit-auth`, `/socket.io`, and `/uploads`, and relies on the service URLs defined in the same env file.
 * The frontend is a Vite/React build served by `nginx` (`client/nginx/default.conf`) which enables gzip, SPA fallback, and proxies `/api`, `/socket.io`, `/imagekit-auth`, and `/uploads` to the gateway.
 * Only the gateway port `5050` and frontend port `80` map to the host; all other services remain internal.
-* A single `.env.production` (copied from `.env.example`) drives every container. Keep the real values (JWT_SECRET, GROQ_API_KEY, ImageKit keys, absolute Mongo URIs) out of version control and rotate them via your deployment pipeline.
+* A single `.env.production` (copied from `.env.example`) drives every container. Keep the real values (JWT_SECRET, GROQ_API_KEY, ImageKit keys, and `MONGO_URI`) out of version control and rotate them via your deployment pipeline.
 
 After `docker compose --env-file .env.production up --build` succeeds, exercise the same smoke tests locally (replace `https://explore-fusion-gateway.onrender.com` with `http://localhost:5050`). The gateway health endpoint, AI chat, and ImageKit auth all travel through the same port, and Mongo data survives container restarts thanks to the named volume.
 

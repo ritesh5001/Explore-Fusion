@@ -1,25 +1,23 @@
 const express = require('express');
+const controller = require('../controllers/adminController');
+const { protect, isAdmin, isSuperAdmin } = require('../../auth/middleware/authMiddleware');
 
-const makeAdminRoutes = ({ auth, controller }) => {
-  const router = express.Router();
+const router = express.Router();
 
-  router.get('/dashboard', auth.protect, auth.isAdmin, controller.dashboard);
+router.get('/dashboard', protect, isAdmin, controller.dashboard);
 
-  router.get('/users', auth.protect, auth.isAdmin, controller.listUsers);
-  router.put('/users/:id/block', auth.protect, auth.isAdmin, controller.blockUser);
-  router.put('/users/:id/unblock', auth.protect, auth.isAdmin, controller.unblockUser);
-  router.put('/users/:id/role', auth.protect, auth.isAdmin, controller.updateUserRole);
-  router.delete('/users/:id', auth.protect, auth.isSuperAdmin, controller.deleteUser);
+router.get('/users', protect, isAdmin, controller.listUsers);
+router.put('/users/:id/block', protect, isAdmin, controller.blockUser);
+router.put('/users/:id/unblock', protect, isAdmin, controller.unblockUser);
+router.put('/users/:id/role', protect, isAdmin, controller.updateUserRole);
+router.delete('/users/:id', protect, isSuperAdmin, controller.deleteUser);
 
-  router.get('/creators', auth.protect, auth.isAdmin, controller.listCreators);
-  router.put('/creators/:id/verify', auth.protect, auth.isAdmin, controller.verifyCreator);
+router.get('/creators', protect, isAdmin, controller.listCreators);
+router.put('/creators/:id/verify', protect, isAdmin, controller.verifyCreator);
 
-  router.get('/bookings', auth.protect, auth.isAdmin, controller.listBookings);
-  router.put('/bookings/:id/cancel', auth.protect, auth.isAdmin, controller.cancelBooking);
+router.get('/bookings', protect, isAdmin, controller.listBookings);
+router.put('/bookings/:id/cancel', protect, isAdmin, controller.cancelBooking);
 
-  router.get('/reports/system', auth.protect, auth.isSuperAdmin, controller.systemReport);
+router.get('/reports/system', protect, isSuperAdmin, controller.systemReport);
 
-  return router;
-};
-
-module.exports = { makeAdminRoutes };
+module.exports = router;

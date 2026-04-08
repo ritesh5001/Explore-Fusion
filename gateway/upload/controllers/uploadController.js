@@ -1,4 +1,4 @@
-const { getImagekit } = require('../../auth/config/imagekit');
+const { getImagekit } = require('../../config/imagekit');
 
 const getUploadedFile = (req) =>
   req.files?.file?.[0] || req.files?.image?.[0] || req.file || null;

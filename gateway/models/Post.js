@@ -29,8 +29,4 @@ const postSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const initPostModel = (connection) => {
-  return connection.model('Post', postSchema);
-};
-
-module.exports = { initPostModel };
+module.exports = mongoose.models.Post || mongoose.model('Post', postSchema);

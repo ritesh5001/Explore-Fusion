@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Itinerary } = require('../../models');
 
 const jsonSuccess = (res, status, data) => res.status(status).json({ success: true, data });
 const jsonError = (res, status, message) =>
@@ -6,10 +7,7 @@ const jsonError = (res, status, message) =>
 
 const isValidId = (value) => mongoose.isValidObjectId(value);
 
-const makeItineraryController = ({ Itinerary }) => {
-  if (!Itinerary) {
-    throw new Error('Itinerary controller requires the Itinerary model');
-  }
+const controller = (() => {
 
   const isAdminOrSuperAdmin = (user) => {
     const role = user?.role;
@@ -149,6 +147,6 @@ const makeItineraryController = ({ Itinerary }) => {
     deleteItinerary,
     getAllItineraries,
   };
-};
+})();
 
-module.exports = { makeItineraryController };
+module.exports = controller;

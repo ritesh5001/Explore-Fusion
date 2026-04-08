@@ -1,4 +1,4 @@
-const imagekit = require('../config/imagekit');
+const { getImagekit } = require('../../config/imagekit');
 
 const jsonError = (res, status, message) => {
   return res.status(status).json({
@@ -9,6 +9,7 @@ const jsonError = (res, status, message) => {
 
 exports.getImagekitAuth = async (req, res) => {
   try {
+    const imagekit = getImagekit();
     const params = imagekit.getAuthenticationParameters();
 
     return res.status(200).json({

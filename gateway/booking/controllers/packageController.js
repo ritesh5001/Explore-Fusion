@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Package } = require('../../models');
 
 const jsonSuccess = (res, status, data) => res.status(status).json({ success: true, data });
 const jsonError = (res, status, message) =>
@@ -6,10 +7,7 @@ const jsonError = (res, status, message) =>
 
 const isValidId = (value) => mongoose.isValidObjectId(value);
 
-const makePackageController = ({ Package }) => {
-  if (!Package) {
-    throw new Error('Package controller requires the Package model');
-  }
+const controller = (() => {
 
   const canManageAny = (user) => {
     const role = user?.role;
@@ -249,6 +247,6 @@ const makePackageController = ({ Package }) => {
     deletePackage,
     searchPackages,
   };
-};
+})();
 
-module.exports = { makePackageController };
+module.exports = controller;

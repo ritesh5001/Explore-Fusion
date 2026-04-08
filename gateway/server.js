@@ -5,6 +5,8 @@ const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 
+// Prefer gateway-local env, then fall back to repo root env for compatibility.
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const securityMiddleware = require('./middleware/security');

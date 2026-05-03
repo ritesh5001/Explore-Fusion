@@ -31,6 +31,31 @@ const profileSchema = z.object({
     .optional()
 });
 
+const onboardingSchema = z.object({
+  bio: z.string().min(20).max(400),
+  travelStyle: z.enum(['backpacker', 'budget', 'midrange', 'luxury']),
+  interests: z.array(z.string().min(2)).min(3).max(12),
+  languages: z.array(z.string().min(2)).min(1).max(8),
+  budgetMin: z.number().int().nonnegative(),
+  budgetMax: z.number().int().nonnegative(),
+  preferredDuration: z.enum(['weekend', '1-week', '2-weeks', '1-month', 'flexible']),
+  companionPreference: z.enum(['solo-buddy', 'small-group', 'large-group']),
+  dreamDestinations: z.array(z.string().min(2)).min(1).max(12),
+  tripPlans: z
+    .array(
+      z.object({
+        destination: z.string().min(2),
+        startDate: z.coerce.date(),
+        endDate: z.coerce.date()
+      })
+    )
+    .min(1)
+    .max(6)
+}).refine((input) => input.budgetMax >= input.budgetMin, {
+  message: 'Budget max must be greater than or equal to budget min',
+  path: ['budgetMax']
+});
+
 export async function getProfile(req: AuthenticatedRequest, res: Response) {
   const user = await User.findById(req.userId);
 
@@ -43,7 +68,25 @@ export async function getProfile(req: AuthenticatedRequest, res: Response) {
 
 export async function updateProfile(req: AuthenticatedRequest, res: Response) {
   const input = profileSchema.parse(req.body);
-  const user = await User.findByIdAndUpdate(req.userId, input, { new: true });
+  const user = await User.findByIdAndUpdate(req.userId, input, { returnDocument: 'after' });
+
+  if (!user) {
+    return res.status(404).json({ message: 'Profile not found' });
+  }
+
+  res.json(sanitizeUser(user));
+}
+
+export async function completeOnboarding(req: AuthenticatedRequest, res: Response) {
+  const input = onboardingSchema.parse(req.body);
+  const user = await User.findByIdAndUpdate(
+    req.userId,
+    {
+      ...input,
+      onboardingCompleted: true
+    },
+    { returnDocument: 'after' }
+  );
 
   if (!user) {
     return res.status(404).json({ message: 'Profile not found' });

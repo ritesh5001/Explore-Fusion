@@ -4,8 +4,8 @@ import { demoTrips } from '../data/demo';
 import { useGetTripsQuery } from '../features/api';
 import { colors } from '../theme/colors';
 
-export function TripsScreen() {
-  const { data } = useGetTripsQuery();
+export function TripsScreen({ token }: { token: string }) {
+  const { data } = useGetTripsQuery(token);
   const trips = data?.trips.length ? data.trips : demoTrips;
 
   return (

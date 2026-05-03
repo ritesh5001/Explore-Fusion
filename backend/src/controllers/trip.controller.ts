@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { z } from 'zod';
 import { isDatabaseConnected } from '../config/database.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -13,7 +13,7 @@ const tripSchema = z.object({
   maxMembers: z.number().int().min(2).max(20).default(2)
 });
 
-export async function listTrips(_req: Request, res: Response) {
+export async function listTrips(_req: AuthenticatedRequest, res: Response) {
   if (!isDatabaseConnected()) {
     return res.json({ trips: demoTrips });
   }

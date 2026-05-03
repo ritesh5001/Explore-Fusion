@@ -4,6 +4,6 @@ import { requireAuth } from '../middleware/auth.js';
 
 export const matchRouter = Router();
 
-matchRouter.get('/discover', discover);
+matchRouter.get('/discover', requireAuth, discover);
 matchRouter.post('/swipe', requireAuth, swipe);
 matchRouter.get('/matches', requireAuth, listMatches);

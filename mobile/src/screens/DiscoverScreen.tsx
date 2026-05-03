@@ -5,9 +5,9 @@ import { demoProfiles } from '../data/demo';
 import { useGetDiscoverProfilesQuery } from '../features/api';
 import { colors } from '../theme/colors';
 
-export function DiscoverScreen() {
+export function DiscoverScreen({ token }: { token: string }) {
   const [index, setIndex] = useState(0);
-  const { data, isError } = useGetDiscoverProfilesQuery();
+  const { data, isError } = useGetDiscoverProfilesQuery(token);
   const profiles = data?.profiles.length ? data.profiles : demoProfiles;
   const profile = profiles[index % profiles.length];
   const status = isError ? 'Demo data' : data ? 'API connected' : 'Loading matches';

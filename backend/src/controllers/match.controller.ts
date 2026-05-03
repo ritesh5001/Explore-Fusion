@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { z } from 'zod';
 import { isDatabaseConnected } from '../config/database.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
@@ -14,20 +14,24 @@ const swipeSchema = z.object({
   compatibilityScore: z.number().min(0).max(100).default(0)
 });
 
-export async function discover(req: Request, res: Response) {
+export async function discover(req: AuthenticatedRequest, res: Response) {
   if (!isDatabaseConnected()) {
-    return res.json({ profiles: demoProfiles });
+    return res.json({ profiles: demoProfiles, source: 'demo' });
   }
 
-  const userId = (req as AuthenticatedRequest).userId;
+  const userId = req.userId;
 
   if (!userId) {
-    return res.json({ profiles: demoProfiles });
+    return res.status(401).json({ message: 'Login required before discovery' });
   }
 
   const currentUser = await User.findById(userId);
   if (!currentUser) {
-    return res.json({ profiles: demoProfiles });
+    return res.status(404).json({ message: 'Profile not found' });
+  }
+
+  if (!currentUser.onboardingCompleted) {
+    return res.status(409).json({ message: 'Complete travel preferences before matching' });
   }
 
   const swipedTargets = await Swipe.find({ swiper: userId }).distinct('target');
@@ -68,7 +72,7 @@ export async function swipe(req: AuthenticatedRequest, res: Response) {
       action: input.action,
       compatibilityScore: input.compatibilityScore
     },
-    { upsert: true, new: true }
+    { upsert: true, returnDocument: 'after' }
   );
 
   let match = null;
@@ -88,7 +92,7 @@ export async function swipe(req: AuthenticatedRequest, res: Response) {
           compatibilityScore: Math.max(input.compatibilityScore, reciprocal.compatibilityScore),
           matchedAt: new Date()
         },
-        { upsert: true, new: true }
+        { upsert: true, returnDocument: 'after' }
       );
     }
   }

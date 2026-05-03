@@ -1,31 +1,93 @@
-import { CalendarDays, CheckCircle2, Heart, MapPin, MessageCircle, ShieldCheck, Sparkles, Users } from 'lucide-react'
+import { CalendarDays, CheckCircle2, Heart, LogOut, MapPin, MessageCircle, ShieldCheck, Sparkles, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import './App.css'
-import { getDiscoverProfiles, getTrips } from './lib/api'
-import type { DiscoverProfile, GroupTrip } from './lib/api'
+import { completeOnboarding, getDiscoverProfiles, getTrips, loginUser, registerUser } from './lib/api'
+import type { FormEvent, ReactNode } from 'react'
+import type { AppUser, DiscoverProfile, GroupTrip, OnboardingInput } from './lib/api'
+
+type AuthMode = 'login' | 'register'
+
+const tokenKey = 'wandermatch_token'
+const userKey = 'wandermatch_user'
 
 function App() {
+  const [token, setToken] = useState(() => localStorage.getItem(tokenKey) ?? '')
+  const [user, setUser] = useState<AppUser | null>(() => {
+    const stored = localStorage.getItem(userKey)
+    return stored ? (JSON.parse(stored) as AppUser) : null
+  })
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([])
   const [trips, setTrips] = useState<GroupTrip[]>([])
   const [activeIndex, setActiveIndex] = useState(0)
-  const [apiStatus, setApiStatus] = useState<'loading' | 'connected' | 'demo'>('loading')
+  const [apiStatus, setApiStatus] = useState<'idle' | 'loading' | 'connected' | 'demo'>('idle')
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    Promise.all([getDiscoverProfiles(), getTrips()])
+    if (!token || !user?.onboardingCompleted) {
+      return
+    }
+
+    setApiStatus('loading')
+    Promise.all([getDiscoverProfiles(token), getTrips(token)])
       .then(([profileData, tripData]) => {
-        setProfiles(profileData)
-        setTrips(tripData)
-        setApiStatus('connected')
+        setProfiles(profileData.length ? profileData : fallbackProfiles)
+        setTrips(tripData.length ? tripData : fallbackTrips)
+        setApiStatus(profileData.length ? 'connected' : 'demo')
       })
-      .catch(() => {
+      .catch((requestError: Error) => {
+        setError(requestError.message)
         setProfiles(fallbackProfiles)
         setTrips(fallbackTrips)
         setApiStatus('demo')
       })
-  }, [])
+  }, [token, user?.onboardingCompleted])
+
+  function saveSession(nextToken: string, nextUser: AppUser) {
+    localStorage.setItem(tokenKey, nextToken)
+    localStorage.setItem(userKey, JSON.stringify(nextUser))
+    setToken(nextToken)
+    setUser(nextUser)
+    setError('')
+  }
+
+  function logout() {
+    localStorage.removeItem(tokenKey)
+    localStorage.removeItem(userKey)
+    setToken('')
+    setUser(null)
+    setProfiles([])
+    setTrips([])
+  }
+
+  if (!token || !user) {
+    return (
+      <Shell apiStatus="idle">
+        <AuthPanel onAuthenticated={saveSession} />
+      </Shell>
+    )
+  }
+
+  if (!user.onboardingCompleted) {
+    return (
+      <Shell apiStatus="connected" user={user} onLogout={logout}>
+        <PreferenceOnboarding
+          error={error}
+          onSubmit={async (input) => {
+            try {
+              const updatedUser = await completeOnboarding(token, input)
+              localStorage.setItem(userKey, JSON.stringify(updatedUser))
+              setUser(updatedUser)
+              setError('')
+            } catch (requestError) {
+              setError(requestError instanceof Error ? requestError.message : 'Could not save preferences')
+            }
+          }}
+        />
+      </Shell>
+    )
+  }
 
   const activeProfile = profiles[activeIndex] ?? profiles[0]
-
   const stats = useMemo(
     () => [
       { label: 'compatibility', value: activeProfile ? `${activeProfile.compatibilityScore}%` : '--' },
@@ -40,26 +102,14 @@ function App() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark">W</span>
-          <span>WanderMatch</span>
-        </div>
-        <nav className="nav-links" aria-label="Primary">
-          <a href="#discover">Discover</a>
-          <a href="#trips">Trips</a>
-          <a href="#safety">Safety</a>
-        </nav>
-        <span className={`api-pill ${apiStatus}`}>{apiStatus === 'connected' ? 'API connected' : apiStatus === 'demo' ? 'Demo data' : 'Loading API'}</span>
-      </header>
-
+    <Shell apiStatus={apiStatus} user={user} onLogout={logout}>
+      {error ? <div className="notice">{error}</div> : null}
       <section className="hero-section">
         <div className="hero-copy">
           <p className="eyebrow">Travel buddy matching for solo travelers</p>
           <h1>Find a compatible companion before the trip starts.</h1>
           <p className="hero-text">
-            Swipe through verified travelers by destination, dates, style, budget, and shared interests. Matches unlock chat, shared planning, and safety tools.
+            Your completed preferences now drive matching by destination overlap, trip dates, travel style, interests, and daily budget.
           </p>
           <div className="hero-actions">
             <a href="#discover" className="primary-action">
@@ -117,17 +167,17 @@ function App() {
         <article>
           <MessageCircle />
           <h2>Real-time chat</h2>
-          <p>Matched users can message, share plans, and build trip context in one conversation.</p>
+          <p>Only matched users can message, share plans, and build trip context.</p>
         </article>
         <article>
           <CalendarDays />
           <h2>Trip boards</h2>
-          <p>Shared itineraries track destinations, dates, booking tasks, and expenses.</p>
+          <p>Trips stay behind login and use the travel data collected during onboarding.</p>
         </article>
         <article id="safety">
           <ShieldCheck />
           <h2>Safety-first flows</h2>
-          <p>Verification, trusted contacts, reporting, and emergency check-in are modeled from day one.</p>
+          <p>Verification, trusted contacts, reporting, and emergency check-in are protected areas.</p>
         </article>
       </section>
 
@@ -154,10 +204,208 @@ function App() {
 
       <footer>
         <CheckCircle2 size={18} />
-        MERN web, Express API, and React Native mobile foundations are ready for feature work.
+        Logged-in matching flow is connected to user preferences.
       </footer>
+    </Shell>
+  )
+}
+
+function Shell({
+  apiStatus,
+  children,
+  user,
+  onLogout
+}: {
+  apiStatus: 'idle' | 'loading' | 'connected' | 'demo'
+  children: ReactNode
+  user?: AppUser | null
+  onLogout?: () => void
+}) {
+  return (
+    <main className="app-shell">
+      <header className="topbar">
+        <div className="brand">
+          <span className="brand-mark">W</span>
+          <span>WanderMatch</span>
+        </div>
+        <nav className="nav-links" aria-label="Primary">
+          <a href="#discover">Discover</a>
+          <a href="#trips">Trips</a>
+          <a href="#safety">Safety</a>
+        </nav>
+        <div className="session-actions">
+          <span className={`api-pill ${apiStatus}`}>{apiStatusLabel(apiStatus)}</span>
+          {user ? <span className="user-pill">{user.name}</span> : null}
+          {onLogout ? (
+            <button type="button" className="logout-button" onClick={onLogout}>
+              <LogOut size={16} />
+              Logout
+            </button>
+          ) : null}
+        </div>
+      </header>
+      {children}
     </main>
   )
+}
+
+function AuthPanel({ onAuthenticated }: { onAuthenticated: (token: string, user: AppUser) => void }) {
+  const [mode, setMode] = useState<AuthMode>('register')
+  const [error, setError] = useState('')
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+
+    try {
+      const dateOfBirth = String(form.get('dateOfBirth') ?? '')
+      const response =
+        mode === 'register'
+          ? await registerUser({
+              name: String(form.get('name') ?? ''),
+              email: String(form.get('email') ?? ''),
+              password: String(form.get('password') ?? ''),
+              phone: String(form.get('phone') ?? ''),
+              homeCity: String(form.get('homeCity') ?? ''),
+              gender: String(form.get('gender') ?? 'prefer-not-to-say'),
+              ...(dateOfBirth ? { dateOfBirth } : {})
+            })
+          : await loginUser({
+              email: String(form.get('email') ?? ''),
+              password: String(form.get('password') ?? '')
+            })
+
+      onAuthenticated(response.token, response.user)
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Authentication failed')
+    }
+  }
+
+  return (
+    <section className="auth-layout">
+      <div className="hero-copy">
+        <p className="eyebrow">Login required</p>
+        <h1>Start with an account, then complete travel preferences.</h1>
+        <p className="hero-text">
+          WanderMatch does not unlock discovery, group trips, chat, or safety tools until the user is logged in and preference onboarding is complete.
+        </p>
+      </div>
+      <form className="auth-card" onSubmit={submit}>
+        <div className="auth-tabs">
+          <button type="button" className={mode === 'register' ? 'active' : ''} onClick={() => setMode('register')}>Register</button>
+          <button type="button" className={mode === 'login' ? 'active' : ''} onClick={() => setMode('login')}>Login</button>
+        </div>
+        {error ? <div className="form-error">{error}</div> : null}
+        {mode === 'register' ? (
+          <>
+            <label>Full name<input name="name" required minLength={2} /></label>
+            <label>Phone<input name="phone" /></label>
+            <label>Home city<input name="homeCity" required /></label>
+            <label>Date of birth<input name="dateOfBirth" type="date" /></label>
+            <label>Gender
+              <select name="gender" defaultValue="prefer-not-to-say">
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+                <option value="non-binary">Non-binary</option>
+                <option value="prefer-not-to-say">Prefer not to say</option>
+              </select>
+            </label>
+          </>
+        ) : null}
+        <label>Email<input name="email" type="email" required /></label>
+        <label>Password<input name="password" type="password" required minLength={mode === 'register' ? 8 : 1} /></label>
+        <button className="primary-action form-submit" type="submit">{mode === 'register' ? 'Create account' : 'Login'}</button>
+      </form>
+    </section>
+  )
+}
+
+function PreferenceOnboarding({ error, onSubmit }: { error: string; onSubmit: (input: OnboardingInput) => Promise<void> }) {
+  const [saving, setSaving] = useState(false)
+
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    setSaving(true)
+    await onSubmit({
+      bio: String(form.get('bio') ?? ''),
+      travelStyle: String(form.get('travelStyle') ?? 'budget'),
+      interests: splitTags(String(form.get('interests') ?? '')),
+      languages: splitTags(String(form.get('languages') ?? '')),
+      budgetMin: Number(form.get('budgetMin') ?? 0),
+      budgetMax: Number(form.get('budgetMax') ?? 0),
+      preferredDuration: String(form.get('preferredDuration') ?? 'flexible'),
+      companionPreference: String(form.get('companionPreference') ?? 'solo-buddy'),
+      dreamDestinations: splitTags(String(form.get('dreamDestinations') ?? '')),
+      tripPlans: [
+        {
+          destination: String(form.get('tripDestination') ?? ''),
+          startDate: String(form.get('startDate') ?? ''),
+          endDate: String(form.get('endDate') ?? '')
+        }
+      ]
+    })
+    setSaving(false)
+  }
+
+  return (
+    <section className="onboarding-section">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">Preference onboarding</p>
+          <h2>Tell WanderMatch what kind of travel buddy you need.</h2>
+        </div>
+      </div>
+      <form className="preference-form" onSubmit={submit}>
+        {error ? <div className="form-error">{error}</div> : null}
+        <label className="wide">Traveler bio<textarea name="bio" required minLength={20} defaultValue="I like planned trips with local food, safe stays, and flexible daytime activities." /></label>
+        <label>Travel style
+          <select name="travelStyle" defaultValue="budget">
+            <option value="backpacker">Backpacker</option>
+            <option value="budget">Budget</option>
+            <option value="midrange">Mid-range</option>
+            <option value="luxury">Luxury</option>
+          </select>
+        </label>
+        <label>Interests<input name="interests" required defaultValue="Hiking, Food & Cuisine, Culture & History, Photography" /></label>
+        <label>Languages<input name="languages" required defaultValue="English, Hindi" /></label>
+        <label>Budget min per day<input name="budgetMin" type="number" required defaultValue={1500} /></label>
+        <label>Budget max per day<input name="budgetMax" type="number" required defaultValue={5000} /></label>
+        <label>Preferred duration
+          <select name="preferredDuration" defaultValue="1-week">
+            <option value="weekend">Weekend</option>
+            <option value="1-week">1 week</option>
+            <option value="2-weeks">2 weeks</option>
+            <option value="1-month">1 month</option>
+            <option value="flexible">Flexible</option>
+          </select>
+        </label>
+        <label>Companion preference
+          <select name="companionPreference" defaultValue="solo-buddy">
+            <option value="solo-buddy">Solo buddy</option>
+            <option value="small-group">Small group</option>
+            <option value="large-group">Large group</option>
+          </select>
+        </label>
+        <label className="wide">Dream destinations<input name="dreamDestinations" required defaultValue="Bali, Vietnam, Jaipur" /></label>
+        <label>Upcoming trip destination<input name="tripDestination" required defaultValue="Bali" /></label>
+        <label>Start date<input name="startDate" type="date" required /></label>
+        <label>End date<input name="endDate" type="date" required /></label>
+        <button className="primary-action form-submit wide" type="submit" disabled={saving}>{saving ? 'Saving...' : 'Complete preferences and start matching'}</button>
+      </form>
+    </section>
+  )
+}
+
+function splitTags(value: string) {
+  return value.split(',').map((item) => item.trim()).filter(Boolean)
+}
+
+function apiStatusLabel(status: 'idle' | 'loading' | 'connected' | 'demo') {
+  if (status === 'connected') return 'API connected'
+  if (status === 'demo') return 'Demo data'
+  if (status === 'loading') return 'Loading API'
+  return 'Protected app'
 }
 
 function formatDateRange(start?: string, end?: string) {

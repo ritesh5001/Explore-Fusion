@@ -4,5 +4,5 @@ import { requireAuth } from '../middleware/auth.js';
 
 export const tripRouter = Router();
 
-tripRouter.get('/', listTrips);
+tripRouter.get('/', requireAuth, listTrips);
 tripRouter.post('/', requireAuth, createTrip);

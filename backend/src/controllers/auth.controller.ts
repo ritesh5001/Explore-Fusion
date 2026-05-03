@@ -9,7 +9,9 @@ const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8),
   phone: z.string().optional(),
-  homeCity: z.string().optional()
+  homeCity: z.string().min(2),
+  dateOfBirth: z.coerce.date().optional(),
+  gender: z.enum(['male', 'female', 'non-binary', 'prefer-not-to-say']).optional()
 });
 
 const loginSchema = z.object({
@@ -32,9 +34,12 @@ export async function register(req: Request, res: Response) {
     passwordHash,
     phone: input.phone,
     homeCity: input.homeCity,
+    dateOfBirth: input.dateOfBirth,
+    gender: input.gender,
     interests: [],
     languages: ['English'],
-    dreamDestinations: []
+    dreamDestinations: [],
+    onboardingCompleted: false
   });
 
   res.status(201).json({

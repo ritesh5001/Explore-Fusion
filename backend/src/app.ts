@@ -7,10 +7,21 @@ import { apiRouter } from './routes/index.js';
 
 export function createApp() {
   const app = express();
+  const allowedOrigins = new Set([
+    ...env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()),
+    'http://localhost:5173',
+    'http://localhost:5174'
+  ]);
 
   app.use(
     cors({
-      origin: env.CLIENT_ORIGIN,
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.has(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(new Error(`CORS blocked origin: ${origin}`));
+      },
       credentials: true
     })
   );

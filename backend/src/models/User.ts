@@ -30,6 +30,7 @@ export interface UserDocument extends mongoose.Document {
   dreamDestinations: string[];
   tripPlans: TripPlan[];
   isVerified: boolean;
+  onboardingCompleted: boolean;
   trustScore: number;
 }
 
@@ -70,6 +71,7 @@ const userSchema = new Schema<UserDocument>(
     dreamDestinations: [{ type: String }],
     tripPlans: [tripPlanSchema],
     isVerified: { type: Boolean, default: false },
+    onboardingCompleted: { type: Boolean, default: false },
     trustScore: { type: Number, default: 4.5 }
   },
   { timestamps: true }

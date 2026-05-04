@@ -84,23 +84,23 @@ export function ProfileDetail() {
         </button>
 
         {/* Gallery */}
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 6, height: 360 }}>
-          <div style={{ borderRadius: 10, overflow: 'hidden' }}>
-            <img src={p.src} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr', gap: 6, height: 360, overflow: 'hidden', borderRadius: 10 }}>
+          <div style={{ borderRadius: 10, overflow: 'hidden', minHeight: 0 }}>
+            <img src={p.src} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
-          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 6, minHeight: 0 }}>
             {GALLERY_EXTRA.slice(0, 2).map((src, i) => (
-              <div key={i} style={{ borderRadius: 10, overflow: 'hidden' }}>
-                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div key={i} style={{ borderRadius: 10, overflow: 'hidden', minHeight: 0 }}>
+                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               </div>
             ))}
           </div>
-          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 6 }}>
-            <div style={{ borderRadius: 10, overflow: 'hidden' }}>
-              <img src={GALLERY_EXTRA[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <div style={{ display: 'grid', gridTemplateRows: '1fr 1fr', gap: 6, minHeight: 0 }}>
+            <div style={{ borderRadius: 10, overflow: 'hidden', minHeight: 0 }}>
+              <img src={GALLERY_EXTRA[2]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             </div>
-            <div style={{ borderRadius: 10, overflow: 'hidden', position: 'relative' }}>
-              <img src={GALLERY_EXTRA[3]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{ borderRadius: 10, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
+              <img src={GALLERY_EXTRA[3]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 14, fontWeight: 700 }}>+5 more</div>
             </div>
           </div>

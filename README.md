@@ -23,6 +23,8 @@ Default URLs:
 - Website: `http://localhost:5173`
 - MongoDB: `mongodb://localhost:27017/wandermatch`
 
+For production, set `CLIENT_ORIGIN` to include your deployed frontend origins such as `https://explorefusion.online` and `https://www.explorefusion.online`.
+
 ## Project Structure
 
 ```text

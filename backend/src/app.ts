@@ -8,11 +8,13 @@ import { apiRouter } from './routes/index.js';
 export function createApp() {
   const app = express();
   const allowedOrigins = new Set([
-    ...env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()),
+    ...env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean),
     'http://localhost:5173',
     'http://localhost:5174',
     'http://127.0.0.1:5173',
-    'http://127.0.0.1:5174'
+    'http://127.0.0.1:5174',
+    'https://explorefusion.online',
+    'https://www.explorefusion.online'
   ]);
 
   app.use(

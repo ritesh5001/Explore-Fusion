@@ -1,22 +1,23 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Button, SegmentedButtons, Text, TextInput } from 'react-native-paper';
 import { AppUser, useLoginMutation, useRegisterMutation } from '../features/api';
 import { colors } from '../theme/colors';
 
 export function AuthScreen({ onAuthenticated }: { onAuthenticated: (token: string, user: AppUser) => void }) {
   const [mode, setMode] = useState<'register' | 'login'>('register');
-  const [name, setName] = useState('Ritesh Sharma');
-  const [email, setEmail] = useState('ritesh@example.com');
-  const [password, setPassword] = useState('password123');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
-  const [homeCity, setHomeCity] = useState('Mumbai');
+  const [homeCity, setHomeCity] = useState('');
   const [error, setError] = useState('');
   const [register, registerState] = useRegisterMutation();
   const [login, loginState] = useLoginMutation();
   const loading = registerState.isLoading || loginState.isLoading;
 
   async function submit() {
+    setError('');
     try {
       const response =
         mode === 'register'
@@ -31,8 +32,9 @@ export function AuthScreen({ onAuthenticated }: { onAuthenticated: (token: strin
           : await login({ email, password }).unwrap();
 
       onAuthenticated(response.token, response.user);
-    } catch {
-      setError('Authentication failed. Check the details and try again.');
+    } catch (err) {
+      const message = 'data' in (err as { data?: { message?: string } }) ? (err as { data?: { message?: string } }).data?.message : undefined;
+      setError(message ?? 'Authentication failed. Check the details and try again.');
     }
   }
 

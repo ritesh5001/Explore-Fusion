@@ -15,12 +15,16 @@ import type { AppUser } from './lib/api'
 const TOKEN_KEY = 'ef_token'
 const USER_KEY = 'ef_user'
 
+
+
+
 export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem(TOKEN_KEY) ?? '')
   const [user, setUser] = useState<AppUser | null>(() => {
     const s = localStorage.getItem(USER_KEY)
     return s ? (JSON.parse(s) as AppUser) : null
   })
+
 
   function saveSession(t: string, u: AppUser) {
     localStorage.setItem(TOKEN_KEY, t)

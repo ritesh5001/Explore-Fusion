@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 import { T, Button } from '../components/ui'
-import { getAdminSummary, getAdminUsers, updateUserModeration } from '../lib/api'
+import { getAdminSummary, getAdminUsers, loginAdmin, updateUserModeration } from '../lib/api'
 import type { AdminSummary, AppUser } from '../lib/api'
 
-const ADMIN_TOKEN_KEY = 'ef_admin_token'
+const ADMIN_SESSION_KEY = 'ef_admin_session'
+const ADMIN_EMAIL = 'nextgenfusion.devs@gmail.com'
 
 export function AdminPanel() {
-  const [adminToken, setAdminToken] = useState(() => localStorage.getItem(ADMIN_TOKEN_KEY) ?? '')
-  const [tokenInput, setTokenInput] = useState(adminToken)
+  const [adminToken, setAdminToken] = useState(() => localStorage.getItem(ADMIN_SESSION_KEY) ?? '')
+  const [email, setEmail] = useState(ADMIN_EMAIL)
+  const [password, setPassword] = useState('')
   const [summary, setSummary] = useState<AdminSummary | null>(null)
   const [users, setUsers] = useState<AppUser[]>([])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [authLoading, setAuthLoading] = useState(false)
 
   async function load(token = adminToken) {
     if (!token) {
@@ -28,6 +31,10 @@ export function AdminPanel() {
       setSummary(nextSummary)
       setUsers(nextUsers)
     } catch (err) {
+      if (err instanceof Error && /token/i.test(err.message)) {
+        localStorage.removeItem(ADMIN_SESSION_KEY)
+        setAdminToken('')
+      }
       setError(err instanceof Error ? err.message : 'Could not load admin data')
     } finally {
       setLoading(false)
@@ -38,10 +45,20 @@ export function AdminPanel() {
     void load()
   }, [])
 
-  function saveToken() {
-    localStorage.setItem(ADMIN_TOKEN_KEY, tokenInput)
-    setAdminToken(tokenInput)
-    void load(tokenInput)
+  async function handleLogin() {
+    setAuthLoading(true)
+    setError('')
+    try {
+      const session = await loginAdmin({ email, password })
+      localStorage.setItem(ADMIN_SESSION_KEY, session.token)
+      setAdminToken(session.token)
+      setPassword('')
+      await load(session.token)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not sign in to admin')
+    } finally {
+      setAuthLoading(false)
+    }
   }
 
   async function moderate(userId: string, input: Parameters<typeof updateUserModeration>[2]) {
@@ -64,16 +81,27 @@ export function AdminPanel() {
             <div style={labelStyle}>Admin control panel</div>
             <h1 style={{ margin: '6px 0 0', fontSize: 30, lineHeight: 1.15 }}>Account and verification review</h1>
           </div>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              value={tokenInput}
-              onChange={(event) => setTokenInput(event.target.value)}
-              placeholder="Admin token"
-              type="password"
-              style={{ ...inputStyle, width: 260 }}
-            />
-            <Button variant="filled" onClick={saveToken}>{loading ? 'Loading...' : 'Connect'}</Button>
-          </div>
+          {!adminToken && (
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <input
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="Admin email"
+                type="email"
+                autoComplete="username"
+                style={{ ...inputStyle, width: 240 }}
+              />
+              <input
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Password"
+                type="password"
+                autoComplete="current-password"
+                style={{ ...inputStyle, width: 220 }}
+              />
+              <Button variant="filled" onClick={() => void handleLogin()}>{authLoading ? 'Signing in...' : 'Sign in'}</Button>
+            </div>
+          )}
         </div>
 
         {error && <div style={{ ...noticeStyle, marginBottom: 14 }}>{error}</div>}
@@ -94,7 +122,11 @@ export function AdminPanel() {
 
         {!users.length && (
           <div style={{ padding: 40, textAlign: 'center', color: T.muted, border: `1px dashed ${T.line}`, borderRadius: 8, background: 'var(--bg)' }}>
-            {adminToken ? 'No users found.' : 'Enter the admin token to load review controls.'}
+            {adminToken
+              ? loading
+                ? 'Loading review queue...'
+                : 'No users found.'
+              : 'Open /admin and sign in with the admin account to load review controls.'}
           </div>
         )}
       </div>

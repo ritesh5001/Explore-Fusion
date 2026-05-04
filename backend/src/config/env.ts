@@ -9,12 +9,10 @@ const envSchema = z.object({
   MONGODB_URI: z.string().default('mongodb://localhost:27017/wandermatch'),
   JWT_SECRET: z.string().min(12).default('dev_only_change_this_secret'),
   CLIENT_ORIGIN: z.string().default('http://localhost:5173'),
-  ADMIN_TOKEN: z.string().min(8).optional()
+  ADMIN_EMAIL: z.string().email().default('nextgenfusion.devs@gmail.com'),
+  ADMIN_PASSWORD: z.string().min(8).default('Ritesh5001@')
 });
 
 const parsedEnv = envSchema.parse(process.env);
 
-export const env = {
-  ...parsedEnv,
-  ADMIN_TOKEN: parsedEnv.ADMIN_TOKEN ?? (parsedEnv.NODE_ENV === 'development' ? 'dev-admin-token' : '')
-};
+export const env = parsedEnv;

@@ -1,9 +1,15 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
+import { env } from '../config/env.js';
 import { User } from '../models/User.js';
 import { sanitizeUser } from './auth.controller.js';
+import { signAdminToken } from '../utils/jwt.js';
 
 const accountStatusSchema = z.enum(['pending', 'approved', 'rejected', 'suspended']);
+const adminLoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1)
+});
 
 const moderationSchema = z.object({
   accountStatus: z.enum(['pending', 'approved', 'rejected', 'suspended']).optional(),
@@ -12,6 +18,21 @@ const moderationSchema = z.object({
   rejectionReason: z.string().max(300).optional(),
   adminNote: z.string().max(300).optional()
 });
+
+export async function adminLogin(req: Request, res: Response) {
+  const input = adminLoginSchema.parse(req.body);
+
+  if (input.email.toLowerCase() !== env.ADMIN_EMAIL.toLowerCase() || input.password !== env.ADMIN_PASSWORD) {
+    return res.status(401).json({ message: 'Invalid admin email or password' });
+  }
+
+  res.json({
+    token: signAdminToken(),
+    admin: {
+      email: env.ADMIN_EMAIL
+    }
+  });
+}
 
 export async function getAdminSummary(_req: Request, res: Response) {
   const [totalUsers, pendingAccounts, pendingPhotos, pendingVerification, approvedAccounts] = await Promise.all([

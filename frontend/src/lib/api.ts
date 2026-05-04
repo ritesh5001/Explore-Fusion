@@ -62,6 +62,13 @@ export interface AuthResponse {
   user: AppUser;
 }
 
+export interface AdminAuthResponse {
+  token: string;
+  admin: {
+    email: string;
+  };
+}
+
 export interface RegisterInput {
   name: string;
   email: string;
@@ -166,12 +173,6 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 function authHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`
-  };
-}
-
-function adminHeaders(token: string) {
-  return {
-    'x-admin-token': token
   };
 }
 
@@ -283,15 +284,22 @@ export async function getDestinations(query?: string): Promise<string[]> {
   return data.destinations;
 }
 
+export async function loginAdmin(input: LoginInput): Promise<AdminAuthResponse> {
+  return request<AdminAuthResponse>('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify(input)
+  });
+}
+
 export async function getAdminSummary(adminToken: string): Promise<AdminSummary> {
   return request<AdminSummary>('/api/admin/summary', {
-    headers: adminHeaders(adminToken)
+    headers: authHeaders(adminToken)
   });
 }
 
 export async function getAdminUsers(adminToken: string): Promise<AppUser[]> {
   const data = await request<AdminUsersResponse>('/api/admin/users', {
-    headers: adminHeaders(adminToken)
+    headers: authHeaders(adminToken)
   });
   return data.users;
 }
@@ -308,7 +316,7 @@ export async function updateUserModeration(
 ): Promise<AppUser> {
   const data = await request<{ user: AppUser }>(`/api/admin/users/${userId}/moderation`, {
     method: 'PATCH',
-    headers: adminHeaders(adminToken),
+    headers: authHeaders(adminToken),
     body: JSON.stringify(input)
   });
   return data.user;

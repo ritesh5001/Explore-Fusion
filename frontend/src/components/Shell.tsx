@@ -102,9 +102,6 @@ export function MinimalShell({ children }: { children: ReactNode }) {
           <div style={{ width: 24, height: 24, borderRadius: 6, background: T.ink, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 800 }}>EF</div>
           Explore Fusion
         </Link>
-        <Link to="/admin" style={{ marginLeft: 'auto', padding: '6px 12px', borderRadius: 6, border: `1px solid ${T.line}`, fontSize: 12, fontWeight: 700, color: T.ink, textDecoration: 'none' }}>
-          Admin
-        </Link>
       </header>
       <main style={{ flex: 1 }}>{children}</main>
     </div>

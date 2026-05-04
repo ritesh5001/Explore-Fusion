@@ -76,6 +76,10 @@ export interface OnboardingInput {
   }>;
 }
 
+export interface DestinationsResponse {
+  destinations: string[];
+}
+
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -135,4 +139,10 @@ export async function getTrips(token: string): Promise<GroupTrip[]> {
     headers: authHeaders(token)
   });
   return data.trips;
+}
+
+export async function getDestinations(query?: string): Promise<string[]> {
+  const search = query ? `?q=${encodeURIComponent(query)}` : '';
+  const data = await request<DestinationsResponse>(`/api/destinations${search}`);
+  return data.destinations;
 }

@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { T, Button, Rule } from '../components/ui'
 import { IconCheck } from '../components/Icon'
-import { completeOnboarding } from '../lib/api'
+import { completeOnboarding, getDestinations } from '../lib/api'
 import type { AppUser } from '../lib/api'
 
 const STEPS = ['Account', 'Travel style', 'Interests', 'Trip dates', 'Photos & verification']
@@ -29,13 +29,37 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
   const [selectedInterests, setSelectedInterests] = useState<Set<string>>(new Set(['Slow travel', 'Food walks', 'Hiking', 'Photography', 'Heritage', 'Markets', 'Hostels']))
   const [selectedLangs, setSelectedLangs] = useState<Set<string>>(new Set(['English', 'Hindi']))
   const [bio, setBio] = useState('')
-  const [destination, setDestination] = useState('Bali, Indonesia')
+  const [destination, setDestination] = useState('')
+  const [destinationOptions, setDestinationOptions] = useState<string[]>([])
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
   const [budgetMin, setBudgetMin] = useState(1500)
   const [budgetMax, setBudgetMax] = useState(5000)
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    getDestinations()
+      .then((destinations) => {
+        if (cancelled) {
+          return
+        }
+
+        setDestinationOptions(destinations)
+        setDestination((current) => current || destinations[0] || '')
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setDestinationOptions([])
+        }
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   function toggleInterest(tag: string) {
     setSelectedInterests((prev) => {
@@ -66,9 +90,9 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
         budgetMax,
         preferredDuration: '1-week',
         companionPreference: 'solo-buddy',
-        dreamDestinations: [destination.split(',')[0]],
+        dreamDestinations: [destination],
         tripPlans: startDate && endDate
-          ? [{ destination: destination.split(',')[0], startDate, endDate }]
+          ? [{ destination, startDate, endDate }]
           : [],
       })
       onComplete(updated)
@@ -124,7 +148,7 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
 
           {step === 1 && <StepTravelStyle travelStyle={travelStyle} setTravelStyle={setTravelStyle} selectedLangs={selectedLangs} toggleLang={toggleLang} bio={bio} setBio={setBio} />}
           {step === 2 && <StepInterests selectedInterests={selectedInterests} toggleInterest={toggleInterest} />}
-          {step === 3 && <StepTripDates destination={destination} setDestination={setDestination} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} budgetMin={budgetMin} setBudgetMin={setBudgetMin} budgetMax={budgetMax} setBudgetMax={setBudgetMax} />}
+          {step === 3 && <StepTripDates destination={destination} setDestination={setDestination} destinationOptions={destinationOptions} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} budgetMin={budgetMin} setBudgetMin={setBudgetMin} budgetMax={budgetMax} setBudgetMax={setBudgetMax} />}
 
           {error && <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: '#fff0e9', border: '1px solid #efb49f', color: '#7a2c19', fontSize: 13 }}>{error}</div>}
 
@@ -234,12 +258,14 @@ function StepInterests({ selectedInterests, toggleInterest }: { selectedInterest
 
 function StepTripDates({
   destination, setDestination,
+  destinationOptions,
   startDate, setStartDate,
   endDate, setEndDate,
   budgetMin, setBudgetMin,
   budgetMax, setBudgetMax,
 }: {
   destination: string; setDestination: (v: string) => void
+  destinationOptions: string[]
   startDate: string; setStartDate: (v: string) => void
   endDate: string; setEndDate: (v: string) => void
   budgetMin: number; setBudgetMin: (v: number) => void
@@ -255,7 +281,18 @@ function StepTripDates({
       <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <div>
           <label style={labelStyle}>Destination</label>
-          <input value={destination} onChange={(e) => setDestination(e.target.value)} style={fieldStyle} placeholder="Bali, Indonesia" />
+          <input
+            list="indian-destinations"
+            value={destination}
+            onChange={(e) => setDestination(e.target.value)}
+            style={fieldStyle}
+            placeholder="Select an Indian destination"
+          />
+          <datalist id="indian-destinations">
+            {destinationOptions.map((option) => (
+              <option key={option} value={option} />
+            ))}
+          </datalist>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
           <div>

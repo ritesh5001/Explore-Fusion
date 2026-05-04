@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { T, PHOTOS, Bubble, DateChip, Button } from '../components/ui'
-import { IconShield, IconMore, IconPlus, IconSend, IconBack, IconPin } from '../components/Icon'
+import { IconShield, IconMore, IconPlus, IconSend, IconPin } from '../components/Icon'
 
 const CONVERSATIONS = [
   { id: 'priya', name: 'Priya Shah', msg: 'Tegallalang walk on day 2?', time: '2m', unread: 2, src: PHOTOS.priya, trip: 'Bali · Jul 4–16', active: true },

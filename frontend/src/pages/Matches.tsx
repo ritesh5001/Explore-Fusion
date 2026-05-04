@@ -1,6 +1,5 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { T, PHOTOS, WFImage, Button } from '../components/ui'
+import { T, PHOTOS, Button } from '../components/ui'
 import { IconPlus } from '../components/Icon'
 
 const TRIPS = [
@@ -66,7 +65,6 @@ export function Matches() {
 
 function TripBlock({ img, title, dates, stats, buddies }: typeof TRIPS[0]) {
   const navigate = useNavigate()
-  const [expanded, setExpanded] = useState(true)
 
   return (
     <div style={{ borderRadius: 14, overflow: 'hidden', border: `1px solid ${T.line}`, background: 'var(--bg)' }}>

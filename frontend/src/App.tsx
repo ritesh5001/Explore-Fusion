@@ -75,38 +75,38 @@ export default function App() {
 
         {/* Authenticated app shell routes */}
         <Route path="/discover" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><Discover token={token} /></Shell>
         } />
 
         <Route path="/profile/:id" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><ProfileDetail token={token} /></Shell>
         } />
 
         <Route path="/matches" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><Matches token={token} currentUserId={user?._id ?? ''} /></Shell>
         } />
 
         <Route path="/trips" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><Trips token={token} /></Shell>
         } />
 
         <Route path="/chat" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><ChatPage token={token} currentUserId={user?._id ?? ''} /></Shell>
         } />
 
         <Route path="/chat/:id" element={
-          needsOnboarding
-            ? <Navigate to="/onboarding" replace />
+          !isAuthed ? <Navigate to="/auth" replace />
+            : needsOnboarding ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><ChatPage token={token} currentUserId={user?._id ?? ''} /></Shell>
         } />
 

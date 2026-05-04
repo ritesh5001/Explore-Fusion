@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom'
 import { T, PHOTOS } from '../components/ui'
 import { IconSearch, IconShield } from '../components/Icon'
 
-const TRENDING = ['Vietnam · Aug', 'Himachal · Jun', 'Goa · Sep', 'Meghalaya · Oct', 'Jaipur · Jun']
+const TRENDING = ['Jaipur · Jun', 'Goa · Sep', 'Meghalaya · Oct', 'Rishikesh · Aug', 'Kerala · Dec']
 const TRUST_ITEMS = ['Verified IDs', 'Interest-first matching', 'Group trips & cost split', '24/7 safety check-in']
 
 export function Landing() {
   const navigate = useNavigate()
-  const [destination, setDestination] = useState('Bali, Indonesia')
-  const [dates, setDates] = useState('Jul 4 — Jul 16')
+  const [destination, setDestination] = useState('Jaipur, Rajasthan')
+  const [dates, setDates] = useState('Jun 4 - Jun 16')
   const [style, setStyle] = useState('Budget')
 
   return (
@@ -17,8 +17,8 @@ export function Landing() {
       {/* Background */}
       <div style={{ position: 'absolute', inset: 0 }}>
         <img
-          src={PHOTOS.bali}
-          alt="Bali"
+          src={PHOTOS.jaipur}
+          alt="Jaipur"
           style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0.72) 100%)' }} />

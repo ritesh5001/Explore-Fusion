@@ -161,18 +161,7 @@ export function DateChip({ children }: { children: ReactNode }) {
   )
 }
 
-// ── Photos pool (Unsplash) ───────────────────────────────────────────
 export const PHOTOS = {
-  priya: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=600&q=70',
-  rahul: 'https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=600&q=70',
-  ananya: 'https://images.unsplash.com/photo-1614283233556-f35b0c801ef1?w=600&q=70',
-  arjun: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=600&q=70',
-  meera: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600&q=70',
-  vikram: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&q=70',
-  bali: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=70',
   jaipur: 'https://images.unsplash.com/photo-1599661046289-e31897846e41?w=800&q=70',
   vietnam: 'https://images.unsplash.com/photo-1528127269322-539801943592?w=800&q=70',
-  himachal: 'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&q=70',
-  goa: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=70',
-  meghalaya: 'https://images.unsplash.com/photo-1558001373-7b93ee48ffa0?w=800&q=70',
 }

@@ -74,6 +74,16 @@ export async function getProfile(req: AuthenticatedRequest, res: Response) {
   res.json(sanitizeUser(user));
 }
 
+export async function getPublicProfile(req: AuthenticatedRequest, res: Response) {
+  const user = await User.findById(req.params.userId).select('-passwordHash');
+
+  if (!user || user.accountStatus !== 'approved' || !user.onboardingCompleted) {
+    return res.status(404).json({ message: 'Profile not found' });
+  }
+
+  res.json(sanitizeUser(user));
+}
+
 export async function updateProfile(req: AuthenticatedRequest, res: Response) {
   const input = profileSchema.parse(req.body);
   const user = await User.findByIdAndUpdate(req.userId, input, { returnDocument: 'after' });

@@ -1,10 +1,12 @@
 export interface DiscoverProfile {
   id: string;
+  _id?: string;
   name: string;
   age?: number;
   homeCity?: string;
   gender?: string;
   bio?: string;
+  photos?: string[];
   travelStyle: string;
   interests: string[];
   languages: string[];
@@ -25,6 +27,8 @@ export interface GroupTrip {
   startDate?: string;
   endDate?: string;
   members?: number;
+  creator?: AppUser;
+  tripType?: 'solo_buddy' | 'group';
   maxMembers: number;
   status: string;
 }
@@ -112,6 +116,34 @@ export interface AdminUsersResponse {
   users: AppUser[];
 }
 
+export interface MatchUser extends AppUser {
+  bio?: string;
+  photos?: string[];
+  interests?: string[];
+  languages?: string[];
+  dreamDestinations?: string[];
+  trustScore?: number;
+  travelStyle?: string;
+  isVerified?: boolean;
+}
+
+export interface MatchRecord {
+  _id: string;
+  users: MatchUser[];
+  status: 'matched' | 'unmatched';
+  compatibilityScore: number;
+  matchedAt: string;
+}
+
+export interface MessageRecord {
+  _id: string;
+  match: string;
+  sender: string;
+  body: string;
+  type: 'text' | 'photo' | 'voice' | 'location' | 'document';
+  createdAt: string;
+}
+
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -172,11 +204,77 @@ export async function getDiscoverProfiles(token: string): Promise<DiscoverProfil
   return data.profiles;
 }
 
+export async function swipeUser(
+  token: string,
+  input: { targetUserId: string; action: 'left' | 'right' | 'super'; compatibilityScore: number }
+): Promise<{ match: MatchRecord | null }> {
+  return request<{ match: MatchRecord | null }>('/api/match/swipe', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(input)
+  });
+}
+
+export async function getMatches(token: string): Promise<MatchRecord[]> {
+  const data = await request<{ matches: MatchRecord[] }>('/api/match/matches', {
+    headers: authHeaders(token)
+  });
+  return data.matches;
+}
+
+export async function getPublicProfile(token: string, userId: string): Promise<MatchUser> {
+  return request<MatchUser>(`/api/profile/${userId}`, {
+    headers: authHeaders(token)
+  });
+}
+
 export async function getTrips(token: string): Promise<GroupTrip[]> {
   const data = await request<{ trips: GroupTrip[] }>('/api/trips', {
     headers: authHeaders(token)
   });
   return data.trips;
+}
+
+export async function createTrip(
+  token: string,
+  input: {
+    destination: string;
+    startDate: string;
+    endDate: string;
+    tripType: 'solo_buddy' | 'group';
+    maxMembers: number;
+  }
+): Promise<GroupTrip> {
+  const data = await request<{ trip: GroupTrip }>('/api/trips', {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify(input)
+  });
+  return data.trip;
+}
+
+export async function joinTrip(token: string, tripId: string): Promise<GroupTrip> {
+  const data = await request<{ trip: GroupTrip }>(`/api/trips/${tripId}/join`, {
+    method: 'POST',
+    headers: authHeaders(token)
+  });
+  return data.trip;
+}
+
+export async function getMessages(token: string, matchId: string): Promise<MessageRecord[]> {
+  const data = await request<{ messages: MessageRecord[] }>(`/api/chat/${matchId}/messages`, {
+    headers: authHeaders(token)
+  });
+  return data.messages;
+}
+
+export async function sendChatMessage(token: string, matchId: string, body: string): Promise<MessageRecord> {
+  const data = await request<{ message: MessageRecord }>(`/api/chat/${matchId}/messages`, {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ body })
+  });
+  return data.message;
 }
 
 export async function getDestinations(query?: string): Promise<string[]> {

@@ -1,9 +1,7 @@
 import { Response } from 'express';
 import { z } from 'zod';
-import { isDatabaseConnected } from '../config/database.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { Trip } from '../models/Trip.js';
-import { demoTrips } from '../services/demoData.js';
 
 const tripSchema = z.object({
   destination: z.string().min(2),
@@ -14,12 +12,12 @@ const tripSchema = z.object({
 });
 
 export async function listTrips(_req: AuthenticatedRequest, res: Response) {
-  if (!isDatabaseConnected()) {
-    return res.json({ trips: demoTrips });
-  }
-
-  const trips = await Trip.find().sort({ startDate: 1 }).limit(40);
-  res.json({ trips: trips.length ? trips : demoTrips });
+  const trips = await Trip.find()
+    .populate('creator', 'name photos homeCity isVerified')
+    .populate('members', 'name photos homeCity isVerified')
+    .sort({ startDate: 1 })
+    .limit(40);
+  res.json({ trips });
 }
 
 export async function createTrip(req: AuthenticatedRequest, res: Response) {
@@ -36,4 +34,27 @@ export async function createTrip(req: AuthenticatedRequest, res: Response) {
   });
 
   res.status(201).json({ trip });
+}
+
+export async function joinTrip(req: AuthenticatedRequest, res: Response) {
+  if (!req.userId) {
+    return res.status(401).json({ message: 'Missing user' });
+  }
+
+  const trip = await Trip.findById(req.params.tripId);
+
+  if (!trip) {
+    return res.status(404).json({ message: 'Trip not found' });
+  }
+
+  if (!trip.members.some((member) => member.toString() === req.userId)) {
+    if (trip.members.length >= trip.maxMembers) {
+      return res.status(409).json({ message: 'Trip is full' });
+    }
+
+    trip.members.push(req.userId as never);
+    await trip.save();
+  }
+
+  res.json({ trip });
 }

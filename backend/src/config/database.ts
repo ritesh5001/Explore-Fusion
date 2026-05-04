@@ -8,7 +8,7 @@ export async function connectDatabase() {
     });
     console.log('MongoDB connected');
   } catch (error) {
-    console.warn('MongoDB not connected. API will run with demo discovery data.');
+    console.warn('MongoDB not connected. Database-backed API routes may fail until MongoDB is available.');
     console.warn(error instanceof Error ? error.message : error);
   }
 }

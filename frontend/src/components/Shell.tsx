@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import type { ReactNode } from 'react'
-import { T, PHOTOS } from './ui'
+import { T } from './ui'
 import { IconSearch, IconLogout } from './Icon'
 
 const NAV_LINKS = [
@@ -12,7 +12,7 @@ const NAV_LINKS = [
 
 interface ShellProps {
   children: ReactNode
-  user?: { name: string } | null
+  user?: { name: string; photos?: string[] } | null
   onLogout?: () => void
 }
 
@@ -60,7 +60,13 @@ export function Shell({ children, user, onLogout }: ShellProps) {
           {user ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', overflow: 'hidden', border: `1px solid ${T.line}` }}>
-                <img src={PHOTOS.arjun} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                {user.photos?.[0] ? (
+                  <img src={user.photos[0]} alt={user.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'grid', placeItems: 'center', background: T.ink, color: '#fff', fontSize: 11, fontWeight: 800 }}>
+                    {user.name.slice(0, 1).toUpperCase()}
+                  </div>
+                )}
               </div>
               <button
                 onClick={onLogout}

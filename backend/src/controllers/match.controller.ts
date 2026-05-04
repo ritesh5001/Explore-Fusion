@@ -1,11 +1,9 @@
 import { Response } from 'express';
 import { z } from 'zod';
-import { isDatabaseConnected } from '../config/database.js';
 import { AuthenticatedRequest } from '../middleware/auth.js';
 import { Match } from '../models/Match.js';
 import { Swipe } from '../models/Swipe.js';
 import { User } from '../models/User.js';
-import { demoProfiles } from '../services/demoData.js';
 import { calculateCompatibilityScore } from '../services/matching.service.js';
 
 const swipeSchema = z.object({
@@ -15,10 +13,6 @@ const swipeSchema = z.object({
 });
 
 export async function discover(req: AuthenticatedRequest, res: Response) {
-  if (!isDatabaseConnected()) {
-    return res.json({ profiles: demoProfiles, source: 'demo' });
-  }
-
   const userId = req.userId;
 
   if (!userId) {
@@ -50,6 +44,7 @@ export async function discover(req: AuthenticatedRequest, res: Response) {
       name: candidate.name,
       homeCity: candidate.homeCity,
       bio: candidate.bio,
+      photos: candidate.photos,
       travelStyle: candidate.travelStyle,
       interests: candidate.interests,
       languages: candidate.languages,
@@ -110,7 +105,7 @@ export async function swipe(req: AuthenticatedRequest, res: Response) {
 
 export async function listMatches(req: AuthenticatedRequest, res: Response) {
   const matches = await Match.find({ users: req.userId, status: 'matched' })
-    .populate('users', 'name photos homeCity travelStyle isVerified trustScore')
+    .populate('users', 'name photos homeCity travelStyle isVerified trustScore bio interests languages dreamDestinations')
     .sort({ matchedAt: -1 });
 
   res.json({ matches });

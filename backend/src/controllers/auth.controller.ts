@@ -39,6 +39,9 @@ export async function register(req: Request, res: Response) {
     interests: [],
     languages: ['English'],
     dreamDestinations: [],
+    accountStatus: 'pending',
+    verificationStatus: 'not-submitted',
+    photoVerificationStatus: 'not-submitted',
     onboardingCompleted: false
   });
 

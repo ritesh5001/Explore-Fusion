@@ -35,6 +35,10 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
   const [endDate, setEndDate] = useState('')
   const [budgetMin, setBudgetMin] = useState(1500)
   const [budgetMax, setBudgetMax] = useState(5000)
+  const [profilePhoto, setProfilePhoto] = useState('')
+  const [verificationSelfie, setVerificationSelfie] = useState('')
+  const [idDocument, setIdDocument] = useState('')
+  const [verificationNote, setVerificationNote] = useState('')
   const [error, setError] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -80,6 +84,12 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
   async function finish() {
     setSaving(true)
     setError('')
+    if (!profilePhoto || !verificationSelfie) {
+      setSaving(false)
+      setError('Add a profile photo and verification selfie before finishing.')
+      return
+    }
+
     try {
       const updated = await completeOnboarding(token, {
         bio: bio || 'Looking for a travel buddy who shares my interests.',
@@ -94,6 +104,12 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
         tripPlans: startDate && endDate
           ? [{ destination, startDate, endDate }]
           : [],
+        verificationSubmission: {
+          profilePhoto,
+          verificationSelfie,
+          ...(idDocument ? { idDocument } : {}),
+          ...(verificationNote ? { note: verificationNote } : {}),
+        },
       })
       onComplete(updated)
       navigate('/discover')
@@ -149,6 +165,7 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
           {step === 1 && <StepTravelStyle travelStyle={travelStyle} setTravelStyle={setTravelStyle} selectedLangs={selectedLangs} toggleLang={toggleLang} bio={bio} setBio={setBio} />}
           {step === 2 && <StepInterests selectedInterests={selectedInterests} toggleInterest={toggleInterest} />}
           {step === 3 && <StepTripDates destination={destination} setDestination={setDestination} destinationOptions={destinationOptions} startDate={startDate} setStartDate={setStartDate} endDate={endDate} setEndDate={setEndDate} budgetMin={budgetMin} setBudgetMin={setBudgetMin} budgetMax={budgetMax} setBudgetMax={setBudgetMax} />}
+          {step === 4 && <StepPhotosVerification profilePhoto={profilePhoto} setProfilePhoto={setProfilePhoto} verificationSelfie={verificationSelfie} setVerificationSelfie={setVerificationSelfie} idDocument={idDocument} setIdDocument={setIdDocument} verificationNote={verificationNote} setVerificationNote={setVerificationNote} />}
 
           {error && <div style={{ marginTop: 12, padding: 12, borderRadius: 8, background: '#fff0e9', border: '1px solid #efb49f', color: '#7a2c19', fontSize: 13 }}>{error}</div>}
 
@@ -320,4 +337,98 @@ function StepTripDates({
       </div>
     </>
   )
+}
+
+function StepPhotosVerification({
+  profilePhoto,
+  setProfilePhoto,
+  verificationSelfie,
+  setVerificationSelfie,
+  idDocument,
+  setIdDocument,
+  verificationNote,
+  setVerificationNote,
+}: {
+  profilePhoto: string; setProfilePhoto: (v: string) => void
+  verificationSelfie: string; setVerificationSelfie: (v: string) => void
+  idDocument: string; setIdDocument: (v: string) => void
+  verificationNote: string; setVerificationNote: (v: string) => void
+}) {
+  return (
+    <>
+      <h1 style={{ fontSize: 30, fontWeight: 700, margin: '6px 0 0', lineHeight: 1.15 }}>Submit photos for admin review</h1>
+      <p style={{ fontSize: 14, color: T.muted, margin: '8px 0 0' }}>Your account can be reviewed from the admin panel after these images are submitted.</p>
+      <div style={{ marginTop: 24, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+        <PhotoUpload title="Profile photo" description="Shown on your profile after admin approval." value={profilePhoto} onChange={setProfilePhoto} required />
+        <PhotoUpload title="Verification selfie" description="Used by admins to compare with your profile photo." value={verificationSelfie} onChange={setVerificationSelfie} required />
+        <PhotoUpload title="ID document" description="Optional for prototype review. Use a safe test image." value={idDocument} onChange={setIdDocument} />
+        <div style={{ border: `1px solid ${T.line}`, borderRadius: 8, padding: 14 }}>
+          <div style={{ fontSize: 12, fontWeight: 800 }}>Reviewer note</div>
+          <textarea
+            value={verificationNote}
+            onChange={(e) => setVerificationNote(e.target.value)}
+            placeholder="Anything the admin should know"
+            rows={7}
+            style={{ marginTop: 10, width: '100%', padding: '10px 12px', border: `1px solid ${T.line}`, borderRadius: 8, fontSize: 13, color: T.ink, resize: 'vertical', outline: 'none' }}
+          />
+        </div>
+      </div>
+    </>
+  )
+}
+
+function PhotoUpload({
+  title,
+  description,
+  value,
+  onChange,
+  required,
+}: {
+  title: string
+  description: string
+  value: string
+  onChange: (v: string) => void
+  required?: boolean
+}) {
+  async function handleFile(file?: File) {
+    if (!file) {
+      return
+    }
+
+    onChange(await fileToDataUrl(file))
+  }
+
+  return (
+    <div style={{ border: `1px solid ${T.line}`, borderRadius: 8, padding: 14 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10 }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 800 }}>{title}</div>
+          <div style={{ fontSize: 11.5, color: T.muted, marginTop: 4, lineHeight: 1.4 }}>{description}</div>
+        </div>
+        {required && <span style={{ fontSize: 10.5, color: T.muted, fontWeight: 700 }}>Required</span>}
+      </div>
+      <div style={{ marginTop: 12, height: 140, borderRadius: 8, overflow: 'hidden', border: `1px dashed ${T.line}`, background: T.fill, display: 'grid', placeItems: 'center' }}>
+        {value ? (
+          <img src={value} alt={title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <span style={{ fontSize: 12, color: T.muted }}>No image selected</span>
+        )}
+      </div>
+      <input
+        type="file"
+        accept="image/*"
+        onChange={(e) => void handleFile(e.target.files?.[0])}
+        style={{ marginTop: 12, width: '100%', fontSize: 12 }}
+      />
+    </div>
+  )
+}
+
+function fileToDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result))
+    reader.onerror = () => reject(new Error('Could not read image'))
+    reader.readAsDataURL(file)
+  })
 }

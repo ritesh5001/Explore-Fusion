@@ -36,6 +36,20 @@ export interface AppUser {
   phone?: string;
   homeCity?: string;
   gender?: string;
+  photos?: string[];
+  accountStatus?: 'pending' | 'approved' | 'rejected' | 'suspended';
+  verificationStatus?: 'not-submitted' | 'pending' | 'approved' | 'rejected';
+  photoVerificationStatus?: 'not-submitted' | 'pending' | 'approved' | 'rejected';
+  isVerified?: boolean;
+  verificationSubmission?: {
+    profilePhoto?: string;
+    verificationSelfie?: string;
+    idDocument?: string;
+    note?: string;
+    submittedAt?: string;
+    reviewedAt?: string;
+    rejectionReason?: string;
+  };
   onboardingCompleted: boolean;
 }
 
@@ -74,10 +88,28 @@ export interface OnboardingInput {
     startDate: string;
     endDate: string;
   }>;
+  verificationSubmission: {
+    profilePhoto: string;
+    verificationSelfie: string;
+    idDocument?: string;
+    note?: string;
+  };
 }
 
 export interface DestinationsResponse {
   destinations: string[];
+}
+
+export interface AdminSummary {
+  totalUsers: number;
+  pendingAccounts: number;
+  pendingPhotos: number;
+  pendingVerification: number;
+  approvedAccounts: number;
+}
+
+export interface AdminUsersResponse {
+  users: AppUser[];
 }
 
 const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:4000';
@@ -102,6 +134,12 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 function authHeaders(token: string) {
   return {
     Authorization: `Bearer ${token}`
+  };
+}
+
+function adminHeaders(token: string) {
+  return {
+    'x-admin-token': token
   };
 }
 
@@ -145,4 +183,35 @@ export async function getDestinations(query?: string): Promise<string[]> {
   const search = query ? `?q=${encodeURIComponent(query)}` : '';
   const data = await request<DestinationsResponse>(`/api/destinations${search}`);
   return data.destinations;
+}
+
+export async function getAdminSummary(adminToken: string): Promise<AdminSummary> {
+  return request<AdminSummary>('/api/admin/summary', {
+    headers: adminHeaders(adminToken)
+  });
+}
+
+export async function getAdminUsers(adminToken: string): Promise<AppUser[]> {
+  const data = await request<AdminUsersResponse>('/api/admin/users', {
+    headers: adminHeaders(adminToken)
+  });
+  return data.users;
+}
+
+export async function updateUserModeration(
+  adminToken: string,
+  userId: string,
+  input: {
+    accountStatus?: AppUser['accountStatus'];
+    verificationStatus?: AppUser['verificationStatus'];
+    photoVerificationStatus?: AppUser['photoVerificationStatus'];
+    rejectionReason?: string;
+  }
+): Promise<AppUser> {
+  const data = await request<{ user: AppUser }>(`/api/admin/users/${userId}/moderation`, {
+    method: 'PATCH',
+    headers: adminHeaders(adminToken),
+    body: JSON.stringify(input)
+  });
+  return data.user;
 }

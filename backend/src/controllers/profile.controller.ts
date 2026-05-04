@@ -4,6 +4,8 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 import { User } from '../models/User.js';
 import { sanitizeUser } from './auth.controller.js';
 
+const reviewImageSchema = z.string().min(8).max(2_500_000);
+
 const profileSchema = z.object({
   name: z.string().min(2).optional(),
   phone: z.string().optional(),
@@ -50,7 +52,13 @@ const onboardingSchema = z.object({
       })
     )
     .min(1)
-    .max(6)
+    .max(6),
+  verificationSubmission: z.object({
+    profilePhoto: reviewImageSchema,
+    verificationSelfie: reviewImageSchema,
+    idDocument: reviewImageSchema.optional(),
+    note: z.string().max(300).optional()
+  })
 }).refine((input) => input.budgetMax >= input.budgetMin, {
   message: 'Budget max must be greater than or equal to budget min',
   path: ['budgetMax']
@@ -83,7 +91,18 @@ export async function completeOnboarding(req: AuthenticatedRequest, res: Respons
     req.userId,
     {
       ...input,
-      onboardingCompleted: true
+      onboardingCompleted: true,
+      photos: [input.verificationSubmission.profilePhoto],
+      accountStatus: 'pending',
+      verificationStatus: input.verificationSubmission.idDocument ? 'pending' : 'not-submitted',
+      photoVerificationStatus: 'pending',
+      isVerified: false,
+      verificationSubmission: {
+        ...input.verificationSubmission,
+        submittedAt: new Date(),
+        reviewedAt: undefined,
+        rejectionReason: undefined
+      }
     },
     { returnDocument: 'after' }
   );

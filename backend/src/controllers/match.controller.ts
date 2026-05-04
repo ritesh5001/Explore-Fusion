@@ -34,8 +34,16 @@ export async function discover(req: AuthenticatedRequest, res: Response) {
     return res.status(409).json({ message: 'Complete travel preferences before matching' });
   }
 
+  if (currentUser.accountStatus !== 'approved') {
+    return res.status(403).json({ message: 'Your account is waiting for admin approval' });
+  }
+
   const swipedTargets = await Swipe.find({ swiper: userId }).distinct('target');
-  const candidates = await User.find({ _id: { $nin: [userId, ...swipedTargets] } }).limit(50);
+  const candidates = await User.find({
+    _id: { $nin: [userId, ...swipedTargets] },
+    accountStatus: 'approved',
+    onboardingCompleted: true
+  }).limit(50);
   const profiles = candidates
     .map((candidate) => ({
       id: candidate._id,

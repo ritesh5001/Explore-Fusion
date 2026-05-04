@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { adminRouter } from './admin.routes.js';
 import { authRouter } from './auth.routes.js';
 import { chatRouter } from './chat.routes.js';
 import { destinationRouter } from './destination.routes.js';
@@ -8,6 +9,7 @@ import { tripRouter } from './trip.routes.js';
 
 export const apiRouter = Router();
 
+apiRouter.use('/admin', adminRouter);
 apiRouter.use('/auth', authRouter);
 apiRouter.use('/destinations', destinationRouter);
 apiRouter.use('/profile', profileRouter);

@@ -2,6 +2,8 @@ import mongoose, { Schema, Types } from 'mongoose';
 
 export type TravelStyle = 'backpacker' | 'budget' | 'midrange' | 'luxury';
 export type Gender = 'male' | 'female' | 'non-binary' | 'prefer-not-to-say';
+export type AccountStatus = 'pending' | 'approved' | 'rejected' | 'suspended';
+export type ReviewStatus = 'not-submitted' | 'pending' | 'approved' | 'rejected';
 
 export interface TripPlan {
   destination: string;
@@ -30,6 +32,18 @@ export interface UserDocument extends mongoose.Document {
   dreamDestinations: string[];
   tripPlans: TripPlan[];
   isVerified: boolean;
+  accountStatus: AccountStatus;
+  verificationStatus: ReviewStatus;
+  photoVerificationStatus: ReviewStatus;
+  verificationSubmission?: {
+    profilePhoto?: string;
+    verificationSelfie?: string;
+    idDocument?: string;
+    note?: string;
+    submittedAt?: Date;
+    reviewedAt?: Date;
+    rejectionReason?: string;
+  };
   onboardingCompleted: boolean;
   trustScore: number;
 }
@@ -71,6 +85,30 @@ const userSchema = new Schema<UserDocument>(
     dreamDestinations: [{ type: String }],
     tripPlans: [tripPlanSchema],
     isVerified: { type: Boolean, default: false },
+    accountStatus: {
+      type: String,
+      enum: ['pending', 'approved', 'rejected', 'suspended'],
+      default: 'pending'
+    },
+    verificationStatus: {
+      type: String,
+      enum: ['not-submitted', 'pending', 'approved', 'rejected'],
+      default: 'not-submitted'
+    },
+    photoVerificationStatus: {
+      type: String,
+      enum: ['not-submitted', 'pending', 'approved', 'rejected'],
+      default: 'not-submitted'
+    },
+    verificationSubmission: {
+      profilePhoto: String,
+      verificationSelfie: String,
+      idDocument: String,
+      note: String,
+      submittedAt: Date,
+      reviewedAt: Date,
+      rejectionReason: String
+    },
     onboardingCompleted: { type: Boolean, default: false },
     trustScore: { type: Number, default: 4.5 }
   },

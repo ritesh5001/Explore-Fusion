@@ -32,6 +32,10 @@ export interface AppUser {
   name: string;
   email: string;
   homeCity?: string;
+  accountStatus?: 'pending' | 'approved' | 'rejected' | 'suspended';
+  verificationStatus?: 'not-submitted' | 'pending' | 'approved' | 'rejected';
+  photoVerificationStatus?: 'not-submitted' | 'pending' | 'approved' | 'rejected';
+  isVerified?: boolean;
   onboardingCompleted: boolean;
 }
 
@@ -69,6 +73,12 @@ export interface OnboardingInput {
     startDate: string;
     endDate: string;
   }>;
+  verificationSubmission: {
+    profilePhoto: string;
+    verificationSelfie: string;
+    idDocument?: string;
+    note?: string;
+  };
 }
 
 const baseUrl = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:4000';

@@ -44,7 +44,12 @@ export function PreferencesScreen({
               startDate,
               endDate
             }
-          ]
+          ],
+          verificationSubmission: {
+            profilePhoto: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=800&q=70',
+            verificationSelfie: 'https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=800&q=70',
+            note: 'Submitted from mobile prototype onboarding.'
+          }
         }
       }).unwrap();
 

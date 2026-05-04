@@ -10,6 +10,7 @@ import { ProfileDetail } from './pages/Profile'
 import { Matches } from './pages/Matches'
 import { ChatPage } from './pages/Chat'
 import { Trips } from './pages/Trips'
+import { AdminPanel } from './pages/AdminPanel'
 import type { AppUser } from './lib/api'
 
 const TOKEN_KEY = 'ef_token'
@@ -107,6 +108,12 @@ export default function App() {
           needsOnboarding
             ? <Navigate to="/onboarding" replace />
             : <Shell user={user} onLogout={logout}><ChatPage /></Shell>
+        } />
+
+        <Route path="/admin" element={
+          <MinimalShell>
+            <AdminPanel />
+          </MinimalShell>
         } />
 
         {/* Catch-all */}

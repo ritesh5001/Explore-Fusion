@@ -10,13 +10,17 @@ export function createApp() {
   const allowedOrigins = new Set([
     ...env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()),
     'http://localhost:5173',
-    'http://localhost:5174'
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174'
   ]);
 
   app.use(
     cors({
       origin: (origin, callback) => {
-        if (!origin || allowedOrigins.has(origin)) {
+        const isLocalViteOrigin = /^http:\/\/(localhost|127\.0\.0\.1):517\d$/.test(origin ?? '');
+
+        if (!origin || allowedOrigins.has(origin) || (env.NODE_ENV === 'development' && isLocalViteOrigin)) {
           return callback(null, true);
         }
 

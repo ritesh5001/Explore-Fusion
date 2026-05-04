@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Explore Fusion · Wireframes</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #f3f3ee; }
+  body {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+    color: #1a1a1a;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  * { box-sizing: border-box; }
+
+  /* Override the inline ui-sans-serif declarations in the JSX components.
+     Components hard-code font-family on shells; this nudge re-applies our
+     brand font to all descendants without touching the JSX. */
+  body, body * {
+    font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+  }
+  /* Keep monospace where it's intentional (annotation labels) */
+  [style*="ui-monospace"], [style*="SF Mono"], [style*="Menlo"] {
+    font-family: 'JetBrains Mono', ui-monospace, Menlo, monospace !important;
+  }
+  /* Editorial headline on the hero (Onboarding B web) */
+  .ef-display { font-family: 'Instrument Serif', Georgia, serif !important; font-weight: 400 !important; letter-spacing: -0.01em !important; }
+
+  /* Wireframe theme tokens (overridden by tweaks) */
+  :root {
+    --wf-ink: #1a1a1a;
+    --wf-line: #c9c9c9;
+    --wf-line-hard: #8a8a8a;
+    --wf-fill: #ececec;
+    --wf-fill-soft: #f5f5f5;
+    --wf-bg: #ffffff;
+    --wf-accent: #1a1a1a;
+    --wf-muted: #6b6b6b;
+  }
+
+  /* "ink" palette = ink + neutrals (default wireframe) */
+  /* "sage"  = match codebase: green primary, terracotta accent on cream */
+  /* "navy"  = navy primary, amber accent — confident travel app */
+  body[data-palette="sage"] {
+    --wf-ink: #2a3d2f;
+    --wf-line: #d6dccd;
+    --wf-line-hard: #97a48b;
+    --wf-fill: #e6ecdc;
+    --wf-fill-soft: #f1f3e8;
+    --wf-bg: #fbfaf3;
+    --wf-accent: #c9613a;
+    --wf-muted: #6f7a68;
+  }
+  body[data-palette="navy"] {
+    --wf-ink: #11233f;
+    --wf-line: #d6deea;
+    --wf-line-hard: #8794ad;
+    --wf-fill: #eaeff7;
+    --wf-fill-soft: #f4f7fb;
+    --wf-bg: #ffffff;
+    --wf-accent: #e89421;
+    --wf-muted: #5a6a82;
+  }
+</style>
+
+<!-- React + Babel -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- Components -->
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="wf-primitives.jsx"></script>
+<script type="text/babel" src="wf-mobile.jsx"></script>
+<script type="text/babel" src="wf-web.jsx"></script>
+</head>
+<body data-palette="ink">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+      "palette": "ink",
+      "photos": true,
+      "density": "comfortable",
+      "showAnnotations": true
+    }/*EDITMODE-END*/;
+
+    function MobileFrame({ children }) {
+      // Custom phone bezel sized to 360×720 mobile artboard
+      return (
+        <div style={{
+          width: 360 + 16, height: 720 + 16,
+          padding: 8, borderRadius: 36,
+          background: '#1a1a1a',
+          boxShadow: '0 24px 48px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.1)',
+          position: 'relative',
+        }}>
+          <div style={{
+            width: 360, height: 720, borderRadius: 28, overflow: 'hidden',
+            background: 'var(--wf-bg, #fff)', position: 'relative',
+          }}>{children}</div>
+        </div>
+      );
+    }
+
+    function App() {
+      const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
+
+      // Apply palette to body
+      React.useEffect(() => {
+        document.body.dataset.palette = tweaks.palette;
+      }, [tweaks.palette]);
+
+      const photosOn = tweaks.photos;
+
+      // Sections + artboards
+      const sections = [
+        { id: 'onboarding', title: '01 · Onboarding', subtitle: 'First time setting up a travel profile. A is a guided stepper; B is trip-first — start with WHERE & WHEN before signup.',
+          rows: [
+            { kind: 'mobile', a: <MOnboardingA />, b: <MOnboardingB /> },
+            { kind: 'web',    a: <WOnboardingA />, b: <WOnboardingB /> },
+          ] },
+        { id: 'discover', title: '02 · Discover', subtitle: 'The core flow. A is the familiar swipe / list; B is map-first — see WHO is in your destination, not just photos in a stack.',
+          rows: [
+            { kind: 'mobile', a: <MDiscoverA />, b: <MDiscoverB /> },
+            { kind: 'web',    a: <WDiscoverA />, b: <WDiscoverB /> },
+          ] },
+        { id: 'profile', title: '03 · Profile detail', subtitle: 'A is photo-led with bio + interests. B is trip-led — leads with her itinerary, then "why you match" by category.',
+          rows: [
+            { kind: 'mobile', a: <MProfileA />, b: <MProfileB /> },
+            { kind: 'web',    a: <WProfileA />, b: <WProfileB /> },
+          ] },
+        { id: 'matches', title: '04 · Matches', subtitle: 'A is a flat conversation list. B groups buddies by trip — closer to how you actually plan: per-destination buddies & costs.',
+          rows: [
+            { kind: 'mobile', a: <MMatchesA />, b: <MMatchesB /> },
+            { kind: 'web',    a: <WMatchesA />, b: <WMatchesB /> },
+          ] },
+        { id: 'chat', title: '05 · Chat', subtitle: 'A is standard 1:1 messaging. B pairs chat with a live trip-plan rail — pin places, split costs, RSVP to plans inline.',
+          rows: [
+            { kind: 'mobile', a: <MChatA />, b: <MChatB /> },
+            { kind: 'web',    a: <WChatA />, b: <WChatB /> },
+          ] },
+      ];
+
+      return (
+        <PhotosCtx.Provider value={photosOn}>
+          {/* Project header */}
+          <DesignCanvas
+            title="Explore Fusion"
+            subtitle={"Mid-fidelity wireframes · interest-first travel buddy matching · Indian travelers · Mobile + Web · A/B per screen"}
+          >
+            {sections.map((sec) => (
+              <React.Fragment key={sec.id}>
+                {sec.rows.map((row, i) => (
+                  <DCSection
+                    key={`${sec.id}-${row.kind}`}
+                    id={`${sec.id}-${row.kind}`}
+                    title={i === 0 ? sec.title : ''}
+                    subtitle={i === 0 ? sec.subtitle : ''}
+                  >
+                    <DCArtboard
+                      id={`${sec.id}-${row.kind}-a`}
+                      label={`${row.kind === 'mobile' ? 'Mobile' : 'Web'} · A`}
+                      width={row.kind === 'mobile' ? 376 : W_W}
+                      height={row.kind === 'mobile' ? 736 : W_H}
+                    >
+                      {row.kind === 'mobile' ? <MobileFrame>{row.a}</MobileFrame> : row.a}
+                    </DCArtboard>
+                    <DCArtboard
+                      id={`${sec.id}-${row.kind}-b`}
+                      label={`${row.kind === 'mobile' ? 'Mobile' : 'Web'} · B`}
+                      width={row.kind === 'mobile' ? 376 : W_W}
+                      height={row.kind === 'mobile' ? 736 : W_H}
+                    >
+                      {row.kind === 'mobile' ? <MobileFrame>{row.b}</MobileFrame> : row.b}
+                    </DCArtboard>
+                    {tweaks.showAnnotations && i === 0 && (
+                      <DCPostIt color="amber" x={row.kind === 'mobile' ? 880 : 2440} y={120}>
+                        {sec.id === 'onboarding' && <>Trip-first onboarding (B) defers signup until <b>after</b> the user sees real buddies — higher activation than asking for email upfront.</>}
+                        {sec.id === 'discover' && <>Map (B) makes "47 buddies in Bali" tangible. Reduces the swipe-loop dread of dating apps.</>}
+                        {sec.id === 'profile' && <>Trip-led profile (B) reframes the question from "do I like them?" to "do their plans fit mine?".</>}
+                        {sec.id === 'matches' && <>Trip-clustering (B) collapses 12 conversations into 2 trips. Cleaner mental model.</>}
+                        {sec.id === 'chat' && <>Plan-rail (B) makes group trips actually feasible — split costs, RSVP, no scrolling chat history.</>}
+                      </DCPostIt>
+                    )}
+                  </DCSection>
+                ))}
+              </React.Fragment>
+            ))}
+
+            {/* Closing context */}
+            <DCSection id="notes" title="Design notes" subtitle="Decisions, tradeoffs, what's deliberately missing.">
+              <DCArtboard id="principles" label="Principles" width={620} height={460}>
+                <div style={{ padding: 32, height: '100%', background: 'var(--wf-bg)', overflow: 'auto' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--wf-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Why this differs from Tinder/Bumble</div>
+                  <ol style={{ paddingLeft: 18, margin: '12px 0 0', fontSize: 13.5, lineHeight: 1.6 }}>
+                    <li><b>Interest-first, not gender-first.</b> Match score is composed from interests + dates + budget + pace + stay style. Gender is never a primary axis.</li>
+                    <li><b>Trip is the unit, not the profile.</b> You don't match a person — you match a person <i>for a specific trip</i>. The same buddy can be a "yes" for Bali and a "no" for Vietnam.</li>
+                    <li><b>Indian-traveler defaults.</b> ₹ budget bands, languages (EN/HI/regional), domestic destinations surfaced first, ID verification (Aadhaar / passport) framed as "Trust score".</li>
+                    <li><b>Group trips are first-class.</b> Discover, profile, matches, and chat all accommodate 2+ buddies — no awkward retrofitting.</li>
+                    <li><b>Safety as routine, not crisis.</b> Verification badges, trust score, location-share inside trip plans only, optional check-in.</li>
+                  </ol>
+                </div>
+              </DCArtboard>
+              <DCArtboard id="next" label="Open questions" width={420} height={460}>
+                <div style={{ padding: 24, height: '100%', background: 'var(--wf-fill-soft)', overflow: 'auto' }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--wf-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Need your input</div>
+                  <ul style={{ paddingLeft: 18, margin: '12px 0 0', fontSize: 13, lineHeight: 1.6 }}>
+                    <li>Cost-split model: app-mediated payments, or just IOU tracker?</li>
+                    <li>Group size cap — 2, 4, 8?</li>
+                    <li>How public is a trip plan? Discoverable, or invite-only?</li>
+                    <li>Trust score formula: verification + reviews + on-time rate?</li>
+                    <li>Match score: do we expose the breakdown to users (Profile B), or hide it?</li>
+                    <li>Verification: Aadhaar via DigiLocker? Selfie + ID?</li>
+                  </ul>
+                  <div style={{ marginTop: 16, padding: 12, borderRadius: 8, background: 'var(--wf-bg)', fontSize: 12, color: 'var(--wf-muted)', lineHeight: 1.5 }}>
+                    Next: pick A or B per screen. Then I'll move these into hi-fi with a real visual direction.
+                  </div>
+                </div>
+              </DCArtboard>
+            </DCSection>
+          </DesignCanvas>
+
+          {/* Tweaks panel */}
+          <TweaksPanel title="Tweaks">
+            <TweakSection title="Theme">
+              <TweakRadio
+                label="Palette"
+                value={tweaks.palette}
+                onChange={(v) => setTweak('palette', v)}
+                options={[
+                  { value: 'ink',  label: 'Ink' },
+                  { value: 'sage', label: 'Sage' },
+                  { value: 'navy', label: 'Navy' },
+                ]}
+              />
+            </TweakSection>
+            <TweakSection title="Display">
+              <TweakToggle
+                label="Real photos"
+                hint="Off = grayscale photo placeholders"
+                value={tweaks.photos}
+                onChange={(v) => setTweak('photos', v)}
+              />
+              <TweakToggle
+                label="Designer notes"
+                hint="Sticky notes alongside artboards"
+                value={tweaks.showAnnotations}
+                onChange={(v) => setTweak('showAnnotations', v)}
+              />
+            </TweakSection>
+          </TweaksPanel>
+        </PhotosCtx.Provider>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

@@ -90,6 +90,12 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
       return
     }
 
+    if (!destination || !startDate || !endDate) {
+      setSaving(false)
+      setError('Add at least one trip plan with destination, start date, and end date before finishing.')
+      return
+    }
+
     try {
       const updated = await completeOnboarding(token, {
         bio: bio || 'Looking for a travel buddy who shares my interests.',
@@ -101,9 +107,7 @@ export function OnboardingFlow({ token, onComplete }: OnboardingFlowProps) {
         preferredDuration: '1-week',
         companionPreference: 'solo-buddy',
         dreamDestinations: [destination],
-        tripPlans: startDate && endDate
-          ? [{ destination, startDate, endDate }]
-          : [],
+        tripPlans: [{ destination, startDate, endDate }],
         verificationSubmission: {
           profilePhoto,
           verificationSelfie,

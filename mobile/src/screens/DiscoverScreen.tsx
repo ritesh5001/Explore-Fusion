@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     color: colors.text,
-    backgroundColor: '#edf8ef',
+    backgroundColor: colors.fill,
     fontWeight: '700'
   },
   card: {

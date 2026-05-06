@@ -264,8 +264,8 @@ const styles = StyleSheet.create({
   error: {
     borderRadius: 8,
     padding: 12,
-    color: '#7a2c19',
-    backgroundColor: '#fff0e9',
+    color: colors.dangerText,
+    backgroundColor: colors.dangerBg,
     fontWeight: '800'
   }
 });

@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     gap: 8
   },
   trendingChip: {
-    backgroundColor: '#f2eee2',
+    backgroundColor: colors.fill,
     borderRadius: 999
   },
   trendingChipText: {

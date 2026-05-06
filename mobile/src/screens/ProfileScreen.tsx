@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   statusChip: {
-    backgroundColor: '#f2eee2'
+    backgroundColor: colors.fill
   },
   section: {
     borderColor: colors.border,
@@ -294,14 +294,14 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     color: colors.text,
-    backgroundColor: '#edf8ef',
+    backgroundColor: colors.fill,
     fontWeight: '700'
   },
   error: {
     borderRadius: 8,
     padding: 12,
-    color: '#7a2c19',
-    backgroundColor: '#fff0e9',
+    color: colors.dangerText,
+    backgroundColor: colors.dangerBg,
     fontWeight: '800'
   }
 });

@@ -265,7 +265,13 @@ function TravelStyleStep({
       <Text variant="headlineSmall" style={styles.sectionTitle}>How do you like to travel?</Text>
       <View style={styles.chips}>
         {TRAVEL_STYLES.map((style) => (
-          <Chip key={style} selected={travelStyle === style} onPress={() => setTravelStyle(style)} style={travelStyle === style ? styles.selectedChip : styles.chip}>
+          <Chip
+            key={style}
+            selected={travelStyle === style}
+            onPress={() => setTravelStyle(style)}
+            style={travelStyle === style ? styles.selectedChip : styles.chip}
+            textStyle={travelStyle === style ? styles.selectedChipText : undefined}
+          >
             {style}
           </Chip>
         ))}
@@ -273,7 +279,13 @@ function TravelStyleStep({
       <Text style={styles.label}>Languages you speak</Text>
       <View style={styles.chips}>
         {LANGUAGES.map((lang) => (
-          <Chip key={lang} selected={selectedLangs.has(lang)} onPress={() => toggleLang(lang)} style={selectedLangs.has(lang) ? styles.selectedChip : styles.chip}>
+          <Chip
+            key={lang}
+            selected={selectedLangs.has(lang)}
+            onPress={() => toggleLang(lang)}
+            style={selectedLangs.has(lang) ? styles.selectedChip : styles.chip}
+            textStyle={selectedLangs.has(lang) ? styles.selectedChipText : undefined}
+          >
             {lang}
           </Chip>
         ))}
@@ -299,7 +311,13 @@ function InterestsStep({
           <Text style={styles.label}>{category}</Text>
           <View style={styles.chips}>
             {tags.map((tag) => (
-              <Chip key={tag} selected={selectedInterests.has(tag)} onPress={() => toggleInterest(tag)} style={selectedInterests.has(tag) ? styles.selectedChip : styles.chip}>
+              <Chip
+                key={tag}
+                selected={selectedInterests.has(tag)}
+                onPress={() => toggleInterest(tag)}
+                style={selectedInterests.has(tag) ? styles.selectedChip : styles.chip}
+                textStyle={selectedInterests.has(tag) ? styles.selectedChipText : undefined}
+              >
                 {tag}
               </Chip>
             ))}
@@ -512,9 +530,12 @@ const styles = StyleSheet.create({
     borderColor: colors.border
   },
   selectedChip: {
-    backgroundColor: '#dcefe9',
+    backgroundColor: colors.text,
     borderWidth: 1,
-    borderColor: colors.primary
+    borderColor: colors.text
+  },
+  selectedChipText: {
+    color: '#fff'
   },
   actions: {
     flexDirection: 'row',
@@ -524,8 +545,8 @@ const styles = StyleSheet.create({
   error: {
     borderRadius: 8,
     padding: 12,
-    color: '#7a2c19',
-    backgroundColor: '#fff0e9',
+    color: colors.dangerText,
+    backgroundColor: colors.dangerBg,
     fontWeight: '800'
   }
 });

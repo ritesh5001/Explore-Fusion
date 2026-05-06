@@ -5,7 +5,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
 import { Text } from 'react-native';
-import { Provider as PaperProvider } from 'react-native-paper';
+import { MD3LightTheme, Provider as PaperProvider } from 'react-native-paper';
 import { Provider as ReduxProvider } from 'react-redux';
 import { AppUser } from './src/features/api';
 import { AuthScreen } from './src/screens/AuthScreen';
@@ -46,6 +46,28 @@ const TAB_ICONS: Record<string, string> = {
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
+const paperTheme = {
+  ...MD3LightTheme,
+  roundness: 2,
+  colors: {
+    ...MD3LightTheme.colors,
+    primary: colors.primary,
+    secondary: colors.text,
+    tertiary: colors.text,
+    background: colors.background,
+    surface: colors.card,
+    surfaceVariant: colors.surface,
+    outline: colors.border,
+    outlineVariant: colors.border,
+    onPrimary: '#ffffff',
+    onSecondary: '#ffffff',
+    onSurface: colors.text,
+    onSurfaceVariant: colors.muted,
+    error: colors.dangerText,
+    errorContainer: colors.dangerBg,
+  },
+};
+
 export default function App() {
   const [token, setToken] = useState('');
   const [user, setUser] = useState<AppUser | null>(null);
@@ -65,7 +87,7 @@ export default function App() {
 
   return (
     <ReduxProvider store={store}>
-      <PaperProvider>
+      <PaperProvider theme={paperTheme}>
         <StatusBar style="dark" />
         {!token || !user ? (
           showAuth ? (

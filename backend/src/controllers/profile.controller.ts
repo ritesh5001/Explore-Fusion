@@ -4,7 +4,7 @@ import { AuthenticatedRequest } from '../middleware/auth.js';
 import { User } from '../models/User.js';
 import { sanitizeUser } from './auth.controller.js';
 
-const reviewImageSchema = z.string().min(8).max(2_500_000);
+const reviewImageSchema = z.string().min(8).max(8_000_000);
 
 const profileSchema = z.object({
   name: z.string().min(2).optional(),

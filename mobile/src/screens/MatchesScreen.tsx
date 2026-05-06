@@ -7,12 +7,14 @@ export function MatchesScreen({
   token,
   currentUserId,
   onOpenChat,
-  onOpenProfile
+  onOpenProfile,
+  onPlanTrip
 }: {
   token: string;
   currentUserId: string;
   onOpenChat: (matchId: string) => void;
   onOpenProfile: (userId: string) => void;
+  onPlanTrip: () => void;
 }) {
   const { data, isLoading, error, refetch } = useGetMatchesQuery(token);
   const matches = data?.matches ?? [];
@@ -31,6 +33,8 @@ export function MatchesScreen({
         label="No matches yet. Like travelers in Discover; chat unlocks only after a mutual like."
         actionLabel="Refresh"
         onAction={() => refetch()}
+        secondaryActionLabel="Plan a trip"
+        onSecondaryAction={onPlanTrip}
       />
     );
   }
@@ -40,6 +44,17 @@ export function MatchesScreen({
       data={matches}
       keyExtractor={(item) => item._id}
       contentContainerStyle={styles.list}
+      ListHeaderComponent={
+        <View style={styles.header}>
+          <View style={styles.grow}>
+            <Text variant="headlineMedium" style={styles.title}>Your matches</Text>
+            <Text style={styles.muted}>{matches.length} active conversations</Text>
+          </View>
+          <Button mode="contained" buttonColor={colors.primary} onPress={onPlanTrip}>
+            Plan a trip
+          </Button>
+        </View>
+      }
       renderItem={({ item }) => {
         const partner = getPartner(item, currentUserId);
         return (
@@ -90,20 +105,31 @@ function Avatar({ user }: { user?: MatchUser }) {
 function CenteredMessage({
   label,
   actionLabel,
-  onAction
+  onAction,
+  secondaryActionLabel,
+  onSecondaryAction
 }: {
   label: string;
   actionLabel?: string;
   onAction?: () => void;
+  secondaryActionLabel?: string;
+  onSecondaryAction?: () => void;
 }) {
   return (
     <View style={styles.centered}>
       <Text style={styles.muted}>{label}</Text>
-      {actionLabel && onAction ? (
-        <Button mode="contained" buttonColor={colors.primary} onPress={onAction} style={{ marginTop: 16 }}>
-          {actionLabel}
-        </Button>
-      ) : null}
+      <View style={styles.centeredActions}>
+        {actionLabel && onAction ? (
+          <Button mode="contained" buttonColor={colors.primary} onPress={onAction}>
+            {actionLabel}
+          </Button>
+        ) : null}
+        {secondaryActionLabel && onSecondaryAction ? (
+          <Button mode="outlined" onPress={onSecondaryAction}>
+            {secondaryActionLabel}
+          </Button>
+        ) : null}
+      </View>
     </View>
   );
 }
@@ -132,9 +158,27 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: colors.background
   },
+  centeredActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+    marginTop: 16,
+    justifyContent: 'center'
+  },
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+    marginBottom: 4
+  },
+  title: {
+    color: colors.text,
+    fontWeight: '800'
   },
   row: {
     flexDirection: 'row',

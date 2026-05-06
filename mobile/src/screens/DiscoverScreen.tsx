@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Image, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Card, Chip, ProgressBar, Text } from 'react-native-paper';
+import { Button, Card, Chip, ProgressBar, Switch, Text } from 'react-native-paper';
 import { DiscoverProfile, useGetDiscoverProfilesQuery, useSwipeUserMutation } from '../features/api';
 import { colors } from '../theme/colors';
 
@@ -15,9 +15,11 @@ export function DiscoverScreen({
 }) {
   const [index, setIndex] = useState(0);
   const [feedback, setFeedback] = useState('');
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const { data, isLoading, error, refetch } = useGetDiscoverProfilesQuery(token);
   const [swipeUser, swipeState] = useSwipeUserMutation();
-  const profiles = data?.profiles ?? [];
+  const allProfiles = data?.profiles ?? [];
+  const profiles = allProfiles.filter((item) => !verifiedOnly || item.isVerified);
   const profile = profiles[index];
 
   const initials = useMemo(() => {
@@ -74,7 +76,7 @@ export function DiscoverScreen({
     );
   }
 
-  if (!profile) {
+  if (!profile && !allProfiles.length) {
     return (
       <ScreenNotice
         title="No new approved travelers are available right now."
@@ -82,6 +84,37 @@ export function DiscoverScreen({
         actionLabel="Refresh"
         onAction={() => refetch()}
       />
+    );
+  }
+
+  if (!profile) {
+    return (
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <Text variant="labelLarge" style={styles.eyebrow}>
+              Approved travelers
+            </Text>
+            <Text variant="headlineMedium" style={styles.title}>
+              Discover
+            </Text>
+          </View>
+        </View>
+        <FilterCard
+          verifiedOnly={verifiedOnly}
+          onToggle={(value) => {
+            setVerifiedOnly(value);
+            setIndex(0);
+          }}
+        />
+        <ScreenNotice
+          title="No verified travelers match that filter right now."
+          body="Turn off verified-only or refresh the discovery queue."
+          actionLabel="Refresh"
+          onAction={() => refetch()}
+          embedded
+        />
+      </ScrollView>
     );
   }
 
@@ -98,6 +131,14 @@ export function DiscoverScreen({
         </View>
         <Chip compact>{profile.compatibilityScore}% match</Chip>
       </View>
+
+      <FilterCard
+        verifiedOnly={verifiedOnly}
+        onToggle={(value) => {
+          setVerifiedOnly(value);
+          setIndex(0);
+        }}
+      />
 
       {feedback ? <Text style={styles.feedback}>{feedback}</Text> : null}
 
@@ -176,15 +217,17 @@ function ScreenNotice({
   title,
   body,
   actionLabel,
-  onAction
+  onAction,
+  embedded
 }: {
   title: string;
   body?: string;
   actionLabel?: string;
   onAction?: () => void;
+  embedded?: boolean;
 }) {
   return (
-    <View style={styles.noticeWrap}>
+    <View style={embedded ? styles.embeddedNoticeWrap : styles.noticeWrap}>
       <Card mode="contained" style={styles.noticeCard}>
         <Card.Content>
           <Text variant="headlineSmall" style={styles.noticeTitle}>
@@ -199,6 +242,26 @@ function ScreenNotice({
         </Card.Content>
       </Card>
     </View>
+  );
+}
+
+function FilterCard({
+  verifiedOnly,
+  onToggle
+}: {
+  verifiedOnly: boolean;
+  onToggle: (value: boolean) => void;
+}) {
+  return (
+    <Card mode="outlined" style={styles.filterCard}>
+      <Card.Content style={styles.filterContent}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.filterTitle}>Verified only</Text>
+          <Text style={styles.filterMeta}>Match the website filter and show only verified travelers.</Text>
+        </View>
+        <Switch value={verifiedOnly} onValueChange={onToggle} color={colors.primary} />
+      </Card.Content>
+    </Card>
   );
 }
 
@@ -226,10 +289,33 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.background
   },
+  embeddedNoticeWrap: {
+    backgroundColor: colors.background
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between'
+  },
+  filterCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 12
+  },
+  filterContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12
+  },
+  filterTitle: {
+    color: colors.text,
+    fontWeight: '800'
+  },
+  filterMeta: {
+    marginTop: 3,
+    color: colors.muted,
+    fontSize: 12,
+    lineHeight: 18
   },
   eyebrow: {
     color: colors.primary,

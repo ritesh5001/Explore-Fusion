@@ -4,12 +4,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Provider as PaperProvider, Text } from 'react-native-paper';
+import { Text } from 'react-native';
+import { Provider as PaperProvider } from 'react-native-paper';
 import { Provider as ReduxProvider } from 'react-redux';
 import { AppUser } from './src/features/api';
 import { AuthScreen } from './src/screens/AuthScreen';
 import { ChatScreen } from './src/screens/ChatScreen';
 import { DiscoverScreen } from './src/screens/DiscoverScreen';
+import { HomeScreen } from './src/screens/HomeScreen';
 import { MatchesScreen } from './src/screens/MatchesScreen';
 import { PreferencesScreen } from './src/screens/PreferencesScreen';
 import { ProfileScreen } from './src/screens/ProfileScreen';
@@ -33,21 +35,32 @@ export type MainTabParamList = {
   Profile: undefined;
 };
 
+const TAB_ICONS: Record<string, string> = {
+  Discover: '🔍',
+  Matches: '❤️',
+  Trips: '✈️',
+  Safety: '🛡️',
+  Profile: '👤',
+};
+
 const Tab = createBottomTabNavigator<MainTabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function App() {
   const [token, setToken] = useState('');
   const [user, setUser] = useState<AppUser | null>(null);
+  const [showAuth, setShowAuth] = useState(false);
 
   function saveSession(nextToken: string, nextUser: AppUser) {
     setToken(nextToken);
     setUser(nextUser);
+    setShowAuth(false);
   }
 
   function logout() {
     setToken('');
     setUser(null);
+    setShowAuth(false);
   }
 
   return (
@@ -55,20 +68,24 @@ export default function App() {
       <PaperProvider>
         <StatusBar style="dark" />
         {!token || !user ? (
-          <AuthScreen onAuthenticated={saveSession} />
+          showAuth ? (
+            <AuthScreen onAuthenticated={saveSession} onBack={() => setShowAuth(false)} />
+          ) : (
+            <HomeScreen onGetStarted={() => setShowAuth(true)} />
+          )
         ) : !user.onboardingCompleted ? (
           <PreferencesScreen token={token} onCompleted={setUser} />
         ) : (
           <NavigationContainer>
-            <Stack.Navigator screenOptions={{ headerStyle: { backgroundColor: colors.background }, headerTitleStyle: { color: colors.text, fontWeight: '800' } }}>
+            <Stack.Navigator
+              screenOptions={{
+                headerStyle: { backgroundColor: colors.background },
+                headerTitleStyle: { color: colors.text, fontWeight: '800' },
+              }}
+            >
               <Stack.Screen name="MainTabs" options={{ headerShown: false }}>
                 {() => (
-                  <MainTabs
-                    token={token}
-                    user={user}
-                    onLogout={logout}
-                    onUserUpdated={setUser}
-                  />
+                  <MainTabs token={token} user={user} onLogout={logout} onUserUpdated={setUser} />
                 )}
               </Stack.Screen>
               <Stack.Screen name="Chat" options={{ title: 'Chat' }}>
@@ -102,7 +119,7 @@ function MainTabs({
   token,
   user,
   onLogout,
-  onUserUpdated
+  onUserUpdated,
 }: {
   token: string;
   user: AppUser;
@@ -117,7 +134,10 @@ function MainTabs({
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-        tabBarIcon: ({ color }) => <Text style={{ color, fontWeight: '900' }}>{route.name.slice(0, 1)}</Text>
+        tabBarIcon: () => (
+          <Text style={{ fontSize: 20 }}>{TAB_ICONS[route.name] ?? route.name.slice(0, 1)}</Text>
+        ),
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       })}
     >
       <Tab.Screen name="Discover">
@@ -136,6 +156,7 @@ function MainTabs({
             currentUserId={user._id}
             onOpenChat={(matchId) => navigation.getParent()?.navigate('Chat', { matchId })}
             onOpenProfile={(userId) => navigation.getParent()?.navigate('PublicProfile', { userId })}
+            onPlanTrip={() => navigation.navigate('Trips')}
           />
         )}
       </Tab.Screen>

@@ -11,8 +11,12 @@ export function createApp() {
     ...env.CLIENT_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean),
     'http://localhost:5173',
     'http://localhost:5174',
+    'http://localhost:8081',
+    'http://localhost:19006',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:5174',
+    'http://127.0.0.1:8081',
+    'http://127.0.0.1:19006',
     'https://explorefusion.online',
     'https://www.explorefusion.online'
   ]);
@@ -20,9 +24,9 @@ export function createApp() {
   app.use(
     cors({
       origin: (origin, callback) => {
-        const isLocalViteOrigin = /^http:\/\/(localhost|127\.0\.0\.1):517\d$/.test(origin ?? '');
+        const isLocalDevOrigin = /^http:\/\/(localhost|127\.0\.0\.1):(517\d|8081|19006)$/.test(origin ?? '');
 
-        if (!origin || allowedOrigins.has(origin) || (env.NODE_ENV === 'development' && isLocalViteOrigin)) {
+        if (!origin || allowedOrigins.has(origin) || (env.NODE_ENV === 'development' && isLocalDevOrigin)) {
           return callback(null, true);
         }
 

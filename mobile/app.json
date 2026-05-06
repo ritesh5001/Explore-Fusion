@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "WanderMatch",
-    "slug": "wandermatch",
+    "slug": "explore-fusion",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,10 +21,17 @@
         "backgroundColor": "#117c6f"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.ritesh5001.explorefusion"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "b32780cf-7945-47e7-b10a-8278f8731c32"
+      }
+    },
+    "owner": "ritesh5001"
   }
 }
